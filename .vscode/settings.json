@@ -1,0 +1,11 @@
+// デフォルトとユーザー設定を上書きするために、このファイルに設定を入れます
+{
+    "files.exclude": {
+        "out": false // コンパイルされたJSファイルのある "out "フォルダを隠すにはtrueを設定します
+    },
+    "search.exclude": {
+        "out": true // 検索結果に "out "フォルダを含めるにはfalseを設定します
+    },
+    // 必要なタスクはnpmスクリプトとして用意されているので、tscタスクの自動検出をオフにする
+    "typescript.tsc.autoDetect": "off"
+}

@@ -21,7 +21,7 @@
 			"end": "$",
 			"patterns": [
 				{
-					"name":"comment",
+					"name": "comment",
 					"match": "//.*"
 				}
 			]
@@ -37,11 +37,11 @@
 				},
 				{
 					"name": "header",
-					"match": "^[A-Za-z0-9]*"
+					"match": "^[A-Z0-9]*"
 				},
 				{
 					"name": "header.prefix",
-					"match": "(?<=^[A-Za-z0-9]*:)([+][+]|--)"
+					"match": "(?<=^[A-Z0-9]*:)([+][+]|--)"
 				}
 			]
 		},
@@ -56,11 +56,11 @@
 				},
 				{
 					"name": "statement.branch",
-					"match": "^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)(?=\\s)"
+					"match": "^#(N|E|M|BRANCHSTART|BRANCHEND)(?=\\s)"
 				},
 				{
 					"name": "statement",
-					"match": "^#[A-Za-z0-9]*(?=\\s)"
+					"match": "^#[A-Z0-9]*(?=\\s)"
 				},
 				{
 					"name": "statement.variable",
@@ -76,7 +76,7 @@
 				{
 					"comment": "連打",
 					"begin": "(?=5)",
-					"end": "(8|(?=[1-4|6-9])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)\\s))",
+					"end": "(8|(?=[1-4|6-9])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
 					"endCaptures": {
 						"1": {
 							"name": "note.roll"
@@ -100,7 +100,7 @@
 				{
 					"comment": "連打（大）",
 					"begin": "(?=6)",
-					"end": "(8|(?=[1-5|7-9])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)\\s))",
+					"end": "(8|(?=[1-5|7-9])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
 					"endCaptures": {
 						"1": {
 							"name": "note.roll.big"
@@ -124,7 +124,7 @@
 				{
 					"comment": "風船連打",
 					"begin": "(?=7)",
-					"end": "(8|(?=[1-6|9])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)\\s))",
+					"end": "(8|(?=[1-6|9])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
 					"endCaptures": {
 						"1": {
 							"name": "note.balloon"
@@ -148,7 +148,7 @@
 				{
 					"comment": "風船連打（大）",
 					"begin": "(?=9)",
-					"end": "(8|(?=[1-7])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND)\\s))",
+					"end": "(8|(?=[1-7])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
 					"endCaptures": {
 						"1": {
 							"name": "note.balloon.big"
@@ -178,23 +178,23 @@
 					"include": "#statement"
 				},
 				{
-					"name":"note.don",
+					"name": "note.don",
 					"match": "1"
 				},
 				{
-					"name":"note.don.big",
+					"name": "note.don.big",
 					"match": "3"
 				},
 				{
-					"name":"note.ka",
+					"name": "note.ka",
 					"match": "2"
 				},
 				{
-					"name":"note.ka.big",
+					"name": "note.ka.big",
 					"match": "4"
 				},
 				{
-					"name":"note.empty",
+					"name": "note.empty",
 					"match": "0"
 				}
 			]
