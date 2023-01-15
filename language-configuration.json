@@ -1,0 +1,11 @@
+{
+    "comments": {
+        "lineComment": "//"
+    },
+    "folding": { 
+      "markers": {
+        "start": "^#START\\b",
+        "end": "^#END\\b"
+      }
+    }
+}

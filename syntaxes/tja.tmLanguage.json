@@ -1,0 +1,203 @@
+{
+	"scopeName": "source.tja",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#header"
+		},
+		{
+			"include": "#statement"
+		},
+		{
+			"include": "#notes"
+		}
+	],
+	"repository": {
+		"comments": {
+			"comment": "コメント",
+			"begin": "(?=//)",
+			"end": "$",
+			"patterns": [
+				{
+					"name":"comment",
+					"match": "//.*"
+				}
+			]
+		},
+		"header": {
+			"comment": "ヘッダ",
+			"begin": "^(?=[A-Z0-9]*:)",
+			"end": "$",
+			"patterns": [
+				{
+					"comment": "コメント",
+					"include": "#comments"
+				},
+				{
+					"name": "header",
+					"match": "^[A-Za-z0-9]*"
+				},
+				{
+					"name": "header.prefix",
+					"match": "(?<=^[A-Za-z0-9]*:)([+][+]|--)"
+				}
+			]
+		},
+		"statement": {
+			"comment": "命令",
+			"begin": "^(?=#)",
+			"end": "$",
+			"patterns": [
+				{
+					"comment": "コメント",
+					"include": "#comments"
+				},
+				{
+					"name": "statement.branch",
+					"match": "^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)(?=\\s)"
+				},
+				{
+					"name": "statement",
+					"match": "^#[A-Za-z0-9]*(?=\\s)"
+				},
+				{
+					"name": "statement.variable",
+					"match": "[^,]"
+				}
+			]
+		},
+		"notes": {
+			"comment": "譜面",
+			"begin": "^(?=[0-9])",
+			"end": ",",
+			"patterns": [
+				{
+					"comment": "連打",
+					"begin": "(?=5)",
+					"end": "(8|(?=[1-4|6-9])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)\\s))",
+					"endCaptures": {
+						"1": {
+							"name": "note.roll"
+						}
+					},
+					"patterns": [
+						{
+							"comment": "コメント",
+							"include": "#comments"
+						},
+						{
+							"comment": "命令",
+							"include": "#statement"
+						},
+						{
+							"name": "note.roll",
+							"match": "(5|0|8)"
+						}
+					]
+				},
+				{
+					"comment": "連打（大）",
+					"begin": "(?=6)",
+					"end": "(8|(?=[1-5|7-9])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)\\s))",
+					"endCaptures": {
+						"1": {
+							"name": "note.roll.big"
+						}
+					},
+					"patterns": [
+						{
+							"comment": "コメント",
+							"include": "#comments"
+						},
+						{
+							"comment": "命令",
+							"include": "#statement"
+						},
+						{
+							"name": "note.roll.big",
+							"match": "(6|0|8)"
+						}
+					]
+				},
+				{
+					"comment": "風船連打",
+					"begin": "(?=7)",
+					"end": "(8|(?=[1-6|9])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND|n|e|m|branchstart|branchend)\\s))",
+					"endCaptures": {
+						"1": {
+							"name": "note.balloon"
+						}
+					},
+					"patterns": [
+						{
+							"comment": "コメント",
+							"include": "#comments"
+						},
+						{
+							"comment": "命令",
+							"include": "#statement"
+						},
+						{
+							"name": "note.balloon",
+							"match": "(7|0|8)"
+						}
+					]
+				},
+				{
+					"comment": "風船連打（大）",
+					"begin": "(?=9)",
+					"end": "(8|(?=[1-7])|(?=^#(N|E|M|BRANCHSTART|BRANCHEND)\\s))",
+					"endCaptures": {
+						"1": {
+							"name": "note.balloon.big"
+						}
+					},
+					"patterns": [
+						{
+							"comment": "コメント",
+							"include": "#comments"
+						},
+						{
+							"comment": "命令",
+							"include": "#statement"
+						},
+						{
+							"name": "note.balloon.big",
+							"match": "(9|0|8)"
+						}
+					]
+				},
+				{
+					"comment": "コメント",
+					"include": "#comments"
+				},
+				{
+					"comment": "命令",
+					"include": "#statement"
+				},
+				{
+					"name":"note.don",
+					"match": "1"
+				},
+				{
+					"name":"note.don.big",
+					"match": "3"
+				},
+				{
+					"name":"note.ka",
+					"match": "2"
+				},
+				{
+					"name":"note.ka.big",
+					"match": "4"
+				},
+				{
+					"name":"note.empty",
+					"match": "0"
+				}
+			]
+		}
+	}
+}

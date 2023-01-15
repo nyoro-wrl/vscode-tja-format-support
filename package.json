@@ -1,0 +1,161 @@
+{
+  "name": "tja-format-support",
+  "displayName": "TJA Format Support",
+  "description": "Taiko Jiro Format Support Extension",
+  "version": "1.0.0",
+  "publisher": "nyoro",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "keywords": [
+    "tja",
+    "tjc",
+    "tjf",
+    "highlight",
+    "snippets"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "tja",
+        "aliases": [
+          "TJA",
+          "tja"
+        ],
+        "extensions": [
+          ".tja",
+          ".tjc",
+          ".tjf"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tja",
+        "scopeName": "source.tja",
+        "path": "./syntaxes/tja.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "tja",
+        "path": "./snippets/snippets.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[tja]": {
+        "files.encoding": "shiftjis",
+        "editor.unicodeHighlight.ambiguousCharacters": false
+      },
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "source.tja header",
+            "settings": {
+              "foreground": "#569CD6"
+            }
+          },
+          {
+            "scope": "source.tja header.prefix",
+            "settings": {
+              "foreground": "#888"
+            }
+          },
+          {
+            "scope": "source.tja header.variable",
+            "settings": {
+              "foreground": "#9CDCFE"
+            }
+          },
+          {
+            "scope": "source.tja statement",
+            "settings": {
+              "foreground": "#569CD6"
+            }
+          },
+          {
+            "scope": "source.tja statement.branch",
+            "settings": {
+              "foreground": "#CE9178"
+            }
+          },
+          {
+            "scope": "source.tja statement.variable",
+            "settings": {
+              "foreground": "#9CDCFE"
+            }
+          },
+          {
+            "scope": "source.tja note.don",
+            "settings": {
+              "foreground": "#e96d46"
+            }
+          },
+          {
+            "scope": "source.tja note.don.big",
+            "settings": {
+              "foreground": "#e95020",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "source.tja note.ka",
+            "settings": {
+              "foreground": "#77c4c1"
+            }
+          },
+          {
+            "scope": "source.tja note.ka.big",
+            "settings": {
+              "foreground": "#00acbd",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "source.tja note.roll",
+            "settings": {
+              "foreground": "#f3c02c"
+            }
+          },
+          {
+            "scope": "source.tja note.roll.big",
+            "settings": {
+              "foreground": "#f8b200",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "source.tja note.balloon",
+            "settings": {
+              "foreground": "#e4853b"
+            }
+          },
+          {
+            "scope": "source.tja note.balloon.big",
+            "settings": {
+              "foreground": "#ff8400",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "source.tja note.empty",
+            "settings": {
+              "foreground": "#404040"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nyoro-wrl/vscode-tja-format-support"
+  }
+}
