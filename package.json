@@ -20,6 +20,9 @@
     "Programming Languages",
     "Snippets"
   ],
+  "activationEvents": [
+    "onLanguage:tja"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
