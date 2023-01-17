@@ -175,6 +175,12 @@
         "body": "HIDDENBRANCH:",
         "description": "譜面分岐を隠す"
     },
+    // ヘッダ.TJAPlayer3
+    "EXAMn:": {
+        "prefix": "EXAMn:",
+        "body": "EXAM${1:1}:${2:種類},${3:赤合格},${4:金合格},${5:範囲}",
+        "description": "段位共通の合格条件"
+    },
     // ヘッダ.OpenTaiko
     "PREIMAGE:": {
         "prefix": "PREIMAGE:",
@@ -185,11 +191,6 @@
         "prefix": "BGOFFSET:",
         "body": "BGOFFSET:",
         "description": "背景画像のオフセット"
-    },
-    "EXAMn:": {
-        "prefix": "EXAMn:",
-        "body": "EXAM${1:1}:${2:種類},${3:赤合格},${4:金合格},${5:範囲}",
-        "description": "段位共通の合格条件"
     },
     "DANTICK:": {
         "prefix": "DANTICK:",
@@ -379,16 +380,10 @@
         "body": "#JPOSSCROLL ${1:秒数} ${2:距離} ${3:方向}",
         "description": "判定枠の移動"
     },
-    // 命令.OpenTaiko
     "#NEXTSONG": {
         "prefix": "#NEXTSONG",
         "body": "#NEXTSONG ${1:曲名},${2:サブタイトル},${3:ジャンル},${4:音声ファイル},${5:初項},${6:公差},${7:レベル},${8:難易度}",
         "description": "課題曲の指定"
-    },
-    "#EXAMn": {
-        "prefix": "#EXAMn",
-        "body": "#EXAM${1:1} ${2:種類},${3:赤合格},${4:金合格},${5:範囲}",
-        "description": "課題曲の合格条件"
     },
     // 命令.TaikoManyGimmicks
     "#JUDGEDELAY": {

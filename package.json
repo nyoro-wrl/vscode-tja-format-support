@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -66,7 +66,7 @@
           {
             "scope": "source.tja header",
             "settings": {
-              "foreground": "#569CD6"
+              "foreground": "#569cd6"
             }
           },
           {
@@ -78,25 +78,25 @@
           {
             "scope": "source.tja header.variable",
             "settings": {
-              "foreground": "#9CDCFE"
+              "foreground": "#9cdcfe"
             }
           },
           {
             "scope": "source.tja statement",
             "settings": {
-              "foreground": "#dfbe05"
+              "foreground": "#cd86c7"
             }
           },
           {
             "scope": "source.tja statement.branch",
             "settings": {
-              "foreground": "#CE9178"
+              "foreground": "#ce9178"
             }
           },
           {
             "scope": "source.tja statement.variable",
             "settings": {
-              "foreground": "#feec9c"
+              "foreground": "#ffc3ff"
             }
           },
           {

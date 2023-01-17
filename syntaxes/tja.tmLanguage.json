@@ -56,7 +56,7 @@
 				},
 				{
 					"name": "statement.branch",
-					"match": "^#(N|E|M|BRANCHSTART|BRANCHEND)(?=\\s)"
+					"match": "^#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)(?=\\s)"
 				},
 				{
 					"name": "statement",
