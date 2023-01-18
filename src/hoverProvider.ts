@@ -63,11 +63,11 @@ const hoverProvider = vscode.languages.registerHoverProvider("tja", {
                     hover.description.appendMarkdown("分岐したい箇所の一小節以上前に置いてください。");
                     break;
                 case "#BRANCHSTART":
-                    hover.symbol.appendCodeblock(currentWord + " <type>, <expart>, <mastar>");
+                    hover.symbol.appendCodeblock(currentWord + " <type>, <expart>, <master>");
                     hover.description.appendMarkdown("譜面分岐を開始します。  \n\n");
                     hover.description.appendMarkdown("`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n");
                     hover.description.appendMarkdown("`<expart>`: この数値以上で玄人譜面に分岐します。  \n");
-                    hover.description.appendMarkdown("`<mastar>`: この数値以上で達人譜面に分岐します。  \n\n");
+                    hover.description.appendMarkdown("`<master>`: この数値以上で達人譜面に分岐します。  \n\n");
                     hover.description.appendMarkdown("分岐判定は一小節前に行われます。  \n");
                     hover.description.appendMarkdown("一小節前から連打が始まる場合、その連打もカウントします。  \n\n");
                     hover.description.appendMarkdown("分岐後は普通譜面`#N`、玄人譜面`#E`、達人譜面`#M`で記述します。");

@@ -283,7 +283,7 @@
             "#BRANCHSTART",
             "bs"
         ],
-        "body": "#BRANCHSTART ${1:分岐条件}, ${2:玄人条件}, ${3:達人条件}",
+        "body": "#BRANCHSTART ${1:<type>}, ${2:<expart>}, ${3:<master>}",
         "description": "譜面分岐開始"
     },
     "#BRANCHEND": {
@@ -366,7 +366,7 @@
             "#SUDDEN",
             "su"
         ],
-        "body": "#SUDDEN ${1:出現時間} ${2:移動時間}",
+        "body": "#SUDDEN ${1:<sudden>} ${2:<move>}",
         "description": "出現タイミングと動作タイミングの制御"
     },
     "#DIRECTION": {
@@ -377,12 +377,12 @@
     // 命令.TJAPlayer3
     "#JPOSSCROLL": {
         "prefix": "#JPOSSCROLL",
-        "body": "#JPOSSCROLL ${1:秒数} ${2:距離} ${3:方向}",
+        "body": "#JPOSSCROLL ${1:<second>} ${2:<distance>} ${3:<direction>}",
         "description": "判定枠の移動"
     },
     "#NEXTSONG": {
         "prefix": "#NEXTSONG",
-        "body": "#NEXTSONG ${1:曲名},${2:サブタイトル},${3:ジャンル},${4:音声ファイル},${5:初項},${6:公差},${7:レベル},${8:難易度}",
+        "body": "#NEXTSONG ${1:<title>},${2:<subtitle>},${3:<genre>},${4:<wave>},${5:<scoreinit>},${6:<scorediff>},${7:<level>},${8:<course>}",
         "description": "課題曲の指定"
     },
     // 命令.TaikoManyGimmicks
@@ -411,7 +411,7 @@
     },
     "#COLOR": {
         "prefix": "#COLOR",
-        "body": "#COLOR ",
+        "body": "#COLOR ${1:<red>} ${2:<green>} ${3:<blue>} ${4:<alpha>}",
         "description": "ノーツの色彩変更"
     },
     "#ANGLE": {
@@ -421,7 +421,7 @@
     },
     "#GRADATION": {
         "prefix": "#GRADATION",
-        "body": "#GRADATION "
+        "body": "#GRADATION ${1:<type>} ${2:<second>} ${3:<type1>} ${4:<type2>}"
     },
     "#BARLINESIZE": {
         "prefix": "#BARLINESIZE",
