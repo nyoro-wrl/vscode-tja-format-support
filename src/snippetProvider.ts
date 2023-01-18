@@ -1,19 +1,16 @@
 import * as vscode from 'vscode';
 import { commandDocuments } from "./documents";
 
-class SharpSnippetProvider implements vscode.CompletionItemProvider {
+export class SharpTriggerSnippetProvider implements vscode.CompletionItemProvider {
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
         const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
         if (wordRange === undefined) {
             return;
         }
-
-        const line = document.lineAt(position.line).text;
-        const currentWord = line.slice(wordRange.start.character, wordRange.end.character);
-        if (currentWord[0] !== "#") {
+        const currentWord = document.lineAt(position.line).text.slice(wordRange.start.character, wordRange.end.character);
+        if (wordRange.start.character !== 0 || currentWord[0] !== "#") {
             return;
         }
-
         const snippets: vscode.CompletionItem[] = [];
         const comands = [...commandDocuments.values()];
         for (const command of comands) {
@@ -23,9 +20,6 @@ class SharpSnippetProvider implements vscode.CompletionItemProvider {
             snippet.kind = vscode.CompletionItemKind.Function;
             snippets.push(snippet);
         }
-
         return snippets;
     }
 }
-
-export default SharpSnippetProvider;

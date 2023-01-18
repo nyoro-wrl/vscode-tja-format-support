@@ -6,6 +6,164 @@ type Document = {
     readonly documentation: Readonly<vscode.MarkdownString>;
 };
 
+export const headerDocuments = new Map<string, Document>([
+    ["title", {
+        name: "TITLE",
+        symbol: new vscode.MarkdownString().appendCodeblock("TITLE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["subtitle", {
+        name: "SUBTITLE",
+        symbol: new vscode.MarkdownString().appendCodeblock("SUBTITLE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["level", {
+        name: "LEVEL",
+        symbol: new vscode.MarkdownString().appendCodeblock("LEVEL:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["bpm", {
+        name: "BPM",
+        symbol: new vscode.MarkdownString().appendCodeblock("BPM:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["wave", {
+        name: "WAVE",
+        symbol: new vscode.MarkdownString().appendCodeblock("WAVE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["offset", {
+        name: "OFFSET",
+        symbol: new vscode.MarkdownString().appendCodeblock("OFFSET:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["course", {
+        name: "COURSE",
+        symbol: new vscode.MarkdownString().appendCodeblock("COURSE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["balloon", {
+        name: "BALLOON",
+        symbol: new vscode.MarkdownString().appendCodeblock("BALLOON:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["songvol", {
+        name: "SONGVOL",
+        symbol: new vscode.MarkdownString().appendCodeblock("SONGVOL:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["sevol", {
+        name: "SEVOL",
+        symbol: new vscode.MarkdownString().appendCodeblock("SEVOL:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["scoreinit", {
+        name: "SCOREINIT",
+        symbol: new vscode.MarkdownString().appendCodeblock("SCOREINIT:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["scorediff", {
+        name: "SCOREDIFF",
+        symbol: new vscode.MarkdownString().appendCodeblock("SCOREDIFF:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["style", {
+        name: "STYLE",
+        symbol: new vscode.MarkdownString().appendCodeblock("STYLE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["life", {
+        name: "LIFE",
+        symbol: new vscode.MarkdownString().appendCodeblock("LIFE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["demostart", {
+        name: "DEMOSTART",
+        symbol: new vscode.MarkdownString().appendCodeblock("DEMOSTART:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["side", {
+        name: "SIDE",
+        symbol: new vscode.MarkdownString().appendCodeblock("SIDE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["scoremode", {
+        name: "SCOREMODE",
+        symbol: new vscode.MarkdownString().appendCodeblock("SCOREMODE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["total", {
+        name: "TOTAL",
+        symbol: new vscode.MarkdownString().appendCodeblock("TOTAL:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["balloonnor", {
+        name: "BALLOONNOR",
+        symbol: new vscode.MarkdownString().appendCodeblock("BALLOONNOR:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["balloonexp", {
+        name: "BALLOONEXP",
+        symbol: new vscode.MarkdownString().appendCodeblock("BALLOONEXP:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["balloonmas", {
+        name: "BALLOONMAS",
+        symbol: new vscode.MarkdownString().appendCodeblock("BALLOONMAS:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["genre", {
+        name: "GENRE",
+        symbol: new vscode.MarkdownString().appendCodeblock("GENRE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["movieoffset", {
+        name: "MOVIEOFFSET",
+        symbol: new vscode.MarkdownString().appendCodeblock("MOVIEOFFSET:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["bgimage", {
+        name: "BGIMAGE",
+        symbol: new vscode.MarkdownString().appendCodeblock("BGIMAGE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["bgmovie", {
+        name: "BGMOVIE",
+        symbol: new vscode.MarkdownString().appendCodeblock("BGMOVIE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["hiddenbranch", {
+        name: "HIDDENBRANCH",
+        symbol: new vscode.MarkdownString().appendCodeblock("HIDDENBRANCH:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["exam", {
+        name: "EXAM",
+        symbol: new vscode.MarkdownString().appendCodeblock("EXAM:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["preimage", {
+        name: "PREIMAGE",
+        symbol: new vscode.MarkdownString().appendCodeblock("PREIMAGE:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["bgoffset", {
+        name: "BGOFFSET",
+        symbol: new vscode.MarkdownString().appendCodeblock("BGOFFSET:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["dantick", {
+        name: "DANTICK",
+        symbol: new vscode.MarkdownString().appendCodeblock("DANTICK:"),
+        documentation: new vscode.MarkdownString()
+    }],
+    ["dantickcolor", {
+        name: "DANTICKCOLOR",
+        symbol: new vscode.MarkdownString().appendCodeblock("DANTICKCOLOR:"),
+        documentation: new vscode.MarkdownString()
+    }],
+]);
+
 export const commandDocuments = new Map<string, Document>([
     ["start", {
         name: "START",
