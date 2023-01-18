@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { commandDocuments } from "./documents";
 
-export class SharpTriggerSnippetProvider implements vscode.CompletionItemProvider {
+export const sharpTriggerSnippetProvider = vscode.languages.registerCompletionItemProvider("tja", {
     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
         const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
         if (wordRange === undefined) {
@@ -22,4 +22,4 @@ export class SharpTriggerSnippetProvider implements vscode.CompletionItemProvide
         }
         return snippets;
     }
-}
+}, "#");
