@@ -1,16 +1,20 @@
 import * as vscode from 'vscode';
 import { headerDocuments, commandDocuments } from "./documents";
 
-// ヘッダー
+// ヘッダ
 export const headerSnippetProvider = vscode.languages.registerCompletionItemProvider("tja", {
     provideCompletionItems(document, position, token, context) {
+        const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
+        if (position.character !== 0 && wordRange?.start.character !== 0) {
+            return;
+        }
         const snippets: vscode.CompletionItem[] = [];
         const comands = [...headerDocuments.values()];
         for (const command of comands) {
             const snippet = new vscode.CompletionItem(command.name + ":", vscode.CompletionItemKind.Snippet);
             snippet.insertText = new vscode.SnippetString(command.name + ":");
             snippet.documentation = new vscode.MarkdownString().appendMarkdown(command.symbol.value + command.documentation.value);
-            snippet.kind = vscode.CompletionItemKind.Constant;
+            snippet.kind = vscode.CompletionItemKind.Property;
             snippets.push(snippet);
         }
         return snippets;
@@ -26,6 +30,7 @@ export const commandSnippetProvider = vscode.languages.registerCompletionItemPro
         }
         const currentWord = document.lineAt(position.line).text.slice(wordRange.start.character, wordRange.end.character);
         if (currentWord[0] === "#") {
+            // #トリガー側が動作するため終了
             return;
         }
         const snippets: vscode.CompletionItem[] = [];
