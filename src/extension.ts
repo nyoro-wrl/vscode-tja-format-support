@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import hoverProvider from "./hoverProvider";
-import { triggerCommandSnippetProvider } from "./snippetProvider";
+import { commandSnippetProvider, triggerCommandSnippetProvider } from "./snippetProvider";
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(hoverProvider);
+	context.subscriptions.push(commandSnippetProvider);
 	context.subscriptions.push(triggerCommandSnippetProvider);
 }
 
