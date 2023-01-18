@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import hoverProvider from "./hoverProvider";
-import { sharpTriggerSnippetProvider } from "./snippetProvider";
+import { triggerCommandSnippetProvider } from "./snippetProvider";
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(hoverProvider);
-	context.subscriptions.push(sharpTriggerSnippetProvider);
+	context.subscriptions.push(triggerCommandSnippetProvider);
 }
 
 // このメソッドは、拡張機能が無効化されたときに呼び出されます。
