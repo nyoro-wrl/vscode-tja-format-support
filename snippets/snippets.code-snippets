@@ -52,7 +52,7 @@
     "SUBTITLE:--": {
         "prefix": "SUBTITLE:--",
         "body": "SUBTITLE:--",
-        "description": "サブタイトル（アーティスト）"
+        "description": "サブタイトル（演奏画面非表示）"
     },
     "LEVEL:": {
         "prefix": "LEVEL:",
