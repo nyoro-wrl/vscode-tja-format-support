@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { headerDocuments, commandDocuments } from "./documents";
 
 // ヘッダ
-export const headerSnippetProvider = vscode.languages.registerCompletionItemProvider("tja", {
+export const headerSnippet = vscode.languages.registerCompletionItemProvider("tja", {
     provideCompletionItems(document, position, token, context) {
         const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
         if (position.character !== 0 && wordRange?.start.character !== 0) {
@@ -22,7 +22,7 @@ export const headerSnippetProvider = vscode.languages.registerCompletionItemProv
 });
 
 // 命令
-export const commandSnippetProvider = vscode.languages.registerCompletionItemProvider("tja", {
+export const commandSnippet = vscode.languages.registerCompletionItemProvider("tja", {
     provideCompletionItems(document, position, token, context) {
         const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
         if (wordRange?.start.character !== 0) {
@@ -47,7 +47,7 @@ export const commandSnippetProvider = vscode.languages.registerCompletionItemPro
 });
 
 // 命令（#トリガー用）
-export const triggerCommandSnippetProvider = vscode.languages.registerCompletionItemProvider("tja", {
+export const triggerCommandSnippet = vscode.languages.registerCompletionItemProvider("tja", {
     provideCompletionItems(document, position, token, context) {
         const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
         if (wordRange === undefined) {

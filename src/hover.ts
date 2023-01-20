@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Hover } from 'vscode';
 import { commandDocuments } from "./documents";
 
-const hoverProvider = vscode.languages.registerHoverProvider("tja", {
+const hover = vscode.languages.registerHoverProvider("tja", {
     provideHover(document, position, token) {
         const hover = {
             symbol: new vscode.MarkdownString(),
@@ -45,4 +45,4 @@ const hoverProvider = vscode.languages.registerHoverProvider("tja", {
     },
 });
 
-export default hoverProvider;
+export default hover;
