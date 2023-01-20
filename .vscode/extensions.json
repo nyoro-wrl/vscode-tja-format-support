@@ -1,7 +1,5 @@
 {
-	// http://go.microsoft.com/fwlink/?LinkId=827846 を参照してください
-	// extensions.json フォーマットのドキュメントを参照してください
-	"recommendations": [
-		"dbaeumer.vscode-eslint"
-	]
+  // http://go.microsoft.com/fwlink/?LinkId=827846 を参照してください
+  // extensions.json フォーマットのドキュメントを参照してください
+  "recommendations": ["dbaeumer.vscode-eslint"]
 }
