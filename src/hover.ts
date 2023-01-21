@@ -15,6 +15,7 @@ const hover = vscode.languages.registerHoverProvider("tja", {
 
     const line = document.lineAt(position.line).text;
     const currentWord = line.slice(wordRange.start.character, wordRange.end.character);
+    const nextChar = line.slice(wordRange.end.character, wordRange.end.character + 1);
 
     if (wordRange.start.character === 0) {
       if (currentWord[0] === "#") {
@@ -25,7 +26,7 @@ const hover = vscode.languages.registerHoverProvider("tja", {
           hover.symbol = item.symbol;
           hover.documentation = item.documentation;
         }
-      } else {
+      } else if (nextChar === ":") {
         // ヘッダ
         const key = currentWord.toLowerCase();
         const item = headerDocuments.get(key);
