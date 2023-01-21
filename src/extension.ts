@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 import hover from "./hover";
-import { commandSnippet, triggerCommandSnippet } from "./snippet";
+import { headerSnippet, commandSnippet, triggerCommandSnippet } from "./snippet";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(hover);
+  context.subscriptions.push(headerSnippet);
   context.subscriptions.push(commandSnippet);
   context.subscriptions.push(triggerCommandSnippet);
 }
