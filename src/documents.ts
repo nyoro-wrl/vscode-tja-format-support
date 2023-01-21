@@ -290,7 +290,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
   [
     "exam",
     {
-      name: "EXAM",
+      name: "EXAM1",
       symbol: new vscode.MarkdownString().appendCodeblock("EXAM<i>:<type>,<red>,<gold>,<range>")
         .value,
       documentation: new vscode.MarkdownString()

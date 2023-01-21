@@ -47,7 +47,7 @@
     },
     "statement": {
       "comment": "命令",
-      "begin": "^(?=#)",
+      "begin": "^(?=#[A-Z]+\\s)",
       "end": "$",
       "patterns": [
         {
@@ -60,7 +60,7 @@
         },
         {
           "name": "statement",
-          "match": "^#[A-Z0-9]*(?=\\s)"
+          "match": "^#[A-Z0-9]+(?=\\s)"
         },
         {
           "name": "statement.variable",
