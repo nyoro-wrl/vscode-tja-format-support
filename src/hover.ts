@@ -20,7 +20,7 @@ const hover = vscode.languages.registerHoverProvider("tja", {
     if (wordRange.start.character === 0) {
       if (currentWord[0] === "#") {
         // 命令
-        const key = currentWord.slice(1).toLowerCase();
+        const key = currentWord.slice(1);
         const item = commandDocuments.get(key);
         if (item !== undefined) {
           hover.symbol = new vscode.MarkdownString(item.symbol);
@@ -28,7 +28,7 @@ const hover = vscode.languages.registerHoverProvider("tja", {
         }
       } else if (nextChar === ":") {
         // ヘッダ
-        const key = currentWord.toLowerCase();
+        const key = currentWord;
         const item = headerDocuments.get(key);
         if (item !== undefined) {
           hover.symbol = new vscode.MarkdownString(item.symbol);

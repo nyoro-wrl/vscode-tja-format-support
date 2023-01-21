@@ -9,7 +9,7 @@ type Document = {
 export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Document>([
   // 太鼓さん次郎
   [
-    "title",
+    "TITLE",
     {
       name: "TITLE",
       symbol: new vscode.MarkdownString().appendCodeblock("TITLE:<string>").value,
@@ -17,7 +17,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "level",
+    "LEVEL",
     {
       name: "LEVEL",
       symbol: new vscode.MarkdownString().appendCodeblock("LEVEL:<int>").value,
@@ -27,7 +27,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "bpm",
+    "BPM",
     {
       name: "BPM",
       symbol: new vscode.MarkdownString().appendCodeblock("BPM:<bpm>").value,
@@ -35,7 +35,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "wave",
+    "WAVE",
     {
       name: "WAVE",
       symbol: new vscode.MarkdownString().appendCodeblock("WAVE:<filepath>").value,
@@ -45,7 +45,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "offset",
+    "OFFSET",
     {
       name: "OFFSET",
       symbol: new vscode.MarkdownString().appendCodeblock("OFFSET:<decimal>").value,
@@ -55,7 +55,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "balloon",
+    "BALLOON",
     {
       name: "BALLOON",
       symbol: new vscode.MarkdownString().appendCodeblock("BALLOON:[<int>...]").value,
@@ -65,7 +65,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "songvol",
+    "SONGVOL",
     {
       name: "SONGVOL",
       symbol: new vscode.MarkdownString().appendCodeblock("SONGVOL:<percent>").value,
@@ -75,7 +75,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "sevol",
+    "SEVOL",
     {
       name: "SEVOL",
       symbol: new vscode.MarkdownString().appendCodeblock("SEVOL:<percent>").value,
@@ -85,7 +85,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "scoreinit",
+    "SCOREINIT",
     {
       name: "SCOREINIT",
       symbol: new vscode.MarkdownString().appendCodeblock("SCOREINIT:<int>").value,
@@ -95,7 +95,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "scorediff",
+    "SCOREDIFF",
     {
       name: "SCOREDIFF",
       symbol: new vscode.MarkdownString().appendCodeblock("SCOREDIFF:<int>").value,
@@ -105,7 +105,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "course",
+    "COURSE",
     {
       name: "COURSE",
       symbol: new vscode.MarkdownString().appendCodeblock("COURSE:<course>").value,
@@ -119,7 +119,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "style",
+    "STYLE",
     {
       name: "STYLE",
       symbol: new vscode.MarkdownString().appendCodeblock("STYLE:<style>").value,
@@ -132,7 +132,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "life",
+    "LIFE",
     {
       name: "LIFE",
       symbol: new vscode.MarkdownString().appendCodeblock("LIFE:<int>").value,
@@ -143,7 +143,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "demostart",
+    "DEMOSTART",
     {
       name: "DEMOSTART",
       symbol: new vscode.MarkdownString().appendCodeblock("DEMOSTART:<second>").value,
@@ -153,7 +153,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "side",
+    "SIDE",
     {
       name: "SIDE",
       symbol: new vscode.MarkdownString().appendCodeblock("SIDE:<side>").value,
@@ -170,7 +170,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "subtitle",
+    "SUBTITLE",
     {
       name: "SUBTITLE",
       symbol: new vscode.MarkdownString().appendCodeblock("SUBTITLE:[--]<string>").value,
@@ -181,7 +181,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
   ],
   // 太鼓さん次郎2
   [
-    "siderev",
+    "SIDEREV",
     {
       name: "SIDEREV",
       symbol: new vscode.MarkdownString().appendCodeblock("SIDEREV:<filepath>").value,
@@ -191,7 +191,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "scoremode",
+    "SCOREMODE",
     {
       name: "SCOREMODE",
       symbol: new vscode.MarkdownString().appendCodeblock("SCOREMODE:<mode>").value,
@@ -202,7 +202,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "total",
+    "TOTAL",
     {
       name: "TOTAL",
       symbol: new vscode.MarkdownString().appendCodeblock("TOTAL:<total>").value,
@@ -213,7 +213,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
   ],
   // TJAPlayer2forPC
   [
-    "balloonnor",
+    "BALLOONNOR",
     {
       name: "BALLOONNOR",
       symbol: new vscode.MarkdownString().appendCodeblock("BALLOONNOR:[<int>...]").value,
@@ -223,7 +223,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "balloonexp",
+    "BALLOONEXP",
     {
       name: "BALLOONEXP",
       symbol: new vscode.MarkdownString().appendCodeblock("BALLOONEXP:[<int>...]").value,
@@ -233,7 +233,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "balloonmas",
+    "BALLOONMAS",
     {
       name: "BALLOONMAS",
       symbol: new vscode.MarkdownString().appendCodeblock("BALLOONMAS:[<int>...]").value,
@@ -243,7 +243,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "genre",
+    "GENRE",
     {
       name: "GENRE",
       symbol: new vscode.MarkdownString().appendCodeblock("GENRE:<genre>").value,
@@ -251,7 +251,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "movieoffset",
+    "MOVIEOFFSET",
     {
       name: "MOVIEOFFSET",
       symbol: new vscode.MarkdownString().appendCodeblock("MOVIEOFFSET:<second>").value,
@@ -261,7 +261,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "bgimage",
+    "BGIMAGE",
     {
       name: "BGIMAGE",
       symbol: new vscode.MarkdownString().appendCodeblock("BGIMAGE:<filepath>").value,
@@ -269,7 +269,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "bgmovie",
+    "BGMOVIE",
     {
       name: "BGMOVIE",
       symbol: new vscode.MarkdownString().appendCodeblock("BGMOVIE:<filepath>").value,
@@ -277,7 +277,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "hiddenbranch",
+    "HIDDENBRANCH",
     {
       name: "HIDDENBRANCH",
       symbol: new vscode.MarkdownString().appendCodeblock("HIDDENBRANCH:1").value,
@@ -288,7 +288,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
   ],
   // OpenTaiko
   [
-    "exam",
+    "EXAM",
     {
       name: "EXAM1",
       symbol: new vscode.MarkdownString().appendCodeblock("EXAM<i>:<type>,<red>,<gold>,<range>")
@@ -315,7 +315,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "preimage",
+    "PREIMAGE",
     {
       name: "PREIMAGE",
       symbol: new vscode.MarkdownString().appendCodeblock("PREIMAGE:<filepath>").value,
@@ -325,7 +325,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "bgoffset",
+    "BGOFFSET",
     {
       name: "BGOFFSET",
       symbol: new vscode.MarkdownString().appendCodeblock("BGOFFSET:<second>").value,
@@ -335,7 +335,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "dantick",
+    "DANTICK",
     {
       name: "DANTICK",
       symbol: new vscode.MarkdownString().appendCodeblock("DANTICK:<type>").value,
@@ -352,7 +352,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
     },
   ],
   [
-    "dantickcolor",
+    "DANTICKCOLOR",
     {
       name: "DANTICKCOLOR",
       symbol: new vscode.MarkdownString().appendCodeblock("DANTICKCOLOR:#<color>").value,
@@ -365,7 +365,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
 
 export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, Document>([
   [
-    "start",
+    "START",
     {
       name: "START",
       symbol: new vscode.MarkdownString().appendCodeblock("#START" + " [<player>]").value,
@@ -378,7 +378,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "end",
+    "END",
     {
       name: "END",
       symbol: new vscode.MarkdownString().appendCodeblock("#END").value,
@@ -388,7 +388,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "bpmchange",
+    "BPMCHANGE",
     {
       name: "BPMCHANGE",
       symbol: new vscode.MarkdownString().appendCodeblock("#BPMCHANGE" + " <bpm>").value,
@@ -396,7 +396,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "gogostart",
+    "GOGOSTART",
     {
       name: "GOGOSTART",
       symbol: new vscode.MarkdownString().appendCodeblock("#GOGOSTART").value,
@@ -405,7 +405,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "gogoend",
+    "GOGOEND",
     {
       name: "GOGOEND",
       symbol: new vscode.MarkdownString().appendCodeblock("#GOGOEND").value,
@@ -414,7 +414,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "measure",
+    "MEASURE",
     {
       name: "MEASURE",
       symbol: new vscode.MarkdownString().appendCodeblock("#MEASURE" + " <numer>/<denom>").value,
@@ -424,7 +424,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "scroll",
+    "SCROLL",
     {
       name: "SCROLL",
       symbol: new vscode.MarkdownString().appendCodeblock("#SCROLL" + " <rate>").value,
@@ -434,7 +434,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "delay",
+    "DELAY",
     {
       name: "DELAY",
       symbol: new vscode.MarkdownString().appendCodeblock("#DELAY" + " <second>").value,
@@ -444,7 +444,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "section",
+    "SECTION",
     {
       name: "SECTION",
       symbol: new vscode.MarkdownString().appendCodeblock("#SECTION").value,
@@ -454,7 +454,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "branchstart",
+    "BRANCHSTART",
     {
       name: "BRANCHSTART",
       symbol: new vscode.MarkdownString().appendCodeblock("#BRANCHSTART").value,
@@ -471,7 +471,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "branchend",
+    "BRANCHEND",
     {
       name: "BRANCHEND",
       symbol: new vscode.MarkdownString().appendCodeblock("#BRANCHEND").value,
@@ -481,7 +481,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "n",
+    "N",
     {
       name: "N",
       symbol: new vscode.MarkdownString().appendCodeblock("#N").value,
@@ -489,7 +489,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "e",
+    "E",
     {
       name: "E",
       symbol: new vscode.MarkdownString().appendCodeblock("#E").value,
@@ -497,7 +497,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "m",
+    "M",
     {
       name: "M",
       symbol: new vscode.MarkdownString().appendCodeblock("#M").value,
@@ -505,7 +505,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "levelhold",
+    "LEVELHOLD",
     {
       name: "LEVELHOLD",
       symbol: new vscode.MarkdownString().appendCodeblock("#LEVELHOLD").value,
@@ -516,7 +516,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "bmscroll",
+    "BMSCROLL",
     {
       name: "BMSCROLL",
       symbol: new vscode.MarkdownString().appendCodeblock("#BMSCROLL").value,
@@ -526,7 +526,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "hbscroll",
+    "HBSCROLL",
     {
       name: "HBSCROLL",
       symbol: new vscode.MarkdownString().appendCodeblock("#HBSCROLL").value,
@@ -538,7 +538,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "barlineoff",
+    "BARLINEOFF",
     {
       name: "BARLINEOFF",
       symbol: new vscode.MarkdownString().appendCodeblock("#BARLINEOFF").value,
@@ -546,7 +546,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "barlineon",
+    "BARLINEON",
     {
       name: "BARLINEON",
       symbol: new vscode.MarkdownString().appendCodeblock("#BARLINEON").value,
@@ -554,7 +554,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "lyric",
+    "LYRIC",
     {
       name: "LYRIC",
       symbol: new vscode.MarkdownString().appendCodeblock("#LYRIC" + " <string>").value,
@@ -562,7 +562,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "sudden",
+    "SUDDEN",
     {
       name: "SUDDEN",
       symbol: new vscode.MarkdownString().appendCodeblock("#SUDDEN" + " <sudden> <move>").value,
@@ -575,7 +575,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "direction",
+    "DIRECTION",
     {
       name: "DIRECTION",
       symbol: new vscode.MarkdownString().appendCodeblock("#DIRECTION" + " <direction>").value,
@@ -592,7 +592,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "jposscroll",
+    "JPOSSCROLL",
     {
       name: "JPOSSCROLL",
       symbol: new vscode.MarkdownString().appendCodeblock(
@@ -606,7 +606,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "nextsong",
+    "NEXTSONG",
     {
       name: "NEXTSONG",
       symbol: new vscode.MarkdownString().appendCodeblock(
@@ -626,7 +626,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "judgedelay",
+    "JUDGEDELAY",
     {
       name: "JUDGEDELAY",
       symbol: new vscode.MarkdownString().appendCodeblock("#JUDGEDELAY" + " <type> [...]").value,
@@ -647,7 +647,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "dummystart",
+    "DUMMYSTART",
     {
       name: "DUMMYSTART",
       symbol: new vscode.MarkdownString().appendCodeblock("#DUMMYSTART").value,
@@ -656,7 +656,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "dummyend",
+    "DUMMYEND",
     {
       name: "DUMMYEND",
       symbol: new vscode.MarkdownString().appendCodeblock("#DUMMYEND").value,
@@ -665,7 +665,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "notespawn",
+    "NOTESPAWN",
     {
       name: "NOTESPAWN",
       symbol: new vscode.MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]")
@@ -684,7 +684,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "size",
+    "SIZE",
     {
       name: "SIZE",
       symbol: new vscode.MarkdownString().appendCodeblock("#SIZE" + " <rate>").value,
@@ -694,7 +694,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "color",
+    "COLOR",
     {
       name: "COLOR",
       symbol: new vscode.MarkdownString().appendCodeblock(
@@ -710,7 +710,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "angle",
+    "ANGLE",
     {
       name: "ANGLE",
       symbol: new vscode.MarkdownString().appendCodeblock("#ANGLE" + " <angle>").value,
@@ -720,7 +720,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "gradation",
+    "GRADATION",
     {
       name: "GRADATION",
       symbol: new vscode.MarkdownString().appendCodeblock(
@@ -771,7 +771,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "barlinesize",
+    "BARLINESIZE",
     {
       name: "BARLINESIZE",
       symbol: new vscode.MarkdownString().appendCodeblock("#BARLINESIZE" + " <width> <height>")
@@ -783,7 +783,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
     },
   ],
   [
-    "resetcommand",
+    "RESETCOMMAND",
     {
       name: "RESETCOMMAND",
       symbol: new vscode.MarkdownString().appendCodeblock("#RESETCOMMAND").value,
