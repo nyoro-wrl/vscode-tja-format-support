@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Hover } from "vscode";
-import { commandDocuments } from "./documents";
+import { headerDocuments, commandDocuments } from "./documents";
 
 const hover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
@@ -16,13 +16,23 @@ const hover = vscode.languages.registerHoverProvider("tja", {
     const line = document.lineAt(position.line).text;
     const currentWord = line.slice(wordRange.start.character, wordRange.end.character);
 
-    if (wordRange.start.character === 0 && currentWord[0] === "#") {
-      // 命令
-      const key = currentWord.slice(1).toLowerCase();
-      const item = commandDocuments.get(key);
-      if (item !== undefined) {
-        hover.symbol = item.symbol;
-        hover.documentation = item.documentation;
+    if (wordRange.start.character === 0) {
+      if (currentWord[0] === "#") {
+        // 命令
+        const key = currentWord.slice(1).toLowerCase();
+        const item = commandDocuments.get(key);
+        if (item !== undefined) {
+          hover.symbol = item.symbol;
+          hover.documentation = item.documentation;
+        }
+      } else {
+        // ヘッダ
+        const key = currentWord.toLowerCase();
+        const item = headerDocuments.get(key);
+        if (item !== undefined) {
+          hover.symbol = item.symbol;
+          hover.documentation = item.documentation;
+        }
       }
     }
 
