@@ -70,7 +70,7 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
       const currentWord = document
         .lineAt(position.line)
         .text.slice(wordRange.start.character, wordRange.end.character);
-      if (wordRange.start.character !== 0 || currentWord[0] !== "#") {
+      if (wordRange.start.character !== 0 || currentWord[0] !== "#" || currentWord.length > 1) {
         return;
       }
       const snippets: vscode.CompletionItem[] = [];
