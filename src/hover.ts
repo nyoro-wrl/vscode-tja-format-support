@@ -23,16 +23,16 @@ const hover = vscode.languages.registerHoverProvider("tja", {
         const key = currentWord.slice(1).toLowerCase();
         const item = commandDocuments.get(key);
         if (item !== undefined) {
-          hover.symbol = item.symbol;
-          hover.documentation = item.documentation;
+          hover.symbol = new vscode.MarkdownString(item.symbol);
+          hover.documentation = new vscode.MarkdownString(item.documentation);
         }
       } else if (nextChar === ":") {
         // ヘッダ
         const key = currentWord.toLowerCase();
         const item = headerDocuments.get(key);
         if (item !== undefined) {
-          hover.symbol = item.symbol;
-          hover.documentation = item.documentation;
+          hover.symbol = new vscode.MarkdownString(item.symbol);
+          hover.documentation = new vscode.MarkdownString(item.documentation);
         }
       }
     }
