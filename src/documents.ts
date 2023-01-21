@@ -6,253 +6,357 @@ type Document = {
   readonly documentation: Readonly<vscode.MarkdownString>;
 };
 
-export const headerDocuments = new Map<string, Document>([
+export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Document>([
+  // 太鼓さん次郎
   [
     "title",
     {
       name: "TITLE",
-      symbol: new vscode.MarkdownString().appendCodeblock("TITLE:"),
-      documentation: new vscode.MarkdownString(),
-    },
-  ],
-  [
-    "subtitle",
-    {
-      name: "SUBTITLE",
-      symbol: new vscode.MarkdownString().appendCodeblock("SUBTITLE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("TITLE:<string>"),
+      documentation: new vscode.MarkdownString().appendMarkdown("曲のタイトル。"),
     },
   ],
   [
     "level",
     {
       name: "LEVEL",
-      symbol: new vscode.MarkdownString().appendCodeblock("LEVEL:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("LEVEL:<int>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("譜面のレベル。  \n")
+        .appendMarkdown("自然数で表記します。"),
     },
   ],
   [
     "bpm",
     {
       name: "BPM",
-      symbol: new vscode.MarkdownString().appendCodeblock("BPM:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BPM:<bpm>"),
+      documentation: new vscode.MarkdownString().appendMarkdown("曲のBPM。"),
     },
   ],
   [
     "wave",
     {
       name: "WAVE",
-      symbol: new vscode.MarkdownString().appendCodeblock("WAVE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("WAVE:<filepath>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("音源ファイルのパス。  \n")
+        .appendMarkdown("殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。"),
     },
   ],
   [
     "offset",
     {
       name: "OFFSET",
-      symbol: new vscode.MarkdownString().appendCodeblock("OFFSET:"),
-      documentation: new vscode.MarkdownString(),
-    },
-  ],
-  [
-    "course",
-    {
-      name: "COURSE",
-      symbol: new vscode.MarkdownString().appendCodeblock("COURSE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("OFFSET:<decimal>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "譜面の開始位置と音源ファイルの再生時刻の差を秒数で指定します。"
+      ),
     },
   ],
   [
     "balloon",
     {
       name: "BALLOON",
-      symbol: new vscode.MarkdownString().appendCodeblock("BALLOON:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BALLOON:[<int>...]"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("風船連打の打数を`,`区切りで入力します。  \n")
+        .appendMarkdown("省略した場合は一律5打になります。"),
     },
   ],
   [
     "songvol",
     {
       name: "SONGVOL",
-      symbol: new vscode.MarkdownString().appendCodeblock("SONGVOL:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("SONGVOL:<percent>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("音源の音量。  \n")
+        .appendMarkdown("基準値は100。"),
     },
   ],
   [
     "sevol",
     {
       name: "SEVOL",
-      symbol: new vscode.MarkdownString().appendCodeblock("SEVOL:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("SEVOL:<percent>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("太鼓音の音量。  \n")
+        .appendMarkdown("基準値は100。"),
     },
   ],
   [
     "scoreinit",
     {
       name: "SCOREINIT",
-      symbol: new vscode.MarkdownString().appendCodeblock("SCOREINIT:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("SCOREINIT:<int>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("配点の初項。  \n")
+        .appendMarkdown("10コンボ未満の時に小音符を良判定で叩いたときの得点を指定します。"),
     },
   ],
   [
     "scorediff",
     {
       name: "SCOREDIFF",
-      symbol: new vscode.MarkdownString().appendCodeblock("SCOREDIFF:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("SCOREDIFF:<int>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("配点の公差。  \n")
+        .appendMarkdown("一定のコンボ数ごとに加算される一打あたりの点数を指定します。"),
+    },
+  ],
+  [
+    "course",
+    {
+      name: "COURSE",
+      symbol: new vscode.MarkdownString().appendCodeblock("COURSE:<course>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("譜面の難易度。  \n")
+        .appendMarkdown(
+          "`<course>`: `Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n"
+        )
+        .appendMarkdown("`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。")
+        .appendMarkdown("`Dan`または`6`を入れると段位道場譜面として認識されます。"),
     },
   ],
   [
     "style",
     {
       name: "STYLE",
-      symbol: new vscode.MarkdownString().appendCodeblock("STYLE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("STYLE:<style>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("プレイ人数を指定します。  \n")
+        .appendMarkdown("`<style>`: `Single`,`Double`もしくは`1`,`2`の値を指定します。  \n")
+        .appendMarkdown(
+          "`Single`または`1`は一人プレイ、`Double`または`2`は二人プレイの譜面であることを示します。"
+        ),
     },
   ],
   [
     "life",
     {
       name: "LIFE",
-      symbol: new vscode.MarkdownString().appendCodeblock("LIFE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("LIFE:<int>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("ライフの数を指定します。  \n")
+        .appendMarkdown("不可を出すたびにライフが減り、0になると強制的に演奏が中断されます。"),
     },
   ],
   [
     "demostart",
     {
       name: "DEMOSTART",
-      symbol: new vscode.MarkdownString().appendCodeblock("DEMOSTART:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("DEMOSTART:<second>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "選曲画面で流すデモの再生開始位置を秒で指定します。"
+      ),
     },
   ],
   [
     "side",
     {
       name: "SIDE",
-      symbol: new vscode.MarkdownString().appendCodeblock("SIDE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("SIDE:<side>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("曲選択画面での表示設定。  \n")
+        .appendMarkdown("`<side>`: `Normal`,`Ex`,`Both`もしくは`1` ~ `3`の値を指定します。  \n")
+        .appendMarkdown(
+          "`Normal`か`1`を入力した場合、曲選択画面で表状態のときのみ曲が表示され、  \n"
+        )
+        .appendMarkdown(
+          "`Ex`か`2`を入力した場合、曲選択画面で裏状態のときのみ曲が表示されます。  \n"
+        )
+        .appendMarkdown("`Both`か`3`を入力した場合は常に表示されます（初期設定）。"),
+    },
+  ],
+  [
+    "subtitle",
+    {
+      name: "SUBTITLE",
+      symbol: new vscode.MarkdownString().appendCodeblock("SUBTITLE:[--]<string>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("曲のサブタイトル。  \n")
+        .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。"),
+    },
+  ],
+  // 太鼓さん次郎2
+  [
+    "siderev",
+    {
+      name: "SIDEREV",
+      symbol: new vscode.MarkdownString().appendCodeblock("SIDEREV:<filepath>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "表裏で対になる譜面ファイルを指定します。"
+      ),
     },
   ],
   [
     "scoremode",
     {
       name: "SCOREMODE",
-      symbol: new vscode.MarkdownString().appendCodeblock("SCOREMODE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("SCOREMODE:<mode>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("配点方式を指定します。  \n")
+        .appendMarkdown("`<mode>`: `0` ~ `2`の値を指定します。  \n")
+        .appendMarkdown("`0`でドンだフル、`1`でAC14、`2`で新筐体。"),
     },
   ],
   [
     "total",
     {
       name: "TOTAL",
-      symbol: new vscode.MarkdownString().appendCodeblock("TOTAL:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("TOTAL:<total>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("ノルマゲージの増える量を指定します。  \n")
+        .appendMarkdown("全良でゲージが満タンになる基準値を100とします。  \n"),
     },
   ],
+  // TJAPlayer2forPC
   [
     "balloonnor",
     {
       name: "BALLOONNOR",
-      symbol: new vscode.MarkdownString().appendCodeblock("BALLOONNOR:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BALLOONNOR:[<int>...]"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("普通譜面での風船連打の打数を`,`区切りで入力します。  \n")
+        .appendMarkdown("省略した場合は一律5打になります。"),
     },
   ],
   [
     "balloonexp",
     {
       name: "BALLOONEXP",
-      symbol: new vscode.MarkdownString().appendCodeblock("BALLOONEXP:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BALLOONEXP:[<int>...]"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("玄人譜面での風船連打の打数を`,`区切りで入力します。  \n")
+        .appendMarkdown("省略した場合は一律5打になります。"),
     },
   ],
   [
     "balloonmas",
     {
       name: "BALLOONMAS",
-      symbol: new vscode.MarkdownString().appendCodeblock("BALLOONMAS:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BALLOONMAS:[<int>...]"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("達人譜面での風船連打の打数を`,`区切りで入力します。  \n")
+        .appendMarkdown("省略した場合は一律5打になります。"),
     },
   ],
   [
     "genre",
     {
       name: "GENRE",
-      symbol: new vscode.MarkdownString().appendCodeblock("GENRE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("GENRE:<genre>"),
+      documentation: new vscode.MarkdownString().appendMarkdown("曲のジャンル。"),
     },
   ],
   [
     "movieoffset",
     {
       name: "MOVIEOFFSET",
-      symbol: new vscode.MarkdownString().appendCodeblock("MOVIEOFFSET:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("MOVIEOFFSET:<second>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "音源ファイルの再生位置と背景動画ファイルの再生時刻の差を秒数で指定します。"
+      ),
     },
   ],
   [
     "bgimage",
     {
       name: "BGIMAGE",
-      symbol: new vscode.MarkdownString().appendCodeblock("BGIMAGE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BGIMAGE:<filepath>"),
+      documentation: new vscode.MarkdownString().appendMarkdown("背景画像ファイルのパス。"),
     },
   ],
   [
     "bgmovie",
     {
       name: "BGMOVIE",
-      symbol: new vscode.MarkdownString().appendCodeblock("BGMOVIE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BGMOVIE:<filepath>"),
+      documentation: new vscode.MarkdownString().appendMarkdown("背景動画ファイルのパス。"),
     },
   ],
   [
     "hiddenbranch",
     {
       name: "HIDDENBRANCH",
-      symbol: new vscode.MarkdownString().appendCodeblock("HIDDENBRANCH:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("HIDDENBRANCH:1"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "譜面分岐を分岐する瞬間まで隠します。"
+      ),
     },
   ],
+  // OpenTaiko
   [
     "exam",
     {
       name: "EXAM",
-      symbol: new vscode.MarkdownString().appendCodeblock("EXAM:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("EXAM<i>:<type>,<red>,<gold>,<range>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("課題曲の合格条件を指定します。  \n")
+        .appendMarkdown("`#NEXTSONG`の後に呼ぶと課題曲ごとの条件を指定できます。  \n\n")
+        .appendMarkdown("`<i>`: 最初は`1`を指定します。このヘッダを呼ぶごとに数を増やします。  \n")
+        .appendMarkdown("`<type>`: 条件の種類を指定します。詳細は下部に記載。  \n")
+        .appendMarkdown("`<red>`: 赤合格の基準値を指定します。  \n")
+        .appendMarkdown("`<gold>`: 金合格の基準値を指定します。  \n")
+        .appendMarkdown(
+          "`<range>`: `m`または`l`を指定します。`m`は基準値以上、`l`は基準値未満で合格を表します。  \n\n"
+        )
+        .appendMarkdown("### **条件の種類**  \n")
+        .appendMarkdown("`g`: 魂ゲージ(%)  \n")
+        .appendMarkdown("`jp`: 良の数  \n")
+        .appendMarkdown("`jg`: 可の数  \n")
+        .appendMarkdown("`jb`: 不可の数  \n")
+        .appendMarkdown("`s`: スコア  \n")
+        .appendMarkdown("`r`: 連打数  \n")
+        .appendMarkdown("`h`: 叩けた数  \n")
+        .appendMarkdown("`c`: 最大コンボ数"),
     },
   ],
   [
     "preimage",
     {
       name: "PREIMAGE",
-      symbol: new vscode.MarkdownString().appendCodeblock("PREIMAGE:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("PREIMAGE:<filepath>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "選曲画面に表示する画像ファイルのパス。　"
+      ),
     },
   ],
   [
     "bgoffset",
     {
       name: "BGOFFSET",
-      symbol: new vscode.MarkdownString().appendCodeblock("BGOFFSET:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("BGOFFSET:<second>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "譜面の再生位置と背景画像ファイルの再生時刻の差を秒数で指定します。"
+      ),
     },
   ],
   [
     "dantick",
     {
       name: "DANTICK",
-      symbol: new vscode.MarkdownString().appendCodeblock("DANTICK:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("DANTICK:<type>"),
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("段位の種別を指定します。  \n")
+        .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します詳細は下部に記載。\n\n")
+        .appendMarkdown("### **段位の種別**  \n\n")
+        .appendMarkdown("`0`: 初級以下  \n")
+        .appendMarkdown("`1`: 青段位  \n")
+        .appendMarkdown("`2`: 赤段位  \n")
+        .appendMarkdown("`3`: 人段位①（銀）  \n")
+        .appendMarkdown("`4`: 人段位②（金）  \n")
+        .appendMarkdown("`5`: 外伝"),
     },
   ],
   [
     "dantickcolor",
     {
       name: "DANTICKCOLOR",
-      symbol: new vscode.MarkdownString().appendCodeblock("DANTICKCOLOR:"),
-      documentation: new vscode.MarkdownString(),
+      symbol: new vscode.MarkdownString().appendCodeblock("DANTICKCOLOR:#<color>"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "段位の色をHTMLカラーコードで指定します。"
+      ),
     },
   ],
 ]);
@@ -266,7 +370,9 @@ export const commandDocuments = new Map<string, Document>([
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面データの記述を開始します。  \n")
         .appendMarkdown("`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。  \n\n")
-        .appendMarkdown("`<player>`に`P1`や`P2`を指定することで、譜面をプレイヤー別に記述することができます。"),
+        .appendMarkdown(
+          "`<player>`に`P1`や`P2`を指定することで、譜面をプレイヤー別に記述することができます。"
+        ),
     },
   ],
   [
@@ -350,7 +456,9 @@ export const commandDocuments = new Map<string, Document>([
       symbol: new vscode.MarkdownString().appendCodeblock("#BRANCHSTART"),
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面分岐を開始します。  \n\n")
-        .appendMarkdown("`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n")
+        .appendMarkdown(
+          "`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n"
+        )
         .appendMarkdown("`<expart>`: この数値以上で玄人譜面に分岐します。  \n")
         .appendMarkdown("`<master>`: この数値以上で達人譜面に分岐します。  \n\n")
         .appendMarkdown("分岐判定は一小節前に行われます。  \n")
@@ -418,7 +526,9 @@ export const commandDocuments = new Map<string, Document>([
       name: "HBSCROLL",
       symbol: new vscode.MarkdownString().appendCodeblock("#HBSCROLL"),
       documentation: new vscode.MarkdownString()
-        .appendMarkdown("譜面のスクロールが`#BMSCROLL`に`#SCROLL`の効果を含めた形式になります。  \n")
+        .appendMarkdown(
+          "譜面のスクロールが`#BMSCROLL`に`#SCROLL`の効果を含めた形式になります。  \n"
+        )
         .appendMarkdown("`#START`より前に記述してください。"),
     },
   ],
@@ -454,7 +564,9 @@ export const commandDocuments = new Map<string, Document>([
       documentation: new vscode.MarkdownString()
         .appendMarkdown("音符の出現タイミングと動作タイミングを変更します。  \n")
         .appendMarkdown("`<sudden>`秒前に出現し、`<move>`秒前に動き出します。  \n")
-        .appendMarkdown("`<sudden>`に`0`を指定すると通常の動作に戻ります（このとき`<move>`にも仮の値を指定する必要があります）。"),
+        .appendMarkdown(
+          "`<sudden>`に`0`を指定すると通常の動作に戻ります（このとき`<move>`にも仮の値を指定する必要があります）。"
+        ),
     },
   ],
   [
@@ -478,7 +590,9 @@ export const commandDocuments = new Map<string, Document>([
     "jposscroll",
     {
       name: "JPOSSCROLL",
-      symbol: new vscode.MarkdownString().appendCodeblock("#JPOSSCROLL" + " <second> <distance> <direction>"),
+      symbol: new vscode.MarkdownString().appendCodeblock(
+        "#JPOSSCROLL" + " <second> <distance> <direction>"
+      ),
       documentation: new vscode.MarkdownString()
         .appendMarkdown("判定枠を左右に移動します。  \n\n")
         .appendMarkdown("`<second>`: 移動にかかる秒数。  \n")
@@ -491,7 +605,8 @@ export const commandDocuments = new Map<string, Document>([
     {
       name: "NEXTSONG",
       symbol: new vscode.MarkdownString().appendCodeblock(
-        "#NEXTSONG" + " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
+        "#NEXTSONG" +
+          " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
       ),
       documentation: new vscode.MarkdownString()
         .appendMarkdown("課題曲を指定します。  \n\n")
@@ -513,7 +628,9 @@ export const commandDocuments = new Map<string, Document>([
       documentation: new vscode.MarkdownString()
         .appendMarkdown("判定位置を判定枠からずらします。  \n")
         .appendMarkdown("譜面の流れる位置は判定位置に準拠します。  \n\n")
-        .appendMarkdown("`<type>`: 位置の指定方法。`0`～`3`で指定します。ここに指定した値によって以降のパラメーターが異なります。")
+        .appendMarkdown(
+          "`<type>`: 位置の指定方法。`0` ~ `3`で指定します。ここに指定した値によって以降のパラメーターが異なります。"
+        )
         .appendCodeblock("#JUDGEDELAY 0")
         .appendMarkdown("判定位置を判定枠に戻します。")
         .appendCodeblock("#JUDGEDELAY 1 <second>")
@@ -547,7 +664,9 @@ export const commandDocuments = new Map<string, Document>([
       symbol: new vscode.MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]"),
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面の出現･隠蔽タイミングを指定します。  \n\n")
-        .appendMarkdown("`<type>`: 動作種類の指定。`0` ~ `2`で指定します。ここに指定した値によって以降のパラメーターが異なります。")
+        .appendMarkdown(
+          "`<type>`: 動作種類の指定。`0` ~ `2`で指定します。ここに指定した値によって以降のパラメーターが異なります。"
+        )
         .appendCodeblock("#NOTESPAWN 0")
         .appendMarkdown("通常の動作に戻します。")
         .appendCodeblock("#NOTESPAWN 1 <second>")
@@ -561,14 +680,18 @@ export const commandDocuments = new Map<string, Document>([
     {
       name: "SIZE",
       symbol: new vscode.MarkdownString().appendCodeblock("#SIZE" + " <rate>"),
-      documentation: new vscode.MarkdownString().appendMarkdown("音符のサイズを`<rate>`倍にします。"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "音符のサイズを`<rate>`倍にします。"
+      ),
     },
   ],
   [
     "color",
     {
       name: "COLOR",
-      symbol: new vscode.MarkdownString().appendCodeblock("#COLOR" + " <red> <green> <blue> <alpha>"),
+      symbol: new vscode.MarkdownString().appendCodeblock(
+        "#COLOR" + " <red> <green> <blue> <alpha>"
+      ),
       documentation: new vscode.MarkdownString()
         .appendMarkdown("音符の色彩を変更します。  \n")
         .appendMarkdown("255を基準値とします。  \n\n")
@@ -583,21 +706,29 @@ export const commandDocuments = new Map<string, Document>([
     {
       name: "ANGLE",
       symbol: new vscode.MarkdownString().appendCodeblock("#ANGLE" + " <angle>"),
-      documentation: new vscode.MarkdownString().appendMarkdown("音符の向きを`<angle>`度回転させます。"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "音符の向きを`<angle>`度回転させます。"
+      ),
     },
   ],
   [
     "gradation",
     {
       name: "GRADATION",
-      symbol: new vscode.MarkdownString().appendCodeblock("#GRADATION" + " <type> [<second> <type1> <type2>]"),
+      symbol: new vscode.MarkdownString().appendCodeblock(
+        "#GRADATION" + " <type> [<second> <type1> <type2>]"
+      ),
       documentation: new vscode.MarkdownString()
         .appendMarkdown("他の命令の即時的な効果を時間的に変化させます。  \n\n")
-        .appendMarkdown("`<type>`: `start`,`end`,`init`のいずれかを指定します。ここに指定した値によって以降のパラメーターが異なります。")
+        .appendMarkdown(
+          "`<type>`: `start`,`end`,`init`のいずれかを指定します。ここに指定した値によって以降のパラメーターが異なります。"
+        )
         .appendCodeblock("#GRADATION start <second> <type1> <type2>")
         .appendMarkdown("GRADATIONを開始します。  \n\n")
         .appendMarkdown("`<second>`: 何秒前に変化を始めるか。  \n")
-        .appendMarkdown("`<type1>`: イージングの種類を`0` ~ `2`で指定します。`0`はEaseIn, `1`はEaseOut, `2`はEaseInOut。  \n")
+        .appendMarkdown(
+          "`<type1>`: イージングの種類を`0` ~ `2`で指定します。`0`はEaseIn, `1`はEaseOut, `2`はEaseInOut。  \n"
+        )
         .appendMarkdown("`<type2>`: 挙動を`0` ~ `10`で指定します。詳細は下部に記載。")
         .appendCodeblock("#GRADATION end")
         .appendMarkdown("GRADATIONを終了します。")
@@ -647,7 +778,9 @@ export const commandDocuments = new Map<string, Document>([
     {
       name: "RESETCOMMAND",
       symbol: new vscode.MarkdownString().appendCodeblock("#RESETCOMMAND"),
-      documentation: new vscode.MarkdownString().appendMarkdown("全ての命令の効果を初期値に戻します。"),
+      documentation: new vscode.MarkdownString().appendMarkdown(
+        "全ての命令の効果を初期値に戻します。"
+      ),
     },
   ],
 ]);

@@ -24,19 +24,6 @@ const hover = vscode.languages.registerHoverProvider("tja", {
         hover.symbol = item.symbol;
         hover.documentation = item.documentation;
       }
-    } else if (wordRange.start.character === 0) {
-      // 末尾が:かどうか判定させる
-      // ヘッダ
-      switch (currentWord) {
-        default:
-          if (currentWord.match(/^EXAM\d*$/)) {
-            // hover.symbol.appendCodeblock("EXAM<i> <type>,<red>,<gold>,<range>");
-            // hover.description.appendMarkdown("課題曲の合格条件を指定します。  \n\n");
-            // hover.description.appendMarkdown("`<i>`: 何曲目の課題曲に対して指定するかを整数で指定します。  \n");
-            // hover.description.appendMarkdown("`<type>`: 何曲目の課題曲に対して指定するかを整数で指定します。  \n");
-          }
-          break;
-      }
     }
 
     if (hover.symbol.value !== "" || hover.documentation.value !== "") {
