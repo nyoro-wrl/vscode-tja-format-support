@@ -361,7 +361,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
   ],
 ]);
 
-export const commandDocuments = new Map<string, Document>([
+export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, Document>([
   [
     "start",
     {
