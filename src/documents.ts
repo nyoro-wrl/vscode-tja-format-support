@@ -9,6 +9,8 @@ type Document = {
   readonly alias: RegExp | undefined;
   // 引数を含む定義
   readonly definition: string;
+  // スニペット用テキスト
+  readonly snippetString: string;
   // 説明
   readonly documentation: string;
 };
@@ -22,6 +24,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("TITLE:<string>").value,
+      snippetString: new vscode.SnippetString().appendText("TITLE:").value,
       documentation: new vscode.MarkdownString().appendMarkdown("曲のタイトル。").value,
     },
   ],
@@ -32,6 +35,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("LEVEL:<int>").value,
+      snippetString: new vscode.SnippetString().appendText("LEVEL:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面のレベル。  \n")
         .appendMarkdown("自然数で表記します。").value,
@@ -44,6 +48,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BPM:<bpm>").value,
+      snippetString: new vscode.SnippetString().appendText("BPM:").value,
       documentation: new vscode.MarkdownString().appendMarkdown("曲のBPM。").value,
     },
   ],
@@ -54,6 +59,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("WAVE:<filepath>").value,
+      snippetString: new vscode.SnippetString().appendText("WAVE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("音源ファイルのパス。  \n")
         .appendMarkdown("殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。").value,
@@ -66,6 +72,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("OFFSET:<decimal>").value,
+      snippetString: new vscode.SnippetString().appendText("OFFSET:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "譜面の開始位置と音源ファイルの再生時刻の差を秒数で指定します。"
       ).value,
@@ -78,6 +85,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BALLOON:[<int>...]").value,
+      snippetString: new vscode.SnippetString().appendText("BALLOON:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("風船連打の打数を`,`区切りで入力します。  \n")
         .appendMarkdown("省略した場合は一律5打になります。").value,
@@ -90,6 +98,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SONGVOL:<percent>").value,
+      snippetString: new vscode.SnippetString().appendText("SONGVOL:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("音源の音量。  \n")
         .appendMarkdown("基準値は100。").value,
@@ -102,6 +111,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SEVOL:<percent>").value,
+      snippetString: new vscode.SnippetString().appendText("SEVOL:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("太鼓音の音量。  \n")
         .appendMarkdown("基準値は100。").value,
@@ -114,6 +124,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SCOREINIT:<int>").value,
+      snippetString: new vscode.SnippetString().appendText("SCOREINIT:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("配点の初項。  \n")
         .appendMarkdown("10コンボ未満の時に小音符を良判定で叩いたときの得点を指定します。").value,
@@ -126,6 +137,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SCOREDIFF:<int>").value,
+      snippetString: new vscode.SnippetString().appendText("SCOREDIFF:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("配点の公差。  \n")
         .appendMarkdown("一定のコンボ数ごとに加算される一打あたりの点数を指定します。").value,
@@ -138,6 +150,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("COURSE:<course>").value,
+      snippetString: new vscode.SnippetString().appendText("COURSE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面の難易度。  \n")
         .appendMarkdown(
@@ -154,6 +167,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("STYLE:<style>").value,
+      snippetString: new vscode.SnippetString().appendText("STYLE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("プレイ人数を指定します。  \n")
         .appendMarkdown("`<style>`: `Single`,`Double`もしくは`1`,`2`の値を指定します。  \n")
@@ -169,6 +183,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("LIFE:<int>").value,
+      snippetString: new vscode.SnippetString().appendText("LIFE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("ライフの数を指定します。  \n")
         .appendMarkdown("不可を出すたびにライフが減り、0になると強制的に演奏が中断されます。")
@@ -182,6 +197,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("DEMOSTART:<second>").value,
+      snippetString: new vscode.SnippetString().appendText("DEMOSTART:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "選曲画面で流すデモの再生開始位置を秒で指定します。"
       ).value,
@@ -194,6 +210,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SIDE:<side>").value,
+      snippetString: new vscode.SnippetString().appendText("SIDE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("曲選択画面での表示設定。  \n")
         .appendMarkdown("`<side>`: `Normal`,`Ex`,`Both`もしくは`1` ~ `3`の値を指定します。  \n")
@@ -213,6 +230,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SUBTITLE:[--]<string>").value,
+      snippetString: new vscode.SnippetString().appendText("SUBTITLE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("曲のサブタイトル。  \n")
         .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
@@ -226,6 +244,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SIDEREV:<filepath>").value,
+      snippetString: new vscode.SnippetString().appendText("SIDEREV:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "表裏で対になる譜面ファイルを指定します。"
       ).value,
@@ -238,6 +257,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("SCOREMODE:<mode>").value,
+      snippetString: new vscode.SnippetString().appendText("SCOREMODE:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("配点方式を指定します。  \n")
         .appendMarkdown("`<mode>`: `0` ~ `2`の値を指定します。  \n")
@@ -251,6 +271,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("TOTAL:<total>").value,
+      snippetString: new vscode.SnippetString().appendText("TOTAL:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("ノルマゲージの増える量を指定します。  \n")
         .appendMarkdown("全良でゲージが満タンになる基準値を100とします。  \n").value,
@@ -264,6 +285,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BALLOONNOR:[<int>...]").value,
+      snippetString: new vscode.SnippetString().appendText("BALLOONNOR:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("普通譜面での風船連打の打数を`,`区切りで入力します。  \n")
         .appendMarkdown("省略した場合は一律5打になります。").value,
@@ -276,6 +298,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BALLOONEXP:[<int>...]").value,
+      snippetString: new vscode.SnippetString().appendText("BALLOONEXP:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("玄人譜面での風船連打の打数を`,`区切りで入力します。  \n")
         .appendMarkdown("省略した場合は一律5打になります。").value,
@@ -288,6 +311,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BALLOONMAS:[<int>...]").value,
+      snippetString: new vscode.SnippetString().appendText("BALLOONMAS:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("達人譜面での風船連打の打数を`,`区切りで入力します。  \n")
         .appendMarkdown("省略した場合は一律5打になります。").value,
@@ -300,6 +324,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("GENRE:<genre>").value,
+      snippetString: new vscode.SnippetString().appendText("GENRE:").value,
       documentation: new vscode.MarkdownString().appendMarkdown("曲のジャンル。").value,
     },
   ],
@@ -310,6 +335,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("MOVIEOFFSET:<second>").value,
+      snippetString: new vscode.SnippetString().appendText("MOVIEOFFSET:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "音源ファイルの再生位置と背景動画ファイルの再生時刻の差を秒数で指定します。"
       ).value,
@@ -322,6 +348,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BGIMAGE:<filepath>").value,
+      snippetString: new vscode.SnippetString().appendText("BGIMAGE:").value,
       documentation: new vscode.MarkdownString().appendMarkdown("背景画像ファイルのパス。").value,
     },
   ],
@@ -332,6 +359,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BGMOVIE:<filepath>").value,
+      snippetString: new vscode.SnippetString().appendText("BGMOVIE:").value,
       documentation: new vscode.MarkdownString().appendMarkdown("背景動画ファイルのパス。").value,
     },
   ],
@@ -342,6 +370,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("HIDDENBRANCH:1").value,
+      snippetString: new vscode.SnippetString().appendText("HIDDENBRANCH:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "譜面分岐を分岐する瞬間まで隠します。"
       ).value,
@@ -356,6 +385,10 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       alias: new RegExp(/^EXAM([1-9]|[1-9][0-9]+)$/),
       definition: new vscode.MarkdownString().appendCodeblock("EXAM1:<type>,<red>,<gold>,<range>")
         .value,
+      snippetString: new vscode.SnippetString()
+        .appendText("EXAM")
+        .appendPlaceholder("n")
+        .appendText(":").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("課題曲の合格条件を指定します。  \n")
         .appendMarkdown(
@@ -386,6 +419,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("PREIMAGE:<filepath>").value,
+      snippetString: new vscode.SnippetString().appendText("PREIMAGE:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "選曲画面に表示する画像ファイルのパス。　"
       ).value,
@@ -398,6 +432,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("BGOFFSET:<second>").value,
+      snippetString: new vscode.SnippetString().appendText("BGOFFSET:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "譜面の再生位置と背景画像ファイルの再生時刻の差を秒数で指定します。"
       ).value,
@@ -410,6 +445,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("DANTICK:<type>").value,
+      snippetString: new vscode.SnippetString().appendText("DANTICK:").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("段位の種別を指定します。  \n")
         .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します詳細は下部に記載。\n\n")
@@ -429,6 +465,7 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("DANTICKCOLOR:#<color>").value,
+      snippetString: new vscode.SnippetString().appendText("DANTICKCOLOR:").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "段位の色をHTMLカラーコードで指定します。"
       ).value,
@@ -444,6 +481,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#START" + " [<player>]").value,
+      snippetString: new vscode.SnippetString().appendText("START").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面データの記述を開始します。  \n")
         .appendMarkdown("`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。  \n\n")
@@ -459,6 +497,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#END").value,
+      snippetString: new vscode.SnippetString().appendText("END").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面データの記述を終了します。  \n")
         .appendMarkdown("`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。").value,
@@ -471,6 +510,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BPMCHANGE" + " <bpm>").value,
+      snippetString: new vscode.SnippetString().appendText("BPMCHANGE").value,
       documentation: new vscode.MarkdownString().appendMarkdown("BPMを変更します。").value,
     },
   ],
@@ -481,6 +521,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#GOGOSTART").value,
+      snippetString: new vscode.SnippetString().appendText("GOGOSTART").value,
       documentation: new vscode.MarkdownString().appendMarkdown("ゴーゴータイムを開始します。")
         .value,
     },
@@ -492,6 +533,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#GOGOEND").value,
+      snippetString: new vscode.SnippetString().appendText("GOGOEND").value,
       documentation: new vscode.MarkdownString().appendMarkdown("ゴーゴータイムを終了します。")
         .value,
     },
@@ -504,6 +546,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#MEASURE" + " <numer>/<denom>")
         .value,
+      snippetString: new vscode.SnippetString().appendText("MEASURE").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("拍子を変更します。  \n")
         .appendMarkdown("`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。").value,
@@ -516,6 +559,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#SCROLL" + " <rate>").value,
+      snippetString: new vscode.SnippetString().appendText("SCROLL").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面のスクロール速度を`<rate>`倍に変更します。  \n")
         .appendMarkdown("デフォルトは`1.00`です。").value,
@@ -528,6 +572,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#DELAY" + " <second>").value,
+      snippetString: new vscode.SnippetString().appendText("DELAY").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面が流れてくるタイミングを`<second>`秒遅らせます。  \n")
         .appendMarkdown("`#BMSCROLL`,`#HBSCROLL`適用下では譜面停止扱いになります。").value,
@@ -540,6 +585,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#SECTION").value,
+      snippetString: new vscode.SnippetString().appendText("SECTION").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面分岐の判定に使う連打数、精度をリセットします。  \n")
         .appendMarkdown("分岐したい箇所の一小節以上前に置いてください。").value,
@@ -552,6 +598,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BRANCHSTART").value,
+      snippetString: new vscode.SnippetString().appendText("BRANCHSTART").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面分岐を開始します。  \n\n")
         .appendMarkdown(
@@ -571,6 +618,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BRANCHEND").value,
+      snippetString: new vscode.SnippetString().appendText("BRANCHEND").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面分岐を終了します。  \n")
         .appendMarkdown("以降は全ての分岐で共通の譜面が流れます。").value,
@@ -583,6 +631,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#N").value,
+      snippetString: new vscode.SnippetString().appendText("N").value,
       documentation: new vscode.MarkdownString().appendMarkdown("普通譜面を記述します。").value,
     },
   ],
@@ -593,6 +642,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#E").value,
+      snippetString: new vscode.SnippetString().appendText("E").value,
       documentation: new vscode.MarkdownString().appendMarkdown("玄人譜面を記述します。").value,
     },
   ],
@@ -603,6 +653,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#M").value,
+      snippetString: new vscode.SnippetString().appendText("M").value,
       documentation: new vscode.MarkdownString().appendMarkdown("達人譜面を記述します。").value,
     },
   ],
@@ -613,6 +664,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#LEVELHOLD").value,
+      snippetString: new vscode.SnippetString().appendText("LEVELHOLD").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("現在の譜面分岐を固定します。  \n")
         .appendMarkdown("この命令がある小節に到達した場合、以後も譜面分岐が行われなくなります。")
@@ -626,6 +678,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BMSCROLL").value,
+      snippetString: new vscode.SnippetString().appendText("BMSCROLL").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面のスクロールがBMS形式になります。  \n")
         .appendMarkdown("`#START`より前に記述してください。").value,
@@ -638,6 +691,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#HBSCROLL").value,
+      snippetString: new vscode.SnippetString().appendText("HBSCROLL").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown(
           "譜面のスクロールが`#BMSCROLL`に`#SCROLL`の効果を含めた形式になります。  \n"
@@ -652,6 +706,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BARLINEOFF").value,
+      snippetString: new vscode.SnippetString().appendText("BARLINEOFF").value,
       documentation: new vscode.MarkdownString().appendMarkdown("小節線を非表示にします。").value,
     },
   ],
@@ -662,6 +717,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BARLINEON").value,
+      snippetString: new vscode.SnippetString().appendText("BARLINEON").value,
       documentation: new vscode.MarkdownString().appendMarkdown("小節線を表示します。").value,
     },
   ],
@@ -672,6 +728,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#LYRIC" + " <string>").value,
+      snippetString: new vscode.SnippetString().appendText("LYRIC").value,
       documentation: new vscode.MarkdownString().appendMarkdown("歌詞を表示します。").value,
     },
   ],
@@ -682,6 +739,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#SUDDEN" + " <sudden> <move>").value,
+      snippetString: new vscode.SnippetString().appendText("SUDDEN").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("音符の出現タイミングと動作タイミングを変更します。  \n")
         .appendMarkdown("`<sudden>`秒前に出現し、`<move>`秒前に動き出します。  \n")
@@ -697,6 +755,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#DIRECTION" + " <direction>").value,
+      snippetString: new vscode.SnippetString().appendText("DIRECTION").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面の流れる方向を指定します。  \n\n")
         .appendMarkdown("`0`: ←（通常）  \n")
@@ -718,6 +777,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       definition: new vscode.MarkdownString().appendCodeblock(
         "#JPOSSCROLL" + " <second> <distance> <direction>"
       ).value,
+      snippetString: new vscode.SnippetString().appendText("JPOSSCROLL").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("判定枠を左右に移動します。  \n\n")
         .appendMarkdown("`<second>`: 移動にかかる秒数。  \n")
@@ -735,6 +795,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
         "#NEXTSONG" +
           " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
       ).value,
+      snippetString: new vscode.SnippetString().appendText("NEXTSONG").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("課題曲を指定します。  \n\n")
         .appendMarkdown("`<title>`: タイトル  \n")
@@ -755,6 +816,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#JUDGEDELAY" + " <type> [...]")
         .value,
+      snippetString: new vscode.SnippetString().appendText("JUDGEDELAY").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("判定位置を判定枠からずらします。  \n")
         .appendMarkdown("譜面の流れる位置は判定位置に準拠します。  \n\n")
@@ -778,6 +840,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#DUMMYSTART").value,
+      snippetString: new vscode.SnippetString().appendText("DUMMYSTART").value,
       documentation: new vscode.MarkdownString().appendMarkdown("音符をダミーノーツにします。")
         .value,
     },
@@ -789,6 +852,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#DUMMYEND").value,
+      snippetString: new vscode.SnippetString().appendText("DUMMYEND").value,
       documentation: new vscode.MarkdownString().appendMarkdown("音符を普通のノーツに戻します。")
         .value,
     },
@@ -801,6 +865,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]")
         .value,
+      snippetString: new vscode.SnippetString().appendText("NOTESPAWN").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面の出現･隠蔽タイミングを指定します。  \n\n")
         .appendMarkdown(
@@ -821,6 +886,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#SIZE" + " <rate>").value,
+      snippetString: new vscode.SnippetString().appendText("SIZE").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "音符のサイズを`<rate>`倍にします。"
       ).value,
@@ -835,6 +901,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       definition: new vscode.MarkdownString().appendCodeblock(
         "#COLOR" + " <red> <green> <blue> <alpha>"
       ).value,
+      snippetString: new vscode.SnippetString().appendText("COLOR").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("音符の色彩を変更します。  \n")
         .appendMarkdown("255を基準値とします。  \n\n")
@@ -851,6 +918,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#ANGLE" + " <angle>").value,
+      snippetString: new vscode.SnippetString().appendText("ANGLE").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "音符の向きを`<angle>`度回転させます。"
       ).value,
@@ -865,6 +933,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       definition: new vscode.MarkdownString().appendCodeblock(
         "#GRADATION" + " <type> [<second> <type1> <type2>]"
       ).value,
+      snippetString: new vscode.SnippetString().appendText("GRADATION").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("他の命令の即時的な効果を時間的に変化させます。  \n\n")
         .appendMarkdown(
@@ -917,6 +986,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#BARLINESIZE" + " <width> <height>")
         .value,
+      snippetString: new vscode.SnippetString().appendText("BARLINESIZE").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("小節線のサイズを変更します。  \n\n")
         .appendMarkdown("`<width>`: 横幅をpxで指定します。  \n")
@@ -930,6 +1000,7 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       keyMatch: true,
       alias: undefined,
       definition: new vscode.MarkdownString().appendCodeblock("#RESETCOMMAND").value,
+      snippetString: new vscode.SnippetString().appendText("RESETCOMMAND").value,
       documentation: new vscode.MarkdownString().appendMarkdown(
         "全ての命令の効果を初期値に戻します。"
       ).value,

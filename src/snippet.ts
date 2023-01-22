@@ -15,7 +15,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
         command.name + ":",
         vscode.CompletionItemKind.Snippet
       );
-      snippet.insertText = new vscode.SnippetString(command.name + ":");
+      snippet.insertText = new vscode.SnippetString(command.snippetString);
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
         command.definition + command.documentation
       );
@@ -47,7 +47,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider("t
         "#" + command.name,
         vscode.CompletionItemKind.Snippet
       );
-      snippet.insertText = new vscode.SnippetString("#" + command.name);
+      snippet.insertText = new vscode.SnippetString("#" + command.snippetString);
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
         command.definition + command.documentation
       );
@@ -80,7 +80,7 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
           "#" + command.name,
           vscode.CompletionItemKind.Snippet
         );
-        snippet.insertText = new vscode.SnippetString(command.name);
+        snippet.insertText = new vscode.SnippetString(command.snippetString);
         snippet.documentation = new vscode.MarkdownString().appendMarkdown(
           command.definition + command.documentation
         );
@@ -92,3 +92,10 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
   },
   "#"
 );
+
+export const commandParameterSnippet = vscode.languages.registerCompletionItemProvider("tja", {
+  provideCompletionItems(document, position, token, context) {
+    const snippets: vscode.CompletionItem[] = [];
+    return snippets;
+  },
+});
