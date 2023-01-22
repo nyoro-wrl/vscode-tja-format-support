@@ -52,8 +52,7 @@
         "files.encoding": "shiftjis",
         "editor.unicodeHighlight.ambiguousCharacters": false,
         "editor.snippetSuggestions": "top",
-        "editor.unicodeHighlight.invisibleCharacters": false,
-        "editor.suggest.showUsers": false
+        "editor.unicodeHighlight.invisibleCharacters": false
       },
       "editor.tokenColorCustomizations": {
         "textMateRules": [
