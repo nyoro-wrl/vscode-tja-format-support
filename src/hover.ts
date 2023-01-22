@@ -22,18 +22,27 @@ const hover = vscode.languages.registerHoverProvider("tja", {
         // 命令
         const key = currentWord.slice(1);
         const item = commandDocuments.get(key);
-        if (item !== undefined) {
-          hover.symbol = new vscode.MarkdownString(item.symbol);
+        if (item !== undefined && item.keyMatch) {
+          hover.symbol = new vscode.MarkdownString(item.definition);
           hover.documentation = new vscode.MarkdownString(item.documentation);
         }
       } else if (nextChar === ":") {
         // ヘッダ
         const key = currentWord;
         const item = headerDocuments.get(key);
-        if (item !== undefined) {
-          hover.symbol = new vscode.MarkdownString(item.symbol);
+        if (item !== undefined && item.keyMatch) {
+          hover.symbol = new vscode.MarkdownString(item.definition);
           hover.documentation = new vscode.MarkdownString(item.documentation);
+        } else {
+          // 見つからない場合はエイリアスを探索
+          for (const header of headerDocuments.values()) {
+            if (header.alias?.test(key)) {
+              hover.symbol = new vscode.MarkdownString(header.definition);
+              hover.documentation = new vscode.MarkdownString(header.documentation);
+            }
+          }
         }
+        // TODO EXAMどうやって取得する？
       }
     }
 

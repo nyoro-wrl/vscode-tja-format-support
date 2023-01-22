@@ -17,7 +17,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       );
       snippet.insertText = new vscode.SnippetString(command.name + ":");
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
-        command.symbol + command.documentation
+        command.definition + command.documentation
       );
       snippet.kind = vscode.CompletionItemKind.Property;
       snippets.push(snippet);
@@ -49,7 +49,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider("t
       );
       snippet.insertText = new vscode.SnippetString("#" + command.name);
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
-        command.symbol + command.documentation
+        command.definition + command.documentation
       );
       snippet.kind = vscode.CompletionItemKind.Function;
       snippets.push(snippet);
@@ -82,7 +82,7 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
         );
         snippet.insertText = new vscode.SnippetString(command.name);
         snippet.documentation = new vscode.MarkdownString().appendMarkdown(
-          command.symbol + command.documentation
+          command.definition + command.documentation
         );
         snippet.kind = vscode.CompletionItemKind.Function;
         snippets.push(snippet);
