@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 // とりあえずコースごとに認識できるだけのやつを作ってみる
 const regexpCourse = new RegExp(/^COURSE:.*/);
-const regexpEnd = new RegExp(/^#END ?.*/);
+const regexpEnd = new RegExp(/^\s*#END ?.*/);
 
 const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
   provideDocumentSymbols(document, token) {
