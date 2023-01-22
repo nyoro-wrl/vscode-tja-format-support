@@ -611,7 +611,9 @@ export const commandDocuments: ReadonlyMap<string, Document> = new Map<string, D
       name: "BRANCHSTART",
       keyMatch: true,
       alias: undefined,
-      definition: new vscode.MarkdownString().appendCodeblock("#BRANCHSTART").value,
+      definition: new vscode.MarkdownString().appendCodeblock(
+        "#BRANCHSTART" + " <type>, <expart>, <master>"
+      ).value,
       snippetString: new vscode.SnippetString().appendText("BRANCHSTART").value,
       documentation: new vscode.MarkdownString()
         .appendMarkdown("譜面分岐を開始します。  \n\n")
