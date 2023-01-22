@@ -47,7 +47,7 @@
     },
     "statement": {
       "comment": "命令",
-      "begin": "^(?=#[A-Z]+\\s)",
+      "begin": "^(?=\\s*#[A-Z]+\\s)",
       "end": "$",
       "patterns": [
         {
@@ -56,11 +56,11 @@
         },
         {
           "name": "statement.branch",
-          "match": "^#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)(?=\\s)"
+          "match": "(?=\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)\\s"
         },
         {
           "name": "statement",
-          "match": "^#[A-Z0-9]+(?=\\s)"
+          "match": "(?=\\s*)#[A-Z0-9]+\\s"
         },
         {
           "name": "statement.variable",
@@ -70,13 +70,13 @@
     },
     "notes": {
       "comment": "譜面",
-      "begin": "^(?=[0-9])",
+      "begin": "^(?=\\s*[0-9])",
       "end": ",",
       "patterns": [
         {
           "comment": "連打",
           "begin": "(?=5)",
-          "end": "(8|(?=[1-4|6-9])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
+          "end": "(8|(?=[1-4|6-9])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
           "endCaptures": {
             "1": {
               "name": "note.roll"
@@ -100,7 +100,7 @@
         {
           "comment": "連打（大）",
           "begin": "(?=6)",
-          "end": "(8|(?=[1-5|7-9])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
+          "end": "(8|(?=[1-5|7-9])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
           "endCaptures": {
             "1": {
               "name": "note.roll.big"
@@ -124,7 +124,7 @@
         {
           "comment": "風船連打",
           "begin": "(?=7)",
-          "end": "(8|(?=[1-6|9])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
+          "end": "(8|(?=[1-6|9])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
           "endCaptures": {
             "1": {
               "name": "note.balloon"
@@ -148,7 +148,7 @@
         {
           "comment": "風船連打（大）",
           "begin": "(?=9)",
-          "end": "(8|(?=[1-7])|(?=^#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
+          "end": "(8|(?=[1-7])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
           "endCaptures": {
             "1": {
               "name": "note.balloon.big"

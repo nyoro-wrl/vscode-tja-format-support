@@ -4,7 +4,7 @@ import { headerDocuments, commandDocuments } from "./documents";
 // ヘッダ
 export const headerSnippet = vscode.languages.registerCompletionItemProvider("tja", {
   provideCompletionItems(document, position, token, context) {
-    const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
+    const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9]+/);
     if (position.character !== 0 && wordRange?.start.character !== 0) {
       return;
     }
@@ -15,9 +15,9 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
         command.name + ":",
         vscode.CompletionItemKind.Snippet
       );
-      snippet.insertText = new vscode.SnippetString(command.name + ":");
+      snippet.insertText = new vscode.SnippetString(command.snippetString);
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
-        command.symbol + command.documentation
+        command.definition + command.documentation
       );
       snippet.kind = vscode.CompletionItemKind.Property;
       snippets.push(snippet);
@@ -30,7 +30,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
 export const commandSnippet = vscode.languages.registerCompletionItemProvider("tja", {
   provideCompletionItems(document, position, token, context) {
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
-    if (wordRange?.start.character !== 0) {
+    if (wordRange === undefined) {
       return;
     }
     const currentWord = document
@@ -47,9 +47,9 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider("t
         "#" + command.name,
         vscode.CompletionItemKind.Snippet
       );
-      snippet.insertText = new vscode.SnippetString("#" + command.name);
+      snippet.insertText = new vscode.SnippetString("#" + command.snippetString);
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
-        command.symbol + command.documentation
+        command.definition + command.documentation
       );
       snippet.kind = vscode.CompletionItemKind.Function;
       snippets.push(snippet);
@@ -70,7 +70,7 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
       const currentWord = document
         .lineAt(position.line)
         .text.slice(wordRange.start.character, wordRange.end.character);
-      if (wordRange.start.character !== 0 || currentWord[0] !== "#" || currentWord.length > 1) {
+      if (currentWord[0] !== "#" || currentWord.length > 1) {
         return;
       }
       const snippets: vscode.CompletionItem[] = [];
@@ -80,9 +80,9 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
           "#" + command.name,
           vscode.CompletionItemKind.Snippet
         );
-        snippet.insertText = new vscode.SnippetString(command.name);
+        snippet.insertText = new vscode.SnippetString(command.snippetString);
         snippet.documentation = new vscode.MarkdownString().appendMarkdown(
-          command.symbol + command.documentation
+          command.definition + command.documentation
         );
         snippet.kind = vscode.CompletionItemKind.Function;
         snippets.push(snippet);
@@ -92,3 +92,10 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
   },
   "#"
 );
+
+export const commandParameterSnippet = vscode.languages.registerCompletionItemProvider("tja", {
+  provideCompletionItems(document, position, token, context) {
+    const snippets: vscode.CompletionItem[] = [];
+    return snippets;
+  },
+});

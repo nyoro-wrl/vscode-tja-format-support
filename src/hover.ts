@@ -18,20 +18,30 @@ const hover = vscode.languages.registerHoverProvider("tja", {
     const nextChar = line.slice(wordRange.end.character, wordRange.end.character + 1);
 
     if (wordRange.start.character === 0) {
+      if (nextChar === ":") {
+        // ヘッダ
+        const key = currentWord;
+        const item = headerDocuments.get(key);
+        if (item !== undefined && item.keyMatch) {
+          hover.symbol = new vscode.MarkdownString(item.definition);
+          hover.documentation = new vscode.MarkdownString(item.documentation);
+        } else {
+          // 見つからない場合はエイリアスを探索
+          for (const header of headerDocuments.values()) {
+            if (header.alias?.test(key)) {
+              hover.symbol = new vscode.MarkdownString(header.definition);
+              hover.documentation = new vscode.MarkdownString(header.documentation);
+            }
+          }
+        }
+      }
+    } else {
       if (currentWord[0] === "#") {
         // 命令
-        const key = currentWord.slice(1).toLowerCase();
+        const key = currentWord.slice(1);
         const item = commandDocuments.get(key);
-        if (item !== undefined) {
-          hover.symbol = new vscode.MarkdownString(item.symbol);
-          hover.documentation = new vscode.MarkdownString(item.documentation);
-        }
-      } else if (nextChar === ":") {
-        // ヘッダ
-        const key = currentWord.toLowerCase();
-        const item = headerDocuments.get(key);
-        if (item !== undefined) {
-          hover.symbol = new vscode.MarkdownString(item.symbol);
+        if (item !== undefined && item.keyMatch) {
+          hover.symbol = new vscode.MarkdownString(item.definition);
           hover.documentation = new vscode.MarkdownString(item.documentation);
         }
       }
