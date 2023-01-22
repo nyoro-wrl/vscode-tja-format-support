@@ -30,7 +30,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
 export const commandSnippet = vscode.languages.registerCompletionItemProvider("tja", {
   provideCompletionItems(document, position, token, context) {
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
-    if (wordRange?.start.character !== 0) {
+    if (wordRange === undefined) {
       return;
     }
     const currentWord = document
@@ -70,7 +70,7 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
       const currentWord = document
         .lineAt(position.line)
         .text.slice(wordRange.start.character, wordRange.end.character);
-      if (wordRange.start.character !== 0 || currentWord[0] !== "#" || currentWord.length > 1) {
+      if (currentWord[0] !== "#" || currentWord.length > 1) {
         return;
       }
       const snippets: vscode.CompletionItem[] = [];
