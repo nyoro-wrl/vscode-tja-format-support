@@ -236,6 +236,20 @@ export const headerDocuments: ReadonlyMap<string, Document> = new Map<string, Do
         .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
     },
   ],
+  [
+    "SONG",
+    {
+      name: "SONG",
+      keyMatch: true,
+      alias: undefined,
+      definition: new vscode.MarkdownString().appendCodeblock("SONG:<filepath>").value,
+      snippetString: new vscode.SnippetString().appendText("SONG:").value,
+      documentation: new vscode.MarkdownString()
+        .appendMarkdown("コースに使用する譜面。  \n")
+        .appendMarkdown("`.tjc`ファイル上で有効なヘッダです。  \n")
+        .appendMarkdown("`<filepath>`: tjaファイルをルートディレクトリから指定します。").value,
+    },
+  ],
   // 太鼓さん次郎2
   [
     "SIDEREV",
