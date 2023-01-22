@@ -4,7 +4,7 @@ import { headerDocuments, commandDocuments } from "./documents";
 // ヘッダ
 export const headerSnippet = vscode.languages.registerCompletionItemProvider("tja", {
   provideCompletionItems(document, position, token, context) {
-    const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
+    const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9]+/);
     if (position.character !== 0 && wordRange?.start.character !== 0) {
       return;
     }
