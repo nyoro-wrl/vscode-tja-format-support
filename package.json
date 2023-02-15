@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.1.6",
+  "version": "1.1.5",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -19,6 +19,9 @@
   "categories": [
     "Programming Languages",
     "Snippets"
+  ],
+  "activationEvents": [
+    "onLanguage:tja"
   ],
   "main": "./out/extension.js",
   "contributes": {
