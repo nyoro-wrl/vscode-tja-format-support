@@ -30,12 +30,16 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
 export const commandSnippet = vscode.languages.registerCompletionItemProvider("tja", {
   provideCompletionItems(document, position, token, context) {
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
-    if (wordRange === undefined || position.character === wordRange.start.character) {
+    if (wordRange === undefined) {
       return;
     }
     const currentWord = document
       .lineAt(position.line)
       .text.slice(wordRange.start.character, wordRange.end.character);
+    if (currentWord[0] === "#") {
+      // #トリガー側が動作するため終了
+      return;
+    }
     const snippets: vscode.CompletionItem[] = [];
     const comands = [...commandDocuments.values()];
     for (const command of comands) {
@@ -43,9 +47,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider("t
         "#" + command.name,
         vscode.CompletionItemKind.Snippet
       );
-      snippet.insertText = new vscode.SnippetString(
-        (currentWord[0] === "#" ? "" : "#") + command.snippetString
-      );
+      snippet.insertText = new vscode.SnippetString("#" + command.snippetString);
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
         command.definition + command.documentation
       );
@@ -61,9 +63,6 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
   "tja",
   {
     provideCompletionItems(document, position, token, context) {
-      if (context.triggerCharacter === undefined) {
-        return;
-      }
       const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
       if (wordRange === undefined) {
         return;
