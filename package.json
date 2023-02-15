@@ -20,6 +20,7 @@
     "Programming Languages",
     "Snippets"
   ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "languages": [
