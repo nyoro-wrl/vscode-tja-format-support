@@ -74,19 +74,19 @@
             }
           },
           {
-            "scope": "source.tja statement",
+            "scope": "source.tja command",
             "settings": {
               "foreground": "#cd86c7"
             }
           },
           {
-            "scope": "source.tja statement.branch",
+            "scope": "source.tja command.branch",
             "settings": {
               "foreground": "#ce9178"
             }
           },
           {
-            "scope": "source.tja statement.variable",
+            "scope": "source.tja command.variable",
             "settings": {
               "foreground": "#ffc3ff"
             }

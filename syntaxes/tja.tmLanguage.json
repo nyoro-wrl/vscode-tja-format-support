@@ -8,7 +8,7 @@
       "include": "#header"
     },
     {
-      "include": "#statement"
+      "include": "#command"
     },
     {
       "include": "#notes"
@@ -45,7 +45,7 @@
         }
       ]
     },
-    "statement": {
+    "command": {
       "comment": "命令",
       "begin": "^(?=\\s*#[A-Z]+\\s)",
       "end": "$",
@@ -55,15 +55,15 @@
           "include": "#comments"
         },
         {
-          "name": "statement.branch",
+          "name": "command.branch",
           "match": "(?=\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)\\s"
         },
         {
-          "name": "statement",
+          "name": "command",
           "match": "(?=\\s*)#[A-Z0-9]+\\s"
         },
         {
-          "name": "statement.variable",
+          "name": "command.variable",
           "match": "[^,]"
         }
       ]
@@ -89,7 +89,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.roll",
@@ -113,7 +113,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.roll.big",
@@ -137,7 +137,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.balloon",
@@ -161,7 +161,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.balloon.big",
@@ -175,7 +175,7 @@
         },
         {
           "comment": "命令",
-          "include": "#statement"
+          "include": "#command"
         },
         {
           "name": "note.don",
