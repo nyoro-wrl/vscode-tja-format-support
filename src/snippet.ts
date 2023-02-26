@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { commandCollection } from "./type/command";
-import { headerCollection } from "./type/header";
+import { commands } from "./constants/commands";
+import { headers } from "./constants/headers";
 
 // ヘッダ
 export const headerSnippet = vscode.languages.registerCompletionItemProvider("tja", {
@@ -10,7 +10,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       return;
     }
     const snippets: vscode.CompletionItem[] = [];
-    for (const header of headerCollection) {
+    for (const header of headers) {
       const snippet = new vscode.CompletionItem(
         header.name + ":",
         vscode.CompletionItemKind.Snippet
@@ -37,7 +37,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider("t
       .lineAt(position.line)
       .text.slice(wordRange.start.character, wordRange.end.character);
     const snippets: vscode.CompletionItem[] = [];
-    for (const command of commandCollection) {
+    for (const command of commands) {
       const snippet = new vscode.CompletionItem(
         "#" + command.name,
         vscode.CompletionItemKind.Snippet
@@ -74,7 +74,7 @@ export const triggerCommandSnippet = vscode.languages.registerCompletionItemProv
         return;
       }
       const snippets: vscode.CompletionItem[] = [];
-      for (const command of commandCollection) {
+      for (const command of commands) {
         const snippet = new vscode.CompletionItem(
           "#" + command.name,
           vscode.CompletionItemKind.Snippet

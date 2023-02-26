@@ -40,14 +40,14 @@ interface IStatementCollection<T extends IStatement> extends ICollection<T> {
    * 一致するStatementを取得
    * @param string
    */
-  getStatement(string: string): T | undefined;
+  get(string: string): T | undefined;
 }
 
 export class StatementCollection<T extends IStatement>
   extends Collection<T>
   implements IStatementCollection<T>
 {
-  getStatement(string: string): T | undefined {
+  get(string: string): T | undefined {
     for (const statement of this) {
       if (statement.regexp.test(string)) {
         return statement;

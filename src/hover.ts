@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Hover, MarkdownString } from "vscode";
-import { commandCollection } from "./type/command";
-import { headerCollection } from "./type/header";
+import { commands } from "./constants/commands";
+import { headers } from "./constants/headers";
 
 const hover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
@@ -21,7 +21,7 @@ const hover = vscode.languages.registerHoverProvider("tja", {
     if (nextChar === ":") {
       // ヘッダ
       const key = currentWord;
-      const item = headerCollection.getStatement(key);
+      const item = headers.get(key);
       if (item !== undefined) {
         hover.symbol = new MarkdownString(item.syntax);
         hover.documentation = new MarkdownString(item.documentation);
@@ -29,7 +29,7 @@ const hover = vscode.languages.registerHoverProvider("tja", {
     } else if (currentWord[0] === "#") {
       // 命令
       const key = currentWord.slice(1);
-      const item = commandCollection.getStatement(key);
+      const item = commands.get(key);
       if (item !== undefined) {
         hover.symbol = new MarkdownString(item.syntax);
         hover.documentation = new MarkdownString(item.documentation);
