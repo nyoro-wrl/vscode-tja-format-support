@@ -52,6 +52,7 @@ class CommandCollection extends StatementCollection<ICommand> {
 export const commandCollection = new CommandCollection({
   // 太鼓さん次郎
   start: {
+    name: "START",
     regexp: /^START$/,
     syntax: new MarkdownString().appendCodeblock("#START" + " [<player>]").value,
     snippet: new SnippetString().appendText("START").value,
@@ -64,6 +65,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   end: {
+    name: "END",
     regexp: /^END$/,
     syntax: new MarkdownString().appendCodeblock("#END").value,
     snippet: new SnippetString().appendText("END").value,
@@ -73,6 +75,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   bpmchange: {
+    name: "BPMCHANGE",
     regexp: /^BPMCHANGE$/,
     syntax: new MarkdownString().appendCodeblock("#BPMCHANGE" + " <bpm>").value,
     snippet: new SnippetString().appendText("BPMCHANGE ").value,
@@ -80,6 +83,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   gogostart: {
+    name: "GOGOSTART",
     regexp: /^GOGOSTART$/,
     syntax: new MarkdownString().appendCodeblock("#GOGOSTART").value,
     snippet: new SnippetString().appendText("GOGOSTART").value,
@@ -87,6 +91,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   gogoend: {
+    name: "GOGOEND",
     regexp: /^GOGOEND$/,
     syntax: new MarkdownString().appendCodeblock("#GOGOEND").value,
     snippet: new SnippetString().appendText("GOGOEND").value,
@@ -94,6 +99,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   measure: {
+    name: "MEASURE",
     regexp: /^MEASURE$/,
     syntax: new MarkdownString().appendCodeblock("#MEASURE" + " <numer>/<denom>").value,
     snippet: new SnippetString().appendText("MEASURE ").value,
@@ -103,6 +109,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   scroll: {
+    name: "SCROLL",
     regexp: /^SCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#SCROLL" + " <rate>").value,
     snippet: new SnippetString().appendText("SCROLL ").value,
@@ -112,6 +119,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   delay: {
+    name: "DELAY",
     regexp: /^DELAY$/,
     syntax: new MarkdownString().appendCodeblock("#DELAY" + " <second>").value,
     snippet: new SnippetString().appendText("DELAY ").value,
@@ -121,6 +129,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   section: {
+    name: "SECTION",
     regexp: /^SECTION$/,
     syntax: new MarkdownString().appendCodeblock("#SECTION").value,
     snippet: new SnippetString().appendText("SECTION").value,
@@ -130,6 +139,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   branchstart: {
+    name: "BRANCHSTART",
     regexp: /^BRANCHSTART$/,
     syntax: new MarkdownString().appendCodeblock("#BRANCHSTART" + " <type>, <expart>, <master>")
       .value,
@@ -147,6 +157,7 @@ export const commandCollection = new CommandCollection({
     split: "Comma",
   },
   branchend: {
+    name: "BRANCHEND",
     regexp: /^BRANCHEND$/,
     syntax: new MarkdownString().appendCodeblock("#BRANCHEND").value,
     snippet: new SnippetString().appendText("BRANCHEND").value,
@@ -156,6 +167,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   n: {
+    name: "N",
     regexp: /^N$/,
     syntax: new MarkdownString().appendCodeblock("#N").value,
     snippet: new SnippetString().appendText("N").value,
@@ -163,6 +175,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   e: {
+    name: "E",
     regexp: /^E$/,
     syntax: new MarkdownString().appendCodeblock("#E").value,
     snippet: new SnippetString().appendText("E").value,
@@ -170,6 +183,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   m: {
+    name: "M",
     regexp: /^M$/,
     syntax: new MarkdownString().appendCodeblock("#M").value,
     snippet: new SnippetString().appendText("M").value,
@@ -177,6 +191,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   levelhold: {
+    name: "LEVELHOLD",
     regexp: /^LEVELHOLD$/,
     syntax: new MarkdownString().appendCodeblock("#LEVELHOLD").value,
     snippet: new SnippetString().appendText("LEVELHOLD").value,
@@ -187,6 +202,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   bmscroll: {
+    name: "BMSCROLL",
     regexp: /^BMSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#BMSCROLL").value,
     snippet: new SnippetString().appendText("BMSCROLL").value,
@@ -196,6 +212,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   hbscroll: {
+    name: "HBSCROLL",
     regexp: /^HBSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#HBSCROLL").value,
     snippet: new SnippetString().appendText("HBSCROLL").value,
@@ -205,6 +222,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   barlineoff: {
+    name: "BARLINEOFF",
     regexp: /^BARLINEOFF$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINEOFF").value,
     snippet: new SnippetString().appendText("BARLINEOFF").value,
@@ -212,6 +230,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   barlineon: {
+    name: "BARLINEON",
     regexp: /^BARLINEON$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINEON").value,
     snippet: new SnippetString().appendText("BARLINEON").value,
@@ -220,6 +239,7 @@ export const commandCollection = new CommandCollection({
   },
   // TJAPlayer2forPC
   lyric: {
+    name: "LYRIC",
     regexp: /^LYRIC$/,
     syntax: new MarkdownString().appendCodeblock("#LYRIC" + " <string>").value,
     snippet: new SnippetString().appendText("LYRIC ").value,
@@ -227,6 +247,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   sudden: {
+    name: "SUDDEN",
     regexp: /^SUDDEN$/,
     syntax: new MarkdownString().appendCodeblock("#SUDDEN" + " <sudden> <move>").value,
     snippet: new SnippetString().appendText("SUDDEN ").value,
@@ -239,6 +260,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   direction: {
+    name: "DIRECTION",
     regexp: /^DIRECTION$/,
     syntax: new MarkdownString().appendCodeblock("#DIRECTION" + " <direction>").value,
     snippet: new SnippetString().appendText("DIRECTION ").value,
@@ -256,6 +278,7 @@ export const commandCollection = new CommandCollection({
   },
   // TJAPlayer3
   jposscroll: {
+    name: "JPOSSCROLL",
     regexp: /^JPOSSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#JPOSSCROLL" + " <second> <distance> <direction>")
       .value,
@@ -268,6 +291,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   nextsong: {
+    name: "NEXTSONG",
     regexp: /^NEXTSONG$/,
     syntax: new MarkdownString().appendCodeblock(
       "#NEXTSONG" + " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
@@ -287,6 +311,7 @@ export const commandCollection = new CommandCollection({
   },
   // TaikoManyGimmicks
   judgedelay: {
+    name: "JUDGEDELAY",
     regexp: /^JUDGEDELAY$/,
     syntax: new MarkdownString().appendCodeblock("#JUDGEDELAY" + " <type> [...]").value,
     snippet: new SnippetString().appendText("JUDGEDELAY ").value,
@@ -307,6 +332,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   dummystart: {
+    name: "DUMMYSTART",
     regexp: /^DUMMYSTART$/,
     syntax: new MarkdownString().appendCodeblock("#DUMMYSTART").value,
     snippet: new SnippetString().appendText("DUMMYSTART").value,
@@ -314,6 +340,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   dummyend: {
+    name: "DUMMYEND",
     regexp: /^DUMMYEND$/,
     syntax: new MarkdownString().appendCodeblock("#DUMMYEND").value,
     snippet: new SnippetString().appendText("DUMMYEND").value,
@@ -321,6 +348,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   notespawn: {
+    name: "NOTESPAWN",
     regexp: /^NOTESPAWN$/,
     syntax: new MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]").value,
     snippet: new SnippetString().appendText("NOTESPAWN ").value,
@@ -338,6 +366,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   size: {
+    name: "SIZE",
     regexp: /^SIZE$/,
     syntax: new MarkdownString().appendCodeblock("#SIZE" + " <rate>").value,
     snippet: new SnippetString().appendText("SIZE ").value,
@@ -345,6 +374,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   color: {
+    name: "COLOR",
     regexp: /^COLOR$/,
     syntax: new MarkdownString().appendCodeblock("#COLOR" + " <red> <green> <blue> <alpha>").value,
     snippet: new SnippetString().appendText("COLOR ").value,
@@ -358,6 +388,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   angle: {
+    name: "ANGLE",
     regexp: /^ANGLE$/,
     syntax: new MarkdownString().appendCodeblock("#ANGLE" + " <angle>").value,
     snippet: new SnippetString().appendText("ANGLE ").value,
@@ -366,6 +397,7 @@ export const commandCollection = new CommandCollection({
     split: "None",
   },
   gradation: {
+    name: "GRADATION",
     regexp: /^GRADATION$/,
     syntax: new MarkdownString().appendCodeblock(
       "#GRADATION" + " <type> [<second> <type1> <type2>]"
@@ -416,6 +448,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   barlinesize: {
+    name: "BARLINESIZE",
     regexp: /^BARLINESIZE$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINESIZE" + " <width> <height>").value,
     snippet: new SnippetString().appendText("BARLINESIZE ").value,
@@ -426,6 +459,7 @@ export const commandCollection = new CommandCollection({
     split: "Space",
   },
   resetcommand: {
+    name: "RESETCOMMAND",
     regexp: /^RESETCOMMAND$/,
     syntax: new MarkdownString().appendCodeblock("#RESETCOMMAND").value,
     snippet: new SnippetString().appendText("RESETCOMMAND").value,

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { Hover } from "vscode";
-import { headerDocuments, commandDocuments } from "./documents";
+import { Hover, MarkdownString } from "vscode";
+import { commandCollection } from "./type/command";
+import { headerCollection } from "./type/header";
 
 const hover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
@@ -17,33 +18,21 @@ const hover = vscode.languages.registerHoverProvider("tja", {
     const currentWord = line.slice(wordRange.start.character, wordRange.end.character);
     const nextChar = line.slice(wordRange.end.character, wordRange.end.character + 1);
 
-    if (wordRange.start.character === 0) {
-      if (nextChar === ":") {
-        // ヘッダ
-        const key = currentWord;
-        const item = headerDocuments.get(key);
-        if (item !== undefined && item.keyMatch) {
-          hover.symbol = new vscode.MarkdownString(item.definition);
-          hover.documentation = new vscode.MarkdownString(item.documentation);
-        } else {
-          // 見つからない場合はエイリアスを探索
-          for (const header of headerDocuments.values()) {
-            if (header.alias?.test(key)) {
-              hover.symbol = new vscode.MarkdownString(header.definition);
-              hover.documentation = new vscode.MarkdownString(header.documentation);
-            }
-          }
-        }
+    if (nextChar === ":") {
+      // ヘッダ
+      const key = currentWord;
+      const item = headerCollection.getStatement(key);
+      if (item !== undefined) {
+        hover.symbol = new MarkdownString(item.syntax);
+        hover.documentation = new MarkdownString(item.documentation);
       }
-    } else {
-      if (currentWord[0] === "#") {
-        // 命令
-        const key = currentWord.slice(1);
-        const item = commandDocuments.get(key);
-        if (item !== undefined && item.keyMatch) {
-          hover.symbol = new vscode.MarkdownString(item.definition);
-          hover.documentation = new vscode.MarkdownString(item.documentation);
-        }
+    } else if (currentWord[0] === "#") {
+      // 命令
+      const key = currentWord.slice(1);
+      const item = commandCollection.getStatement(key);
+      if (item !== undefined) {
+        hover.symbol = new MarkdownString(item.syntax);
+        hover.documentation = new MarkdownString(item.documentation);
       }
     }
 

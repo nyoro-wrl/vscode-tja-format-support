@@ -10,6 +10,10 @@ type Split = "Comma" | "Space" | "None";
  */
 export interface IStatement {
   /**
+   * 名前
+   */
+  readonly name: string;
+  /**
    * 一致する正規表現
    */
   readonly regexp: RegExp;
