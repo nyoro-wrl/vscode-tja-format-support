@@ -6,8 +6,8 @@ import { headers } from "./constants/headers";
 const hover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
     const hover = {
-      symbol: new vscode.MarkdownString(),
-      documentation: new vscode.MarkdownString(),
+      symbol: new MarkdownString(),
+      documentation: new MarkdownString(),
     };
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
     if (wordRange === undefined) {
