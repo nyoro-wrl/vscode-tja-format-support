@@ -152,11 +152,11 @@ export const headers = new HeaderCollection({
   demostart: {
     name: "DEMOSTART",
     regexp: /^DEMOSTART$/,
-    syntax: new MarkdownString().appendCodeblock("SUBTITLE:[--]<string>").value,
-    snippet: new SnippetString().appendText("SUBTITLE:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("曲のサブタイトル。  \n")
-      .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
+    syntax: new MarkdownString().appendCodeblock("DEMOSTART:<second>").value,
+    snippet: new SnippetString().appendText("DEMOSTART:").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "選曲画面で流すデモの再生開始位置を秒で指定します。"
+    ).value,
     section: "Global",
     split: "None",
   },
