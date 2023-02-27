@@ -3,7 +3,7 @@ import { Collection, ICollection } from "./collection";
 /**
  * パラメーターの区切り文字
  */
-type Split = "Comma" | "Space" | "None";
+export type Split = "Comma" | "Space" | "None" | "Unknown";
 
 /**
  * TJAで使用できる文
