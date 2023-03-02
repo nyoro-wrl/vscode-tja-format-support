@@ -1,41 +1,87 @@
+import * as vscode from "vscode";
+import { Position, Range } from "vscode";
 import { commands } from "./constants/commands";
 import { headers } from "./constants/headers";
-import { Split } from "./type/statement";
+import { Split, splitToRegExp } from "./type/statement";
 
-const commentRegExp = /^(.*)\/\/\s*.*$/;
-const headerRegExp = /^([A-Z0-9]+):(.*)$/;
-const commandRegExp = /^#([A-Z0-9]+)(\s+(.*))?$/;
-const chartRegExp = /^[0-9\s],?$/;
+const deleteCommentRegExp = /^\s*(.*)\s*\/\/\s*.*\s*$/;
+const headerLineRegExp = /^\s*([A-Z0-9]+):(.*)?\s*$/;
+const commandLineRegExp = /^\s*#([A-Z0-9]+)( (.*)+)?\s*$/;
 const notesRegExp = /[0-9]/;
+const measureEndRegExp = /,/;
+const unknowsRegExp = /[\S]/;
 
-type TokenType = "header" | "command" | "rawParameter" | "parameter" | "notes" | "measureEnd";
+type TokenType =
+  | "Header"
+  | "Command"
+  | "RawParameter"
+  | "Parameter"
+  | "Notes"
+  | "MeasureEnd"
+  | "EndOfLine"
+  | "Unknown";
 
 type Token = {
   readonly type: TokenType;
   readonly value: string;
+  readonly range: Range;
 };
 
 /**
  * 字句解析
  */
 export class Lexer {
-  private inputs: string[];
-  private text = "";
+  readonly document: vscode.TextDocument;
+  private range: vscode.Range = new Range(0, 0, 0, 0);
 
-  constructor(input: string) {
-    this.inputs = input.split(/\r\n|\n/);
+  constructor(document: vscode.TextDocument) {
+    this.document = document;
   }
 
   /**
-   * コメント部分の削除
+   * 現在の範囲のテキストを取得
    * @returns
    */
-  private deleteComment(): string {
-    const matches = commentRegExp.exec(this.text);
+  private getText(): string {
+    return this.document.getText(this.range);
+  }
+
+  /**
+   * 正規表現結果から範囲を取得
+   * @param matches
+   * @param index
+   * @returns
+   */
+  private getRegExpRange(matches: RegExpExecArray, index: number): Range {
+    const start = this.range.start.character + matches[0].indexOf(matches[index]);
+    const end = start + matches[index].length;
+    return new Range(this.range.start.line, start, this.range.end.line, end);
+  }
+
+  /**
+   * 正規表現結果をトークンに変換
+   * @param type
+   * @param matches
+   * @param index
+   * @returns
+   */
+  private regExpToToken(matches: RegExpExecArray, index: number, type: TokenType): Token {
+    const value = matches[index];
+    const range = this.getRegExpRange(matches, index);
+    return { type: type, value: value, range: range };
+  }
+
+  /**
+   * コメント範囲の削除
+   * @returns
+   */
+  private deleteCommentRange(): void {
+    const text = this.getText();
+    const matches = deleteCommentRegExp.exec(text);
     if (matches === null) {
-      return this.text;
+      return;
     }
-    return matches[1].trimEnd();
+    this.range = this.getRegExpRange(matches, 1);
   }
 
   /**
@@ -43,7 +89,8 @@ export class Lexer {
    * @returns
    */
   private isHeader(): boolean {
-    return headerRegExp.test(this.text);
+    const text = this.getText();
+    return headerLineRegExp.test(text);
   }
 
   /**
@@ -52,17 +99,16 @@ export class Lexer {
    */
   private getHeader(): Token[] {
     const tokens: Token[] = [];
-    const matches = headerRegExp.exec(this.text);
+    const text = this.getText();
+    const matches = headerLineRegExp.exec(text);
     if (matches === null) {
       return tokens;
     }
-    const headerValue = matches[1];
-    const headerToken: Token = { type: "header", value: headerValue };
-    tokens.push(headerToken);
-    const rawParameterValue = matches[2];
-    if (rawParameterValue.length > 0) {
-      const rawParameterToken: Token = { type: "rawParameter", value: rawParameterValue };
-      tokens.push(rawParameterToken);
+    const header = this.regExpToToken(matches, 1, "Header");
+    tokens.push(header);
+    if (matches[2] !== undefined) {
+      const rawParameter = this.regExpToToken(matches, 2, "RawParameter");
+      tokens.push(rawParameter);
     }
     return tokens;
   }
@@ -72,7 +118,8 @@ export class Lexer {
    * @returns
    */
   private isCommand(): boolean {
-    return commandRegExp.test(this.text);
+    const text = this.getText();
+    return commandLineRegExp.test(text);
   }
 
   /**
@@ -81,25 +128,18 @@ export class Lexer {
    */
   private getCommand(): Token[] {
     const tokens: Token[] = [];
-    const matches = commandRegExp.exec(this.text);
+    const text = this.getText();
+    const matches = commandLineRegExp.exec(text);
     if (matches === null) {
       return tokens;
     }
-    const commandValue = matches[1];
-    const commandToken: Token = { type: "command", value: commandValue };
-    tokens.push(commandToken);
+    const command = this.regExpToToken(matches, 1, "Command");
+    tokens.push(command);
     if (matches[3] !== undefined) {
-      const rawParameterValue = matches[3];
-      if (rawParameterValue.length > 0) {
-        const rawParameterToken: Token = { type: "rawParameter", value: rawParameterValue };
-        tokens.push(rawParameterToken);
-      }
+      const rawParameter = this.regExpToToken(matches, 3, "RawParameter");
+      tokens.push(rawParameter);
     }
     return tokens;
-  }
-
-  private isChart(): boolean {
-    return chartRegExp.test(this.text);
   }
 
   /**
@@ -108,13 +148,21 @@ export class Lexer {
    */
   private getChart(): Token[] {
     const tokens: Token[] = [];
-    for (const char of this.text) {
+    const line = this.range.start.line;
+    const start = this.range.start.character;
+    const end = this.range.end.character;
+    for (let index = start; index < end; index++) {
+      const range = new Range(line, index, line, index + 1);
+      const char = this.document.getText(range);
       if (notesRegExp.test(char)) {
-        const notesToken: Token = { type: "notes", value: char };
-        tokens.push(notesToken);
-      } else if (char === ",") {
-        const measureEndToken: Token = { type: "measureEnd", value: char };
-        tokens.push(measureEndToken);
+        const token: Token = { type: "Notes", value: char, range: range };
+        tokens.push(token);
+      } else if (measureEndRegExp.test(char)) {
+        const token: Token = { type: "MeasureEnd", value: char, range: range };
+        tokens.push(token);
+      } else if (unknowsRegExp.test(char)) {
+        const token: Token = { type: "Unknown", value: char, range: range };
+        tokens.push(token);
       }
     }
     return tokens;
@@ -126,322 +174,471 @@ export class Lexer {
    */
   public tokenized(): Token[] {
     const tokens: Token[] = [];
-    for (let line = 0; line < this.inputs.length; line++) {
-      this.text = this.inputs[line].trim();
-      this.text = this.deleteComment();
+    for (let line = 0; line < this.document.lineCount; line++) {
+      const textLine = this.document.lineAt(line);
+      this.range = textLine.range;
+      this.deleteCommentRange();
       if (this.isHeader()) {
         tokens.push(...this.getHeader());
       } else if (this.isCommand()) {
         tokens.push(...this.getCommand());
-      } else if (this.isChart()) {
+      } else {
         tokens.push(...this.getChart());
       }
+      const eolRange = new Range(line, this.range.end.character, line, this.range.end.character);
+      const eolToken: Token = { type: "EndOfLine", value: "", range: eolRange };
+      tokens.push(eolToken);
     }
     return tokens;
   }
 }
 
-// 全ての表現
-class Expression {
-  readonly tokens: Token[] = [];
-  readonly children: Expression[] = [];
+class Expression {}
 
-  constructor(...tokens: Token[]) {
-    this.tokens.push(...tokens);
+export class GlobalExpression extends Expression {
+  readonly headers: HeaderExpression[] = [];
+  readonly courses: CourseExpression[] = [];
+
+  public getCourse(): CourseExpression {
+    if (this.courses.length === 0) {
+      this.courses.push(new CourseExpression());
+    }
+    return this.courses[this.courses.length - 1];
+  }
+
+  public getRange(): Range | undefined {
+    const ranges: Range[] = [];
+    for (const header of this.headers) {
+      const headerRanges = header.getRange();
+      if (headerRanges !== undefined) {
+        ranges.push(headerRanges);
+      }
+    }
+    for (const course of this.courses) {
+      const courseRanges = course.getRange();
+      if (courseRanges !== undefined) {
+        ranges.push(courseRanges);
+      }
+    }
+    return concatRange(...ranges);
   }
 }
 
-// 全ての親
-class TopExpression extends Expression {}
-
-class ParameterExpression extends Expression {
+export class HeaderExpression extends Expression {
+  readonly name: TextExpression;
   readonly split: Split;
+  rawParameter: TextExpression | undefined;
+  readonly parameters: TextExpression[] = [];
 
   constructor(token: Token) {
-    super(token);
-    this.split = this.getParameterSplitType(token);
+    super();
+    if (token.type !== "Header") {
+      throw new Error('TokenType must be "Header".');
+    }
+    this.name = new TextExpression(token);
+    const statement = headers.get(token.value);
+    this.split = statement?.split ?? "Unknown";
   }
 
-  public parameterParse(token: Token): void {
-    switch (this.split) {
-      case "Unknown":
-        this.tokens.push(token);
-        break;
-      case "None": {
-        const value = token.value;
-        const parameterToken: Token = { type: "parameter", value: value };
-        this.tokens.push(parameterToken);
-        break;
-      }
-      case "Space": {
-        const parameters = token.value.split(" ");
-        for (const parameter of parameters) {
-          const trimValue = parameter.trim();
-          const parameterToken: Token = { type: "parameter", value: trimValue };
-          this.tokens.push(parameterToken);
-        }
-        break;
-      }
-      case "Comma": {
-        const parameters = token.value.split(",");
-        for (const parameter of parameters) {
-          const trimValue = parameter.trim();
-          const parameterToken: Token = { type: "parameter", value: trimValue };
-          this.tokens.push(parameterToken);
-        }
-        break;
-      }
-      default:
-        throw new Error("parameterSplitTypeに対応する処理がありません");
+  public getRange(): Range | undefined {
+    const ranges: Range[] = [];
+    ranges.push(this.name.range);
+    if (this.rawParameter !== undefined) {
+      ranges.push(this.rawParameter.range);
     }
-  }
-
-  private getParameterSplitType(token: Token): Split {
-    switch (token.type) {
-      case "header": {
-        const header = headers.get(token.value);
-        if (header === undefined) {
-          return "Unknown";
-        } else {
-          return header.split;
-        }
-      }
-      case "command": {
-        const command = commands.get(token.value);
-        if (command === undefined) {
-          return "Unknown";
-        } else {
-          return command.split;
-        }
-      }
-      default:
-        throw new Error("パラメーターを持つトークンではありません");
-    }
+    return concatRange(...ranges);
   }
 }
 
-// ヘッダー
-class HeaderExpression extends ParameterExpression {}
+class CommandExpression extends Expression {
+  readonly name: TextExpression;
+  readonly split: Split;
+  rawParameter: TextExpression | undefined;
+  readonly parameters: TextExpression[] = [];
 
-// 命令
-class CommandExpression extends ParameterExpression {}
+  constructor(token: Token) {
+    super();
+    if (token.type !== "Command") {
+      throw new Error('TokenType must be "Command".');
+    }
+    this.name = new TextExpression(token);
+    const statement = commands.get(token.value);
+    this.split = statement?.split ?? "Unknown";
+  }
 
-// 譜面外に記載する命令
-class OuterChartCommandExpression extends CommandExpression {}
+  public getRange(): Range | undefined {
+    const ranges: Range[] = [];
+    ranges.push(this.name.range);
+    if (this.rawParameter !== undefined) {
+      ranges.push(this.rawParameter.range);
+    }
+    return concatRange(...ranges);
+  }
+}
 
-// 譜面内に記載する命令
-class InnerChartCommandExpression extends CommandExpression {}
+class CourseExpression extends Expression {
+  readonly headers: HeaderExpression[] = [];
+  readonly commands: CommandExpression[] = [];
+  readonly charts: ChartExpression[] = [];
 
-// 譜面部分（#START~#END）
-class ChartExpression extends Expression {}
+  public getRange(): Range | undefined {
+    const ranges: Range[] = [];
+    for (const header of this.headers) {
+      const headerRanges = header.getRange();
+      if (headerRanges !== undefined) {
+        ranges.push(headerRanges);
+      }
+    }
+    for (const command of this.commands) {
+      const commandRanges = command.getRange();
+      if (commandRanges !== undefined) {
+        ranges.push(commandRanges);
+      }
+    }
+    for (const chart of this.charts) {
+      const chartRanges = chart.getRange();
+      if (chartRanges !== undefined) {
+        ranges.push(chartRanges);
+      }
+    }
+    return concatRange(...ranges);
+  }
+}
 
-// 不正
-class IllegalExpression extends Expression {}
+class ChartExpression extends Expression {
+  start: CommandExpression | undefined;
+  readonly measures: MeasureExpression[] = [];
+  end: CommandExpression | undefined;
+
+  public getRange(): Range | undefined {
+    const ranges: Range[] = [];
+    if (this.start !== undefined) {
+      const startRanges = this.start.getRange();
+      if (startRanges !== undefined) {
+        ranges.push();
+      }
+    }
+    for (const measure of this.measures) {
+      const measureRanges = measure.getRange();
+      if (measureRanges !== undefined) {
+        ranges.push();
+      }
+    }
+    if (this.end !== undefined) {
+      const endRanges = this.end.getRange();
+      if (endRanges !== undefined) {
+        ranges.push(endRanges);
+      }
+    }
+    return concatRange(...ranges);
+  }
+}
+
+class MeasureExpression extends Expression {
+  readonly charts: (TextExpression | CommandExpression)[] = [];
+  end: TextExpression | undefined;
+
+  public getRange(): Range | undefined {
+    const ranges: Range[] = [];
+    for (const chart of this.charts) {
+      if (chart instanceof TextExpression) {
+        ranges.push(chart.range);
+      } else if (chart instanceof CommandExpression) {
+        ranges.push(chart.name.range);
+        if (chart.rawParameter !== undefined) {
+          ranges.push(chart.rawParameter.range);
+        }
+      }
+    }
+    return concatRange(...ranges);
+  }
+}
+
+export class TextExpression extends Expression {
+  readonly value: string;
+  readonly range: Range;
+
+  constructor(token: Token) {
+    super();
+    this.value = token.value;
+    this.range = token.range;
+  }
+}
+
+function splitWithPositions(
+  str: string,
+  separator: RegExp
+): Array<{ text: string; start: number; end: number }> {
+  const result = [];
+  let start = 0;
+  let match = separator.exec(str);
+  while ((match = separator.exec(str))) {
+    const end = match.index;
+    if (end > start) {
+      result.push({ text: str.substring(start, end), start: start, end: end });
+    }
+    start = separator.lastIndex;
+  }
+  if (start < str.length) {
+    result.push({ text: str.substring(start), start: start, end: str.length });
+  }
+  return result;
+}
+
+function tokenizedRawParameter(rawParameter: Token, split: Split): Token[] {
+  if (rawParameter.type !== "RawParameter") {
+    throw new Error('TokenType must be "RawParameter".');
+  }
+  const parameters: Token[] = [];
+  const tokenType: TokenType = split === "Unknown" ? "RawParameter" : "Parameter";
+  const regexp = splitToRegExp(split);
+  const results = splitWithPositions(rawParameter.value, regexp);
+  for (const result of results) {
+    const value = result.text;
+    const range = new Range(
+      rawParameter.range.start.line,
+      rawParameter.range.start.character + result.start,
+      rawParameter.range.end.line,
+      rawParameter.range.start.character + result.end
+    );
+    const parameter: Token = { type: tokenType, value: value, range: range };
+    parameters.push(parameter);
+  }
+  return parameters;
+}
+
+// TODO 複数コースに対応
+// TODO プレイヤーごとのChartに対応
 
 export class Parser {
-  private tokens: Token[];
-  private position = 0;
+  readonly tokens: Token[];
+  position: number = 0;
 
-  constructor(input: Token[] | string) {
-    if (Array.isArray(input)) {
-      this.tokens = input;
-    } else {
-      const lexer = new Lexer(input);
-      const tokens = lexer.tokenized();
-      this.tokens = tokens;
-    }
+  constructor(tokens: Token[]) {
+    this.tokens = tokens;
   }
 
-  public parse(): Expression {
-    let expression = new TopExpression();
-    expression = this.expressionParse(expression);
-    return expression;
-  }
-
-  private expressionParse<TExpression extends Expression>(parent: TExpression): TExpression {
-    for (this.position; this.position < this.tokens.length; this.position++) {
+  private parseExpression<T extends Expression>(parent: T): T {
+    for (; this.position < this.tokens.length; this.position++) {
       const token = this.tokens[this.position];
       switch (token.type) {
-        case "header": {
-          if (parent instanceof TopExpression) {
-            let headerExpression = new HeaderExpression(token);
-            this.position++;
-            headerExpression = this.expressionParse(headerExpression);
-            parent.children.push(headerExpression);
+        case "Header": {
+          if (parent instanceof GlobalExpression) {
+            const info = headers.get(token.value);
+            const section = info?.section ?? "Unknown";
+            switch (section) {
+              case "Global":
+              case "Unknown": {
+                let expression = new HeaderExpression(token);
+                this.position++;
+                expression = this.parseExpression(expression);
+                parent.headers.push(expression);
+                break;
+              }
+              case "Course": {
+                // CourseExpressionで取得させる
+                let expression = parent.getCourse();
+                expression = this.parseExpression(expression);
+                break;
+              }
+              default:
+                throw new ReferenceError("No action defined for HeaderSection.");
+            }
+          } else if (parent instanceof CourseExpression) {
+            const info = headers.get(token.value);
+            const section = info?.section ?? "Unknown";
+            switch (section) {
+              case "Course":
+              case "Unknown": {
+                let expression = new HeaderExpression(token);
+                this.position++;
+                expression = this.parseExpression(expression);
+                parent.headers.push(expression);
+                break;
+              }
+              case "Global": {
+                // CourseExpressionから出てGlobalExpressionで取得させる
+                this.position--;
+                return parent;
+              }
+              default:
+                throw new ReferenceError("No action defined for HeaderSection.");
+            }
           } else {
+            // 不正
+          }
+          break;
+        }
+        case "Command": {
+          if (parent instanceof GlobalExpression) {
+            // CourseExpressionで取得させる
+            let expression = parent.getCourse();
+            expression = this.parseExpression(expression);
+          } else if (parent instanceof CourseExpression) {
+            const info = commands.get(token.value);
+            const section = info?.section ?? "Unknown";
+            switch (section) {
+              case "Outer":
+              case "Unknown": {
+                let expression = new CommandExpression(token);
+                this.position++;
+                expression = this.parseExpression(expression);
+                parent.commands.push(expression);
+                break;
+              }
+              case "Start": {
+                let expression = new ChartExpression();
+                expression = this.parseExpression(expression);
+                parent.charts.push(expression);
+                break;
+              }
+              case "Inner": {
+                // 不正
+                break;
+              }
+              case "End": {
+                // 不正
+                break;
+              }
+              default:
+                throw new ReferenceError("No action defined for CommandSection.");
+            }
+          } else if (parent instanceof ChartExpression) {
+            const info = commands.get(token.value);
+            const section = info?.section ?? "Unknown";
+            switch (section) {
+              case "Outer": {
+                // 不正
+                break;
+              }
+              case "Start": {
+                let expression = new CommandExpression(token);
+                this.position++;
+                expression = this.parseExpression(expression);
+                parent.start = expression;
+                break;
+              }
+              case "Inner":
+              case "Unknown": {
+                let expression = new MeasureExpression();
+                expression = this.parseExpression(expression);
+                parent.measures.push(expression);
+                break;
+              }
+              case "End": {
+                let expression = new CommandExpression(token);
+                this.position++;
+                expression = this.parseExpression(expression);
+                parent.end = expression;
+                // ChartExpressionから出る
+                this.position--;
+                return parent;
+              }
+              default:
+                throw new ReferenceError("No action defined for CommandSection.");
+            }
+          } else if (parent instanceof MeasureExpression) {
+            const info = commands.get(token.value);
+            const section = info?.section ?? "Unknown";
+            switch (section) {
+              case "Outer": {
+                // 不正
+                break;
+              }
+              case "Start": {
+                // 不正
+                break;
+              }
+              case "Inner":
+              case "Unknown": {
+                let expression = new CommandExpression(token);
+                this.position++;
+                expression = this.parseExpression(expression);
+                parent.charts.push(expression);
+                break;
+              }
+              case "End": {
+                // 不正
+                break;
+              }
+              default:
+                throw new ReferenceError("No action defined for CommandSection.");
+            }
+          } else {
+            // 不正
+          }
+          break;
+        }
+        case "RawParameter": {
+          if (parent instanceof HeaderExpression || parent instanceof CommandExpression) {
+            parent.rawParameter = new TextExpression(token);
+            const tokens = tokenizedRawParameter(token, parent.split);
+            parent.parameters.push(...tokens);
+          } else {
+            // 不正
+          }
+          break;
+        }
+        case "Notes": {
+          if (parent instanceof ChartExpression) {
+            let expression = new MeasureExpression();
+            expression = this.parseExpression(expression);
+            parent.measures.push(expression);
+          } else if (parent instanceof MeasureExpression) {
+            let expression = new TextExpression(token);
+            parent.charts.push(expression);
+          } else {
+            // 不正
+          }
+          break;
+        }
+        case "MeasureEnd": {
+          if (parent instanceof ChartExpression) {
+            let expression = new MeasureExpression();
+            expression = this.parseExpression(expression);
+            parent.measures.push(expression);
+          } else if (parent instanceof MeasureExpression) {
+            let expression = new TextExpression(token);
+            parent.end = expression;
             return parent;
           }
           break;
         }
-        case "command": {
-          if (parent instanceof TopExpression) {
-            let commandExpression = new CommandExpression(token);
-            this.position++;
-            commandExpression = this.expressionParse(commandExpression);
-            parent.children.push(commandExpression);
-          } else {
+        case "EndOfLine": {
+          if (parent instanceof HeaderExpression || parent instanceof CommandExpression) {
             return parent;
           }
           break;
         }
-        case "rawParameter": {
-          if (parent instanceof ParameterExpression) {
-            parent.parameterParse(token);
-          }
-          return parent;
+        case "Unknown": {
+          throw new ReferenceError('No action defined for TokenType = "Unknown".');
         }
-        case "notes": {
-          break;
-        }
-        case "measureEnd": {
-          break;
-        }
-        default: {
-          throw new Error("TokenTypeが見つかりません");
-        }
+        default:
+          throw new ReferenceError("No action defined for TokenType.");
       }
     }
     return parent;
   }
 
-  // private parseExpression(parent: Expression): Expression {
-  //   for (this.position; this.position < parent.tokens.length; this.position++) {
-  //     const token = this.tokens[0];
-  //     switch (token.type) {
-  //       case TokenType.header: {
-  //         if () {
-
-  //         }
-  //         const expression = new HeaderExpression(token);
-  //         this.parseExpression(expression);
-  //         parent.children.push(expression);
-  //         break;
-  //       }
-  //       case TokenType.command: {
-  //         const expression = new CommandExpression(token);
-  //         expressions.push(expression);
-  //         break;
-  //       }
-  //       case TokenType.rawParameter: {
-  //         if (nowExpression instanceof HeaderExpression) {
-  //           nowExpression.tokens.push(token);
-  //         } else if (nowExpression instanceof CommandExpression) {
-  //           nowExpression.tokens.push(token);
-  //         } else {
-  //           const expression = new IllegalExpression(token);
-  //           expressions.push();
-  //         }
-  //         break;
-  //       }
-  //       case TokenType.notes: {
-  //         break;
-  //       }
-  //       case TokenType.measureEnd: {
-  //         break;
-  //       }
-  //       default: {
-  //         throw new Error("TokenTypeが見つかりません");
-  //       }
-  //     }
-  //   }
-  //   return parent;
-  // }
-
-  // public parse() {
-  //   const expression = new SongExpression(...this.tokens);
-  //   this.parseExpression(expression);
-
-  //   const nowExpression: Expression = new SongExpression();
-  //   for (const token of this.tokens) {
-  //     switch (token.type) {
-  //       case TokenType.header: {
-  //         if (nowExpression instanceof SongExpression) {
-  //           nowExpression.children.push();
-  //         }
-  //         nowExpression = new HeaderExpression(token);
-  //         expressions.push(nowExpression);
-  //         break;
-  //       }
-  //       case TokenType.command: {
-  //         const expression = new CommandExpression(token);
-  //         expressions.push(expression);
-  //         break;
-  //       }
-  //       case TokenType.rawParameter: {
-  //         if (nowExpression instanceof HeaderExpression) {
-  //           nowExpression.tokens.push(token);
-  //         } else if (nowExpression instanceof CommandExpression) {
-  //           nowExpression.tokens.push(token);
-  //         } else {
-  //           const expression = new IllegalExpression(token);
-  //           expressions.push();
-  //         }
-  //         break;
-  //       }
-  //       case TokenType.notes: {
-  //         break;
-  //       }
-  //       case TokenType.measureEnd: {
-  //         break;
-  //       }
-  //       default: {
-  //         throw new Error("TokenTypeが見つかりません");
-  //       }
-  //     }
-  //     nodes.children.push({ token: token });
-  //   }
-  // }
+  public parse(): GlobalExpression {
+    const global = new GlobalExpression();
+    return this.parseExpression(global);
+  }
 }
 
-// enum AstNodeType {
-//   document,
-//   heading,
-// }
-
-// interface AstNode {
-//   type: AstNodeType;
-// }
-
-// interface HeadingNode extends AstNode {
-//   type: AstNodeType.heading;
-//   value: string;
-// }
-
-// interface DocumentNode extends AstNode {
-//   type: AstNodeType.document;
-//   children: AstNode[];
-// }
-
-// class OldParser {
-//   private currentToken: Token | null = null;
-
-//   constructor(private lexer: Lexer) {
-//     this.currentToken = lexer.getNextToken();
-//   }
-
-//   private consume(type: TokenType): void {
-//     if (this.currentToken?.type === type) {
-//       this.currentToken = this.lexer.getNextToken();
-//     } else {
-//       throw new Error(`Unexpected token: ${this.currentToken?.value}`);
-//     }
-//   }
-
-//   private parseHeading(): HeadingNode {
-//     const value = this.currentToken?.value || "";
-//     this.consume(TokenType.header);
-//     return { type: AstNodeType.heading, value };
-//   }
-
-//   private parseDocument(): DocumentNode {
-//     const children: AstNode[] = [];
-//     while (this.currentToken?.type !== TokenType.rawParameter) {
-//       children.push(this.parseHeading());
-//     }
-//     return { type: AstNodeType.document, children };
-//   }
-
-//   public parse(): AstNode {
-//     return this.parseDocument();
-//   }
-// }
+export function concatRange(...ranges: Range[]): Range | undefined {
+  if (ranges.length === 0) {
+    return;
+  }
+  let min = ranges[0].start;
+  let max = ranges[0].end;
+  for (const { start, end } of ranges.slice(1)) {
+    if (min.line >= start.line && min.character > start.character) {
+      min = start;
+    }
+    if (max.line <= end.line && max.character < end.character) {
+      max = end;
+    }
+  }
+  return new Range(min, max);
+}

@@ -2,13 +2,9 @@ import * as vscode from "vscode";
 import { Hover, MarkdownString } from "vscode";
 import { commands } from "./constants/commands";
 import { headers } from "./constants/headers";
-import { Lexer, Parser } from "./parser";
 
 const hover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
-    const parser = new Parser(document.getText());
-    const test = parser.parse();
-
     const hover = {
       symbol: new MarkdownString(),
       documentation: new MarkdownString(),

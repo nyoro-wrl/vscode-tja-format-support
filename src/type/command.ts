@@ -1,9 +1,19 @@
 import { IStatement, StatementCollection } from "./statement";
 
 /**
+ * 命令の記載位置
+ */
+type CommandSection = "Outer" | "Start" | "Inner" | "End" | "Unknown";
+
+/**
  * 命令
  */
-interface ICommand extends IStatement {}
+interface ICommand extends IStatement {
+  /**
+   * 命令の記載位置
+   */
+  readonly section: CommandSection;
+}
 
 interface ICommandRecord extends Record<string, ICommand> {
   readonly start: ICommand;

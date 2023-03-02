@@ -3,7 +3,7 @@ import { IStatement, StatementCollection } from "./statement";
 /**
  * ヘッダーの記載位置
  */
-type HeaderSection = "Global" | "Course";
+type HeaderSection = "Global" | "Course" | "Unknown";
 
 /**
  * ヘッダー

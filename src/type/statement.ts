@@ -55,3 +55,22 @@ export class StatementCollection<T extends IStatement>
     }
   }
 }
+
+/**
+ * Splitから区切り用正規表現に変換
+ * @param split
+ * @returns
+ */
+export function splitToRegExp(split: Split): RegExp {
+  switch (split) {
+    case "Comma":
+      return /\s*,\s*/g;
+    case "Space":
+      return /\s+/g;
+    case "None":
+    case "Unknown":
+      return /(?!)/g;
+    default:
+      throw new ReferenceError("No action defined for Split.");
+  }
+}
