@@ -1,19 +1,20 @@
 import * as vscode from "vscode";
 import { DocumentSymbol, Range, SymbolKind } from "vscode";
-import {
-  concatRange,
-  GlobalExpression,
-  HeaderExpression,
-  Lexer,
-  Parser,
-  TextExpression,
-} from "./parser";
+import { Parser } from "./type/parser";
+import { ChartExpression, GlobalExpression, HeaderExpression } from "./type/expression";
+import { unionRanges } from "./util/vscode";
+import { unionRanges as newUnionRanges } from "./type/node";
+import { Parser as NodeParser } from "./type/newNodeParser";
+import { Node } from "./type/node";
 
 export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
-  provideDocumentSymbols(document, token) {
-    const lexer = new Lexer(document);
-    const tokens = lexer.tokenized();
-    const parser = new Parser(tokens);
+  provideDocumentSymbols(document: vscode.TextDocument, token) {
+    const nodeParser = new NodeParser(document);
+    const node = nodeParser.parse();
+
+    return symbolNode(node);
+
+    const parser = new Parser(document);
     const expression = parser.parse();
 
     const parseSymbol = new ParseSymbol(expression);
@@ -21,6 +22,20 @@ export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
     return symbols;
   },
 });
+
+function symbolNode(node: Node): DocumentSymbol[] {
+  const symbols: DocumentSymbol[] = [];
+  const range = newUnionRanges(node.ranges);
+  if (range !== undefined) {
+    const symbol = new DocumentSymbol(node.kind, "", SymbolKind.Variable, range, range);
+    for (const child of node.children) {
+      const childSymbols = symbolNode(child);
+      symbol.children.push(...childSymbols);
+    }
+    symbols.push(symbol);
+  }
+  return symbols;
+}
 
 class ParseSymbol {
   constructor(private expression: GlobalExpression) {}
@@ -32,33 +47,31 @@ class ParseSymbol {
       if (range === undefined) {
         continue;
       }
+      const headerName = header.name.value;
+      const headerValue = header.rawParameter?.value;
+      const name = headerValue === undefined ? `${headerName}:` : `${headerName}: ${headerValue}`;
       const symbol = new DocumentSymbol(
-        header.name.value + ":",
-        header.rawParameter?.value ?? "",
+        name,
+        "",
         SymbolKind.Constant,
         range,
-        new Range(
-          header.name.range.end.line,
-          header.name.range.end.character,
-          range.end.line,
-          range.end.character
-        )
+        new Range(range.end, range.end)
       );
       symbols.push(symbol);
     }
     return symbols;
   }
 
-  private textSymbols(expressions: TextExpression[]): DocumentSymbol[] {
+  private chartSymbols(charts: ChartExpression[]): DocumentSymbol[] {
     const symbols: DocumentSymbol[] = [];
-    for (const expression of expressions) {
-      const symbol = new DocumentSymbol(
-        expression.value,
-        "",
-        SymbolKind.Field,
-        expression.range,
-        expression.range
-      );
+    for (const chart of charts) {
+      const range = chart.getRange();
+      if (range === undefined) {
+        continue;
+      }
+      const player = chart.start?.rawParameter?.value;
+      const name = player === undefined ? "#START ~ #END" : `#START ${player} ~ #END`;
+      const symbol = new DocumentSymbol(name, "", SymbolKind.Constructor, range, range);
       symbols.push(symbol);
     }
     return symbols;
@@ -75,11 +88,11 @@ class ParseSymbol {
           ranges.push(headerRanges);
         }
       }
-      const range = concatRange(...ranges);
+      const range = unionRanges(...ranges);
       if (range !== undefined) {
-        const titleText =
-          headers.find((x) => x.name.value === "TITLE")?.rawParameter?.value ?? "Header";
-        const symbol = new DocumentSymbol(titleText, "", SymbolKind.Enum, range, range);
+        const titleName = headers.find((x) => x.name.value === "TITLE")?.rawParameter?.value;
+        const name = titleName ?? "TITLE";
+        const symbol = new DocumentSymbol(name, "", SymbolKind.Enum, range, range);
         symbol.children = this.headerSymbols(headers);
         symbols.push(symbol);
       }
@@ -91,16 +104,14 @@ class ParseSymbol {
         if (range === undefined) {
           continue;
         }
-        let courseText =
-          course.headers.find((x) => x.name.value === "COURSE")?.rawParameter?.value ?? "";
-        const symbol = new DocumentSymbol(
-          "COURSE: " + courseText,
-          "",
-          SymbolKind.Class,
-          range,
-          range
-        );
-        symbol.children = this.headerSymbols(course.headers);
+        const courseValue = course.headers.find((x) => x.name.value === "COURSE")?.rawParameter
+          ?.value;
+        const name = courseValue === undefined ? "COURSE:" : "COURSE: " + courseValue;
+        const symbol = new DocumentSymbol(name, "", SymbolKind.Class, range, range);
+        const courseHeaders = this.headerSymbols(course.headers);
+        const charts = this.chartSymbols(course.charts);
+        symbol.children.push(...courseHeaders);
+        symbol.children.push(...charts);
         symbols.push(symbol);
       }
     }

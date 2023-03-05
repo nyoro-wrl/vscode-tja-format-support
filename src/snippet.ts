@@ -9,6 +9,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
     if (position.character !== 0 && wordRange?.start.character !== 0) {
       return;
     }
+
     const snippets: vscode.CompletionItem[] = [];
     for (const header of headers) {
       const snippet = new vscode.CompletionItem(
@@ -19,7 +20,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
         header.syntax + header.documentation
       );
-      snippet.kind = vscode.CompletionItemKind.Property;
+      snippet.kind = vscode.CompletionItemKind.Constant;
       snippets.push(snippet);
     }
     return snippets;
@@ -48,7 +49,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider("t
       snippet.documentation = new vscode.MarkdownString().appendMarkdown(
         command.syntax + command.documentation
       );
-      snippet.kind = vscode.CompletionItemKind.Function;
+      snippet.kind = vscode.CompletionItemKind.Method;
       snippets.push(snippet);
     }
     return snippets;
