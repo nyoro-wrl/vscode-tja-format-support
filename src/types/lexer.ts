@@ -1,13 +1,12 @@
 import * as vscode from "vscode";
 import { Range } from "vscode";
+import { splitStringWithRegexDelimiter } from "../util/string";
 
-const deleteCommentRegExp = /^\s*(.*)\s*\/\/\s*.*\s*$/;
 const headerLineRegExp = /^\s*([A-Z0-9]+):(.*)?\s*$/;
 const commandLineRegExp = /^\s*#([A-Z0-9]+)( (.*)+)?\s*$/;
 const notesRegExp = /^([0-9])/;
 const measureEndRegExp = /^(,)/;
 const spaceRegExp = /^(\s+)/;
-const unknownRegExp = /^([^0-9,\s]+)/;
 
 /**
  * トークンの種類
@@ -138,7 +137,7 @@ export class Lexer {
    */
   private deleteCommentRange(): void {
     const text = this.getText();
-    const matches = deleteCommentRegExp.exec(text);
+    const matches = /^\s*(.*)\s*\/\/\s*.*\s*$/.exec(text);
     if (matches === null) {
       return;
     }
@@ -256,6 +255,22 @@ export class Lexer {
           this.range.end.line,
           this.range.end.character
         );
+        // 小節後のテキストを全てUnknownとして処理する
+        const text2 = this.document.getText(this.range);
+        if (/[^\s]+/.test(text2)) {
+          const [matches, _] = splitStringWithRegexDelimiter(text2, /\s+/g);
+          for (const match of matches.filter((x) => x.value !== "")) {
+            const range = new Range(
+              this.range.start.line,
+              match.start + this.range.start.character,
+              this.range.start.line,
+              match.end + this.range.start.character
+            );
+            const token: Token = { kind: "Unknown", value: match.value, range: range };
+            tokens.push(token);
+          }
+        }
+        break;
       } else if (spaceRegExp.test(text)) {
         const matches = spaceRegExp.exec(text);
         if (matches === null) {
@@ -269,7 +284,7 @@ export class Lexer {
           this.range.end.character
         );
       } else {
-        const matches = unknownRegExp.exec(text);
+        const matches = /^([^0-9,\s]+)/.exec(text);
         if (matches === null) {
           throw new Error();
         }
