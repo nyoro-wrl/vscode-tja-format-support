@@ -17,9 +17,9 @@ export function tokenizedRawParameter(rawParameter: Token, separator: Separator)
   const parameters: Token[] = [];
   const kind: TokenKind = separator === "Unknown" ? "RawParameter" : "Parameter";
   const regexp = splitToRegExp(separator);
-  const results = splitWithPositions(rawParameter.value, regexp);
-  for (const result of results) {
-    const value = result.text;
+  const [texts, delimiters] = splitWithPositions(regexp, rawParameter.value);
+  for (const result of texts) {
+    const value = result.value;
     const range = new Range(
       rawParameter.range.start.line,
       rawParameter.range.start.character + result.start,
@@ -27,6 +27,17 @@ export function tokenizedRawParameter(rawParameter: Token, separator: Separator)
       rawParameter.range.start.character + result.end
     );
     const parameter: Token = { kind: kind, value: value, range: range };
+    parameters.push(parameter);
+  }
+  for (const result of delimiters) {
+    const value = result.value;
+    const range = new Range(
+      rawParameter.range.start.line,
+      rawParameter.range.start.character + result.start,
+      rawParameter.range.end.line,
+      rawParameter.range.start.character + result.end
+    );
+    const parameter: Token = { kind: "Delimiter", value: value, range: range };
     parameters.push(parameter);
   }
   return parameters;

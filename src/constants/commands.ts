@@ -1,6 +1,9 @@
 import { MarkdownString, SnippetString } from "vscode";
 import { CommandCollection } from "../type/command";
 
+/**
+ * 命令の仕様一覧
+ */
 export const commands = new CommandCollection({
   // 太鼓さん次郎
   start: {

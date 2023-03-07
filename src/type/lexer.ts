@@ -9,19 +9,42 @@ const measureEndRegExp = /^(,)/;
 const spaceRegExp = /^(\s+)/;
 const unknownRegExp = /^([^0-9,\s]+)/;
 
+/**
+ * トークンの種類
+ *
+ *     "Header" // ヘッダー（先頭）
+ *     "Command" // 命令（先頭）
+ *     "RawParameter" // ヘッダーまたは命令のパラメーター（分割なし）
+ *     "Parameter" // ヘッダーまたは命令のパラメーター
+ *     "Delimiter" // パラメーターの区切り文字
+ *     "Notes" // ノーツ
+ *     "MeasureEnd" // 小節の終わり
+ *     "EndOfLine" // 行末
+ *     "Unknown" // 不明
+ */
 export type TokenKind =
   | "Header"
   | "Command"
   | "RawParameter"
   | "Parameter"
+  | "Delimiter"
   | "Notes"
   | "MeasureEnd"
   | "EndOfLine"
   | "Unknown";
 
 export type Token = {
+  /**
+   * トークンの種類
+   */
   readonly kind: TokenKind;
+  /**
+   * トークンの値
+   */
   readonly value: string;
+  /**
+   * トークンの位置
+   */
   readonly range: Range;
 };
 
@@ -34,6 +57,30 @@ export class Lexer {
 
   constructor(document: vscode.TextDocument) {
     this.document = document;
+  }
+
+  /**
+   * テキストをトークンに変換
+   * @returns
+   */
+  public tokenized(): Token[] {
+    const tokens: Token[] = [];
+    for (let line = 0; line < this.document.lineCount; line++) {
+      const textLine = this.document.lineAt(line);
+      this.range = textLine.range;
+      this.deleteCommentRange();
+      if (this.isHeader()) {
+        tokens.push(...this.getHeader());
+      } else if (this.isCommand()) {
+        tokens.push(...this.getCommand());
+      } else {
+        tokens.push(...this.getChart());
+      }
+      const eolRange = new Range(line, this.range.end.character, line, this.range.end.character);
+      const eolToken: Token = { kind: "EndOfLine", value: "", range: eolRange };
+      tokens.push(eolToken);
+    }
+    return tokens;
   }
 
   /**
@@ -243,30 +290,6 @@ export class Lexer {
           this.range.end.character
         );
       }
-    }
-    return tokens;
-  }
-
-  /**
-   * テキストをトークンに変換
-   * @returns
-   */
-  public tokenized(): Token[] {
-    const tokens: Token[] = [];
-    for (let line = 0; line < this.document.lineCount; line++) {
-      const textLine = this.document.lineAt(line);
-      this.range = textLine.range;
-      this.deleteCommentRange();
-      if (this.isHeader()) {
-        tokens.push(...this.getHeader());
-      } else if (this.isCommand()) {
-        tokens.push(...this.getCommand());
-      } else {
-        tokens.push(...this.getChart());
-      }
-      const eolRange = new Range(line, this.range.end.character, line, this.range.end.character);
-      const eolToken: Token = { kind: "EndOfLine", value: "", range: eolRange };
-      tokens.push(eolToken);
     }
     return tokens;
   }

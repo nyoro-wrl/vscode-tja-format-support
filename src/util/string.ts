@@ -1,25 +1,37 @@
+interface SplitPosition {
+  value: string;
+  start: number;
+  end: number;
+}
+
 /**
  * 区切り文字で分割し、文字,開始位置,終了位置の配列を取得
- * @param str
  * @param separator
+ * @param str
  * @returns
  */
 export function splitWithPositions(
-  str: string,
-  separator: RegExp
-): Array<{ text: string; start: number; end: number }> {
-  const result = [];
+  separator: RegExp,
+  str: string
+): [parts: SplitPosition[], delimiters: SplitPosition[]] {
+  const parts: SplitPosition[] = [];
+  const delimiters: SplitPosition[] = [];
   let start = 0;
-  let match = separator.exec(str);
-  while ((match = separator.exec(str))) {
-    const end = match.index;
-    if (end > start) {
-      result.push({ text: str.substring(start, end), start: start, end: end });
+
+  // 区切り文字の位置を取得し、区切り文字とその位置を配列に格納する
+  str.split(separator).forEach((value, index) => {
+    const end = start + value.length;
+    parts.push({ value, start, end });
+
+    const match = str.slice(end).match(separator);
+    if (match) {
+      const delimiterStart = end;
+      const delimiterEnd = delimiterStart + match[0].length;
+      delimiters.push({ value: match[0], start: delimiterStart, end: delimiterEnd });
     }
-    start = separator.lastIndex;
-  }
-  if (start < str.length) {
-    result.push({ text: str.substring(start), start: start, end: str.length });
-  }
-  return result;
+
+    start = end + (match ? match[0].length : 0);
+  });
+
+  return [parts, delimiters];
 }

@@ -2,6 +2,12 @@ import { IStatement, StatementCollection } from "./statement";
 
 /**
  * 命令の記載位置
+ *
+ *     "Outer" // 譜面の外側
+ *     "Start" // 譜面の開始
+ *     "Inner" // 譜面の内側
+ *     "End" // 譜面の終了
+ *     "Unknows" // 不明
  */
 type CommandSection = "Outer" | "Start" | "Inner" | "End" | "Unknown";
 

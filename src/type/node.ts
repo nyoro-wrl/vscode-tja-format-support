@@ -4,16 +4,35 @@ import { headers } from "../constants/headers";
 import { Token } from "./lexer";
 import { Separator } from "./statement";
 
+/**
+ * ノードの種類
+ *
+ *     "Global" // 全体
+ *     "GlobalHeaders" // 共通ヘッダー
+ *     "CourseHeaders" // 難易度別ヘッダー
+ *     "Course" // 難易度
+ *     "Header" // ヘッダー
+ *     "Command" // 命令
+ *     "Directive" // ヘッダー・命令の名前
+ *     "Parameters" // パラメーターの塊
+ *     "Parameter" // パラメーター
+ *     "Delimiter" // パラメーターの区切り文字
+ *     "Chart" // 譜面
+ *     "Measure" // 小節
+ *     "Note" // ノーツ
+ *     "MeasureEnd" // 小節の終わり
+ */
 export type NodeKind =
   | "Global"
   | "GlobalHeaders"
   | "CourseHeaders"
+  | "Course"
   | "Header"
   | "Command"
-  | "Name"
+  | "Directive"
   | "Parameters"
   | "Parameter"
-  | "Course"
+  | "Delimiter"
   | "Chart"
   | "Measure"
   | "Note"
@@ -73,9 +92,7 @@ export class Node implements INode {
 
   protected pushRange(...ranges: Range[]): void {
     for (const range of ranges) {
-      // if (this._ranges.find((x) => x.isEqual(range)) !== undefined) {
       this._ranges.push(range);
-      // }
     }
     this._ranges = mergeRanges(this._ranges);
     const range = unionRanges(this._ranges);
@@ -88,21 +105,26 @@ export class Node implements INode {
   }
 }
 
-export class HeaderNode extends Node {
+export class ParameterNode extends Node {
   readonly separator: Separator;
 
-  constructor(token: Token, parent: Node | undefined) {
-    super("Header", token.range, parent);
-    this.separator = headers.get(token.value)?.separator ?? "Unknown";
+  constructor(kind: NodeKind, range: Range, separator: Separator, parent: Node | undefined) {
+    super(kind, range, parent);
+    this.separator = separator;
   }
 }
 
-export class CommandNode extends Node {
-  readonly separator: Separator;
-
+export class HeaderNode extends ParameterNode {
   constructor(token: Token, parent: Node | undefined) {
-    super("Command", token.range, parent);
-    this.separator = commands.get(token.value)?.separator ?? "Unknown";
+    const separator = headers.get(token.value)?.separator ?? "Unknown";
+    super("Header", token.range, separator, parent);
+  }
+}
+
+export class CommandNode extends ParameterNode {
+  constructor(token: Token, parent: Node | undefined) {
+    const separator = commands.get(token.value)?.separator ?? "Unknown";
+    super("Command", token.range, separator, parent);
   }
 }
 

@@ -1,21 +1,14 @@
 import * as vscode from "vscode";
 import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
-import { clearDiagnostics, addSyntaxError } from "../error";
+import { addSyntaxError, clearDiagnostics } from "../error";
 import { Lexer, Token } from "./lexer";
-import {
-  ChartExpression,
-  CommandExpression,
-  CourseExpression,
-  Expression,
-  GlobalExpression,
-  HeaderExpression,
-  MeasureExpression,
-  TextExpression,
-} from "./expression";
+import { CommandNode, HeaderNode, Node, NodeKind, ParameterNode, TextNode } from "./node";
+import { findLast } from "lodash";
 import { tokenizedRawParameter } from "../util/lexer";
+import { Range } from "vscode";
 
-// TODO Parserでは許容してるけど1行に複数小節って書ける？
+// TODO 1行の複数小節をエラーにする
 
 /**
  * 構文解析
@@ -32,11 +25,11 @@ export class Parser {
   /**
    * 直前まで譜面部分に入っていたかどうか
    */
-  private chartIn: boolean = false;
+  private chartAfter: boolean = false;
   /**
    * 一度でも譜面部分に入ったかどうか
    */
-  private chartInOnce: boolean = false;
+  private chartAfterOnce: boolean = false;
 
   constructor(document: vscode.TextDocument) {
     const lexer = new Lexer(document);
@@ -44,311 +37,263 @@ export class Parser {
     this.tokens = tokens;
   }
 
-  private parseExpression<T extends Expression>(parent: T): T {
+  public parse(): Node {
+    clearDiagnostics();
+    const node = new Node("Global", new Range(0, 0, 0, 0), undefined);
+    return this.parseNode(node);
+  }
+
+  /**
+   * parent.childrenからkindが一致する最後の子要素を取得する。見つからない場合は作成する
+   * @param parent
+   * @param kind
+   * @returns
+   */
+  private findLastOrCreateChildren(parent: Node, kind: NodeKind, range: Range): Node {
+    let node = findLast(parent.children, (x) => x.kind === kind);
+    if (node === undefined) {
+      node = new Node(kind, range, parent);
+      parent.push(node);
+    }
+    return node;
+  }
+
+  private parseNode<T extends Node>(parent: T): T {
     for (; this.position < this.tokens.length; this.position++) {
       const token = this.tokens[this.position];
-      switch (token.kind) {
-        case "Header": {
-          if (parent instanceof GlobalExpression) {
-            const info = headers.get(token.value);
-            const section = info?.section ?? "Unknown";
-            switch (section) {
-              case "Global":
-              case "Unknown": {
-                if (this.chartIn) {
-                  // Course単位の命令として解釈する
-                  // 新しくCourseを作成
-                  this.chartIn = false;
-                  let expression = new CourseExpression();
-                  expression = this.parseExpression(expression);
-                  parent.courses.push(expression);
-                } else {
-                  let expression = new HeaderExpression(token);
-                  this.position++;
-                  expression = this.parseExpression(expression);
-                  parent.headers.push(expression);
-                }
-                break;
+      if (token.kind === "Unknown") {
+        addSyntaxError(token.range, "Invalid text.");
+      } else {
+        if (parent.kind === "Global") {
+          if (token.kind === "Header") {
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Course" || this.chartAfterOnce) {
+              if (this.chartAfter) {
+                this.chartAfter = false;
+                let node = new Node("Course", token.range, parent);
+                node = this.parseNode(node);
+                parent.push(node);
+              } else {
+                let node = this.findLastOrCreateChildren(parent, "Course", token.range);
+                node = this.parseNode(node);
               }
-              case "Course": {
-                if (this.chartIn) {
-                  // 新しくCourseを作成
-                  this.chartIn = false;
-                  let expression = new CourseExpression();
-                  expression = this.parseExpression(expression);
-                  parent.courses.push(expression);
-                } else {
-                  // 最新のCourseで取得させる（ない場合は作成）
-                  let expression = parent.getCourse();
-                  expression = this.parseExpression(expression);
-                }
-                break;
-              }
-              default: {
-                addSyntaxError(
-                  token.range,
-                  `No processing defined for HeaderSection = "${section}".`
-                );
-                break;
-              }
+            } else if (section === "Global" || section === "Unknown") {
+              let node = this.findLastOrCreateChildren(parent, "GlobalHeaders", token.range);
+              node = this.parseNode(node);
+            } else {
+              addSyntaxError(
+                token.range,
+                `No processing defined for HeaderSection = "${section}".`
+              );
             }
-          } else if (parent instanceof CourseExpression) {
-            const info = headers.get(token.value);
-            const section = info?.section ?? "Unknown";
-            switch (section) {
-              case "Course":
-              case "Unknown": {
-                if (this.chartIn) {
-                  // CourseExpressionから出る
-                  this.position--;
-                  return parent;
-                } else {
-                  let expression = new HeaderExpression(token);
-                  this.position++;
-                  expression = this.parseExpression(expression);
-                  parent.headers.push(expression);
-                }
-                break;
-              }
-              case "Global": {
-                if (this.chartIn) {
-                  // CourseExpressionから出る
-                  this.position--;
-                  return parent;
-                } else if (this.chartInOnce) {
-                  // Course単位の命令として解釈する
-                  let expression = new HeaderExpression(token);
-                  this.position++;
-                  expression = this.parseExpression(expression);
-                  parent.headers.push(expression);
-                } else {
-                  // CourseExpressionから出てGlobalExpressionで取得させる
-                  this.position--;
-                  return parent;
-                }
-                break;
-              }
-              default: {
-                addSyntaxError(
-                  token.range,
-                  `No processing defined for HeaderSection = "${section}".`
-                );
-                break;
-              }
+          } else if (token.kind === "Command") {
+            if (this.chartAfter) {
+              this.chartAfter = false;
+              let node = new Node("Course", token.range, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+            } else {
+              let node = this.findLastOrCreateChildren(parent, "Course", token.range);
+              node = this.parseNode(node);
             }
+          } else if (token.kind === "Notes") {
+            addSyntaxError(token.range, "Missing #START.");
+          } else if (token.kind === "MeasureEnd") {
+            addSyntaxError(token.range, "Invalid text.");
+          } else if (token.kind === "EndOfLine") {
           } else {
-            addSyntaxError(token.range, "Invalid header position.");
+            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-          break;
-        }
-        case "Command": {
-          if (parent instanceof GlobalExpression) {
-            // CourseExpressionで取得させる
-            let expression = parent.getCourse();
-            expression = this.parseExpression(expression);
-          } else if (parent instanceof CourseExpression) {
-            const info = commands.get(token.value);
-            const section = info?.section ?? "Unknown";
-            switch (section) {
-              case "Outer":
-              case "Unknown": {
-                let expression = new CommandExpression(token);
-                this.position++;
-                expression = this.parseExpression(expression);
-                parent.commands.push(expression);
-                break;
-              }
-              case "Start": {
-                let expression = new ChartExpression();
-                expression = this.parseExpression(expression);
-                parent.charts.push(expression);
-                this.chartIn = true;
-                this.chartInOnce = true;
-                break;
-              }
-              case "Inner": {
-                addSyntaxError(token.range, "Invalid command position.");
-                break;
-              }
-              case "End": {
-                addSyntaxError(token.range, "Invalid command position.");
-                break;
-              }
-              default: {
-                addSyntaxError(
-                  token.range,
-                  `No processing defined for CommandSection = "${section}".`
-                );
-                break;
-              }
-            }
-          } else if (parent instanceof ChartExpression) {
-            const info = commands.get(token.value);
-            const section = info?.section ?? "Unknown";
-            switch (section) {
-              case "Outer": {
-                addSyntaxError(token.range, "Invalid command position.");
-                break;
-              }
-              case "Start": {
-                let expression = new CommandExpression(token);
-                this.position++;
-                expression = this.parseExpression(expression);
-                parent.start = expression;
-                break;
-              }
-              case "Inner":
-              case "Unknown": {
-                let expression = new MeasureExpression();
-                expression = this.parseExpression(expression);
-                parent.measures.push(expression);
-                break;
-              }
-              case "End": {
-                let expression = new CommandExpression(token);
-                this.position++;
-                expression = this.parseExpression(expression);
-                parent.end = expression;
-                // ChartExpressionから出る
+        } else if (parent.kind === "GlobalHeaders" || parent.kind === "CourseHeaders") {
+          if (token.kind === "Header") {
+            let node = new HeaderNode(token, parent);
+            node = this.parseNode(node);
+            parent.push(node);
+            return parent;
+          } else if (token.kind === "Command") {
+            this.position--;
+            return parent;
+          } else if (token.kind === "Notes") {
+            addSyntaxError(token.range, "Missing #START.");
+          } else if (token.kind === "MeasureEnd") {
+            addSyntaxError(token.range, "Invalid text.");
+          } else if (token.kind === "EndOfLine") {
+          } else {
+            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+          }
+        } else if (parent.kind === "Course") {
+          if (token.kind === "Header") {
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Course" || section === "Unknown" || this.chartAfterOnce) {
+              if (this.chartAfter) {
                 this.position--;
                 return parent;
+              } else {
+                let node = this.findLastOrCreateChildren(parent, "CourseHeaders", token.range);
+                node = this.parseNode(node);
               }
-              default: {
-                addSyntaxError(
-                  token.range,
-                  `No processing defined for CommandSection = "${section}".`
-                );
-                break;
-              }
+            } else if (section === "Global") {
+              this.position--;
+              return parent;
+            } else {
+              addSyntaxError(
+                token.range,
+                `No processing defined for HeaderSection = "${section}".`
+              );
             }
-          } else if (parent instanceof MeasureExpression) {
-            const info = commands.get(token.value);
-            const section = info?.section ?? "Unknown";
-            switch (section) {
-              case "Outer": {
-                addSyntaxError(token.range, "Invalid command position.");
-                break;
-              }
-              case "Start": {
-                addSyntaxError(token.range, "Invalid command position.");
-                break;
-              }
-              case "Inner":
-              case "Unknown": {
-                let expression = new CommandExpression(token);
-                this.position++;
-                expression = this.parseExpression(expression);
-                parent.charts.push(expression);
-                break;
-              }
-              case "End": {
-                if (
-                  parent instanceof MeasureExpression &&
-                  parent.charts.every((x) => x instanceof CommandExpression)
-                ) {
-                  // #END直前に配置された命令のみの小節対応
-                  // MeasureExpressionから出る
-                  this.position--;
-                  return parent;
+          } else if (token.kind === "Command") {
+            const section = commands.get(token.value)?.section ?? "Unknown";
+            if (section === "Outer" || section === "Unknown") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+            } else if (section === "Start") {
+              let chart = new Node("Chart", token.range, parent);
+              let start = new CommandNode(token, chart);
+              start = this.parseNode(start);
+              chart.push(start);
+              this.position++;
+              chart = this.parseNode(chart);
+              parent.push(chart);
+            } else if (section === "Inner" || section === "End") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+              addSyntaxError(node.range, "Invalid command position.");
+            } else {
+              addSyntaxError(
+                token.range,
+                `No processing defined for CommandSection = "${section}".`
+              );
+            }
+          } else if (token.kind === "Notes") {
+            addSyntaxError(token.range, "Missing #START.");
+          } else if (token.kind === "MeasureEnd") {
+            addSyntaxError(token.range, "Invalid text.");
+          } else if (token.kind === "EndOfLine") {
+          } else {
+            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+          }
+        } else if (parent.kind === "Header" || parent.kind === "Command") {
+          if (
+            (parent.kind === "Header" && token.kind === "Header") ||
+            (parent.kind === "Command" && token.kind === "Command")
+          ) {
+            const node = new TextNode("Directive", token, parent);
+            parent.push(node);
+          } else if (token.kind === "RawParameter") {
+            if (parent instanceof ParameterNode) {
+              const rawParameter = new Node("Parameters", token.range, parent);
+              const parameters = tokenizedRawParameter(token, parent.separator);
+              if (parameters.length === 1) {
+                const node = new TextNode("Parameter", token, parent);
+                parent.push(node);
+              } else {
+                for (const parameter of parameters) {
+                  let kind: NodeKind;
+                  if (parameter.kind === "RawParameter" || parameter.kind === "Parameter") {
+                    kind = "Parameter";
+                  } else if (parameter.kind === "Delimiter") {
+                    kind = "Delimiter";
+                  } else {
+                    return parent;
+                  }
+                  const node = new TextNode(kind, parameter, rawParameter);
+                  rawParameter.push(node);
                 }
-                const previewToken = this.tokens[this.position - 1];
-                addSyntaxError(previewToken.range, "Unclosed measure.");
-                break;
+                parent.push(rawParameter);
               }
-              default: {
-                addSyntaxError(
-                  token.range,
-                  `No processing defined for CommandSection = "${section}".`
-                );
-                break;
-              }
+            } else {
+              addSyntaxError(token.range, "No processing defined for instance.");
             }
-          } else {
-            addSyntaxError(token.range, "Invalid command position.");
-          }
-          break;
-        }
-        case "RawParameter": {
-          if (parent instanceof HeaderExpression || parent instanceof CommandExpression) {
-            parent.rawParameter = new TextExpression(token);
-            const tokens = tokenizedRawParameter(token, parent.separator);
-            parent.parameters.push(...tokens);
-          } else {
-            addSyntaxError(token.range, "Invalid parameter position.");
-          }
-          break;
-        }
-        case "Parameter": {
-          // 普通ここには来ない（Parse時には全てRawParameterで入ってくるため）
-          // 字句解析側でRawParameterをParameterに変換した場合はここの処理が使われる
-          if (parent instanceof HeaderExpression || parent instanceof CommandExpression) {
-            parent.parameters.push(new TextExpression(token));
-          } else {
-            addSyntaxError(token.range, "Invalid parameter position.");
-          }
-          break;
-        }
-        case "Notes": {
-          if (parent instanceof ChartExpression) {
-            let expression = new MeasureExpression();
-            expression = this.parseExpression(expression);
-            parent.measures.push(expression);
-          } else if (parent instanceof MeasureExpression) {
-            let expression = new TextExpression(token);
-            parent.charts.push(expression);
-          } else {
-            addSyntaxError(token.range, "Invalid note position.");
-          }
-          break;
-        }
-        case "MeasureEnd": {
-          if (parent instanceof ChartExpression) {
-            let expression = new MeasureExpression();
-            expression = this.parseExpression(expression);
-            parent.measures.push(expression);
-          } else if (parent instanceof MeasureExpression) {
-            let expression = new TextExpression(token);
-            parent.end = expression;
+            return parent;
+          } else if (token.kind === "EndOfLine") {
             return parent;
           } else {
-            addSyntaxError(token.range, "Invalid measure end position.");
+            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-          break;
-        }
-        case "EndOfLine": {
-          if (parent instanceof HeaderExpression || parent instanceof CommandExpression) {
+        } else if (parent.kind === "Chart") {
+          if (token.kind === "Header") {
+            addSyntaxError(token.range, "Invalid header position.");
+          } else if (token.kind === "Command") {
+            const section = commands.get(token.value)?.section ?? "Unknown";
+            if (section === "Outer" || section === "Start") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+              addSyntaxError(token.range, "Invalid command position.");
+            } else if (section === "Inner" || section === "Unknown") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+            } else if (section === "End") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+              this.chartAfter = true;
+              this.chartAfterOnce = true;
+              return parent;
+            } else {
+              addSyntaxError(
+                token.range,
+                `No processing defined for CommandSection = "${section}".`
+              );
+            }
+          } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
+            let node = new Node("Measure", token.range, parent);
+            node = this.parseNode(node);
+            parent.push(node);
+          } else if (token.kind === "EndOfLine") {
+          } else {
+            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+          }
+        } else if (parent.kind === "Measure") {
+          if (token.kind === "Header") {
+            addSyntaxError(token.range, "Invalid header position.");
+          } else if (token.kind === "Command") {
+            const section = commands.get(token.value)?.section ?? "Unknown";
+            if (section === "Outer" || section === "Start") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+              addSyntaxError(token.range, "Invalid command position.");
+            } else if (section === "Inner" || section === "Unknown") {
+              let node = new CommandNode(token, parent);
+              node = this.parseNode(node);
+              parent.push(node);
+            } else if (section === "End") {
+              const previewToken = this.tokens[this.position - 1];
+              addSyntaxError(previewToken.range, "Unclosed measure.");
+              this.position--;
+              return parent;
+            } else {
+              addSyntaxError(
+                token.range,
+                `No processing defined for CommandSection = "${section}".`
+              );
+            }
+          } else if (token.kind === "Notes") {
+            const node = new TextNode("Note", token, parent);
+            parent.push(node);
+          } else if (token.kind === "MeasureEnd") {
+            const node = new TextNode("MeasureEnd", token, parent);
+            parent.push(node);
             return parent;
+          } else if (token.kind === "EndOfLine") {
+          } else {
+            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-          break;
-        }
-        case "Unknown": {
-          addSyntaxError(token.range, "Invalid text.");
-          break;
-        }
-        default: {
-          addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
-          break;
+        } else {
+          addSyntaxError(token.range, `No processing defined for NodeKind = "${parent.kind}".`);
         }
       }
     }
-    if (this.position <= this.tokens.length) {
-      const token = this.tokens[this.tokens.length - 1];
-      if (parent instanceof CourseExpression) {
-        if (!this.chartIn) {
-          addSyntaxError(token.range, "No chart provided.");
-        }
-      } else if (parent instanceof ChartExpression) {
-        addSyntaxError(token.range, "Missing #END.");
-      } else if (parent instanceof MeasureExpression) {
-        addSyntaxError(token.range, "Unclosed measure.");
+    if (this.position >= this.tokens.length) {
+      if (parent.kind === "Chart") {
+        const previewToken = this.tokens[this.position - 1];
+        addSyntaxError(previewToken.range, "Missing #END.");
       }
     }
     return parent;
-  }
-
-  public parse(): GlobalExpression {
-    clearDiagnostics();
-    const global = new GlobalExpression();
-    return this.parseExpression(global);
   }
 }
