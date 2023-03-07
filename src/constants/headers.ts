@@ -1,5 +1,5 @@
 import { MarkdownString, SnippetString } from "vscode";
-import { HeaderCollection } from "../type/header";
+import { HeaderCollection } from "../types/header";
 
 /**
  * ヘッダーの仕様一覧

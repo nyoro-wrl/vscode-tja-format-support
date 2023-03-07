@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { DocumentSymbol, SymbolKind } from "vscode";
-import { Parser } from "./type/parser";
-import { unionRanges as newUnionRanges } from "./type/node";
-import { Node } from "./type/node";
+import { Parser } from "./types/parser";
+import { unionRanges as newUnionRanges } from "./types/node";
+import { Node } from "./types/node";
 
 export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
   provideDocumentSymbols(document: vscode.TextDocument, token) {

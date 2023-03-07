@@ -1,6 +1,6 @@
 import { Range } from "vscode";
-import { Token, TokenKind } from "../type/lexer";
-import { Separator } from "../type/statement";
+import { Token, TokenKind } from "../types/lexer";
+import { Separator } from "../types/statement";
 import { splitToRegExp } from "./statement";
 import { splitWithPositions } from "./string";
 

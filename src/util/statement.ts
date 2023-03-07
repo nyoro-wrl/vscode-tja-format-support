@@ -1,4 +1,4 @@
-import { Separator } from "../type/statement";
+import { Separator } from "../types/statement";
 
 /**
  * Separatorから区切り用正規表現に変換

@@ -1,5 +1,5 @@
 import { MarkdownString, SnippetString } from "vscode";
-import { CommandCollection } from "../type/command";
+import { CommandCollection } from "../types/command";
 
 /**
  * 命令の仕様一覧
