@@ -179,7 +179,7 @@ export class Parser {
             (parent.kind === "Header" && token.kind === "Header") ||
             (parent.kind === "Command" && token.kind === "Command")
           ) {
-            const node = new TextNode("Directive", token, parent);
+            const node = new TextNode("Statement", token, parent);
             parent.push(node);
           } else if (token.kind === "RawParameter") {
             if (parent instanceof ParameterNode) {

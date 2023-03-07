@@ -13,7 +13,7 @@ import { Separator } from "./statement";
  *     "Course" // 難易度
  *     "Header" // ヘッダー
  *     "Command" // 命令
- *     "Directive" // ヘッダー・命令の名前
+ *     "Statement" // ヘッダー・命令の名前
  *     "Parameters" // パラメーターの塊
  *     "Parameter" // パラメーター
  *     "Delimiter" // パラメーターの区切り文字
@@ -29,7 +29,7 @@ export type NodeKind =
   | "Course"
   | "Header"
   | "Command"
-  | "Directive"
+  | "Statement"
   | "Parameters"
   | "Parameter"
   | "Delimiter"
