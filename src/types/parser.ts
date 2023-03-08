@@ -218,7 +218,7 @@ export class Parser {
             parent.push(node);
           } else if (token.kind === "RawParameter") {
             const rawParameter = new ParametersNode(parent);
-            const parameters = tokenizedRawParameter(token, parent.propeties.separator);
+            const parameters = tokenizedRawParameter(token, parent.properties.separator);
             if (parameters.length === 1) {
               const node = new ParameterNode(parent, token);
               parent.push(node);

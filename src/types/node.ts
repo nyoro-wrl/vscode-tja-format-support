@@ -3,7 +3,7 @@ import { mergeRanges, unionRanges } from "../util/range";
 import { Token } from "./lexer";
 import { Separator } from "./statement";
 
-type StatementPropeties = {
+type StatementProperties = {
   name: string;
   parameter: string;
   parameters: string[];
@@ -101,54 +101,54 @@ export class RootHeadersNode extends ParentNode<HeaderNode> {}
 export class CourseNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {}
 export class CourseHeadersNode extends ParentNode<HeaderNode> {}
 export class HeaderNode extends ParentNode<NameNode | ParameterNode | ParametersNode> {
-  protected _propeties: StatementPropeties;
+  protected _properties: StatementProperties;
 
-  get propeties(): Readonly<StatementPropeties> {
-    return this._propeties;
+  get properties(): Readonly<StatementProperties> {
+    return this._properties;
   }
 
   constructor(parent: ParentNode | undefined, separator: Separator) {
     super(parent);
-    this._propeties = { name: "", parameter: "", parameters: [], separator: separator };
+    this._properties = { name: "", parameter: "", parameters: [], separator: separator };
   }
 
   public override push(node: NameNode | ParameterNode | ParametersNode) {
     super.push(node);
     if (node instanceof NameNode) {
-      this._propeties.name += node.value;
+      this._properties.name += node.value;
     } else if (node instanceof ParameterNode) {
-      this._propeties.parameter += node.value;
-      this._propeties.parameters.push(node.value);
+      this._properties.parameter += node.value;
+      this._properties.parameters.push(node.value);
     } else if (node instanceof ParametersNode) {
-      this._propeties.parameter += node.children.map((x) => x.value).join("");
-      this._propeties.parameters.push(
+      this._properties.parameter += node.children.map((x) => x.value).join("");
+      this._properties.parameters.push(
         ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
       );
     }
   }
 }
 export class CommandNode extends ParentNode<NameNode | ParameterNode | ParametersNode> {
-  protected _propeties: StatementPropeties;
+  protected _properties: StatementProperties;
 
-  get propeties(): Readonly<StatementPropeties> {
-    return this._propeties;
+  get properties(): Readonly<StatementProperties> {
+    return this._properties;
   }
 
   constructor(parent: ParentNode | undefined, separator: Separator) {
     super(parent);
-    this._propeties = { name: "", parameter: "", parameters: [], separator: separator };
+    this._properties = { name: "", parameter: "", parameters: [], separator: separator };
   }
 
   public override push(node: NameNode | ParameterNode | ParametersNode) {
     super.push(node);
     if (node instanceof NameNode) {
-      this._propeties.name += node.value;
+      this._properties.name += node.value;
     } else if (node instanceof ParameterNode) {
-      this._propeties.parameter += node.value;
-      this._propeties.parameters.push(node.value);
+      this._properties.parameter += node.value;
+      this._properties.parameters.push(node.value);
     } else if (node instanceof ParametersNode) {
-      this._propeties.parameter += node.children.map((x) => x.value).join("");
-      this._propeties.parameters.push(
+      this._properties.parameter += node.children.map((x) => x.value).join("");
+      this._properties.parameters.push(
         ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
       );
     }

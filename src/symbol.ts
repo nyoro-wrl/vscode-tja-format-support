@@ -34,16 +34,16 @@ function nodeToSymbols<T extends Node>(node: T): DocumentSymbol[] {
       symbol = new DocumentSymbol("Course", "", SymbolKind.Variable, node.range, node.range);
     } else if (node instanceof HeaderNode) {
       symbol = new DocumentSymbol(
-        node.propeties.name + ":",
-        node.propeties.parameter,
+        node.properties.name + ":",
+        node.properties.parameter,
         SymbolKind.Variable,
         node.range,
         node.range
       );
     } else if (node instanceof CommandNode && node.parent instanceof CourseNode) {
       symbol = new DocumentSymbol(
-        "#" + node.propeties.name,
-        node.propeties.parameter,
+        "#" + node.properties.name,
+        node.properties.parameter,
         SymbolKind.Variable,
         node.range,
         node.range
