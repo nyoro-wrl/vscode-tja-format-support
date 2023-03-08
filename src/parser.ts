@@ -3,11 +3,7 @@ import { TextDocument } from "vscode";
 import { RootNode } from "./types/node";
 import { Parser } from "./types/parser";
 
-interface NodeMap {
-  [uri: string]: RootNode;
-}
-
-const root: NodeMap = {};
+const root: { [uri: string]: RootNode } = {};
 
 export const documentChange = vscode.workspace.onDidChangeTextDocument((event) => {
   const editor = vscode.window.activeTextEditor;
@@ -19,14 +15,18 @@ export const documentChange = vscode.workspace.onDidChangeTextDocument((event) =
 
 export function documentParse(document: TextDocument): void {
   const nodeParser = new Parser(document);
-  root[document.uri.toString()] = nodeParser.parse();
+  const key = document.uri.toString();
+  root[key] = nodeParser.parse();
 }
 
-export function getRoot(document: TextDocument): RootNode | undefined {
-  const result = root[document.uri.toString()];
-  if (result === undefined) {
+export function getRoot(document: TextDocument): RootNode {
+  const key = document.uri.toString();
+  if (!root.hasOwnProperty(key)) {
     documentParse(document);
-    return root[document.uri.toString()];
+  }
+  const result = root[key];
+  if (result === undefined) {
+    throw new Error("Failed to getRoot.");
   }
   return result;
 }

@@ -144,16 +144,23 @@ export class Parser {
           } else if (token.kind === "MeasureEnd") {
             addSyntaxError(token.range, "Invalid text.");
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else if (parent instanceof RootHeadersNode || parent instanceof CourseHeadersNode) {
           if (token.kind === "Header") {
-            const separator = headers.get(token.value)?.separator ?? "Unknown";
+            const info = headers.get(token.value);
+            const section = info?.section ?? "Unknown";
+            if (parent instanceof RootHeadersNode && section === "Course") {
+              this.position--;
+              return parent;
+            }
+            const separator = info?.separator ?? "Unknown";
             let node = new HeaderNode(parent, separator);
             node = this.parseNode(node);
             parent.push(node);
-            return parent;
+            // return parent;
           } else if (token.kind === "Command") {
             this.position--;
             return parent;
@@ -162,6 +169,7 @@ export class Parser {
           } else if (token.kind === "MeasureEnd") {
             addSyntaxError(token.range, "Invalid text.");
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
@@ -217,6 +225,7 @@ export class Parser {
           } else if (token.kind === "MeasureEnd") {
             addSyntaxError(token.range, "Invalid text.");
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
@@ -255,8 +264,9 @@ export class Parser {
               }
               parent.push(rawParameter);
             }
-            return parent;
+            // return parent;
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
             return parent;
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
@@ -297,6 +307,7 @@ export class Parser {
             this.measure++;
             parent.push(node);
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
@@ -335,6 +346,7 @@ export class Parser {
             parent.push(node);
             return parent;
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }

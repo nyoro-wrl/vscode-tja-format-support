@@ -27,13 +27,13 @@ export function mergeRanges(ranges: Range[]): Range[] {
     // 現在の範囲と比較範囲の重なりを求める
     const intersection = currentRange.intersection(range);
 
-    if (!intersection) {
+    if (intersection) {
+      // 重なりがある場合は現在の範囲を更新する
+      currentRange = currentRange.union(range);
+    } else {
       // 重なりがない場合は現在の範囲を結果に追加して比較範囲に移る
       mergedRanges.push(currentRange);
       currentRange = range;
-    } else {
-      // 重なりがある場合は現在の範囲を更新する
-      currentRange = currentRange.union(range);
     }
   }
 

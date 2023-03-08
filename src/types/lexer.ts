@@ -256,9 +256,9 @@ export class Lexer {
           this.range.end.character
         );
         // 小節後のテキストを全てUnknownとして処理する
-        const text2 = this.document.getText(this.range);
-        if (/[^\s]+/.test(text2)) {
-          const [matches, _] = splitStringWithRegexDelimiter(text2, /\s+/g);
+        const afterText = this.document.getText(this.range);
+        if (/[^\s]+/.test(afterText)) {
+          const [matches, _] = splitStringWithRegexDelimiter(afterText, /\s+/g);
           for (const match of matches.filter((x) => x.value !== "")) {
             const range = new Range(
               this.range.start.line,

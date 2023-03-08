@@ -73,22 +73,43 @@ export class ParentNode<T extends Node = Node> extends Node {
   }
 
   /**
-   * 子ノードを再帰的に検索
+   * 自分と子ノードを再帰的に検索し、最初に一致したNodeを返す
    * @param predicate
    * @returns
    */
-  public findChildren(predicate: (node: Node) => boolean): Node | undefined {
+  public find(predicate: (node: Node) => boolean): Node | undefined {
+    if (predicate(this)) {
+      return this;
+    }
     for (const child of this.children) {
-      if (predicate(child)) {
-        return child;
-      }
       if (child instanceof ParentNode) {
-        const result = child.findChildren(predicate);
+        const result = child.find(predicate);
         if (result !== undefined) {
           return result;
         }
       }
     }
+  }
+
+  /**
+   * 自分と子ノードを再帰的に検索し、最後に一致したNodeを返す
+   * @param predicate
+   * @returns
+   */
+  public findLast(predicate: (node: Node) => boolean): Node | undefined {
+    let result: Node | undefined;
+    if (predicate(this)) {
+      result = this;
+    }
+    for (const child of this.children) {
+      if (child instanceof ParentNode) {
+        const node = child.findLast(predicate);
+        if (node !== undefined) {
+          result = node;
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -108,7 +129,7 @@ export class ParentNode<T extends Node = Node> extends Node {
    * 範囲の追加
    * @param ranges
    */
-  protected pushRange(...ranges: Range[]): void {
+  public pushRange(...ranges: Range[]): void {
     for (const range of ranges) {
       this._ranges.push(range);
     }

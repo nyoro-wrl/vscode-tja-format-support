@@ -17,10 +17,8 @@ export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
   provideDocumentSymbols(document: vscode.TextDocument, token) {
     const result: DocumentSymbol[] = [];
     const node = getRoot(document);
-    if (node !== undefined) {
-      const symbols = nodeToSymbols(node);
-      result.push(...symbols);
-    }
+    const symbols = nodeToSymbols(node);
+    result.push(...symbols);
     return result;
   },
 });
