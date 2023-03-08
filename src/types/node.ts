@@ -100,7 +100,7 @@ export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {}
 export class RootHeadersNode extends ParentNode<HeaderNode> {}
 export class CourseNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {}
 export class CourseHeadersNode extends ParentNode<HeaderNode> {}
-export class HeaderNode extends ParentNode<NameNode | ParameterNode | ParametersNode> {
+export class StatementNode<T extends Node> extends ParentNode<T> {
   protected _properties: StatementProperties;
 
   get properties(): Readonly<StatementProperties> {
@@ -112,7 +112,7 @@ export class HeaderNode extends ParentNode<NameNode | ParameterNode | Parameters
     this._properties = { name: "", parameter: "", parameters: [], separator: separator };
   }
 
-  public override push(node: NameNode | ParameterNode | ParametersNode) {
+  public override push(node: T) {
     super.push(node);
     if (node instanceof NameNode) {
       this._properties.name += node.value;
@@ -127,33 +127,8 @@ export class HeaderNode extends ParentNode<NameNode | ParameterNode | Parameters
     }
   }
 }
-export class CommandNode extends ParentNode<NameNode | ParameterNode | ParametersNode> {
-  protected _properties: StatementProperties;
-
-  get properties(): Readonly<StatementProperties> {
-    return this._properties;
-  }
-
-  constructor(parent: ParentNode | undefined, separator: Separator) {
-    super(parent);
-    this._properties = { name: "", parameter: "", parameters: [], separator: separator };
-  }
-
-  public override push(node: NameNode | ParameterNode | ParametersNode) {
-    super.push(node);
-    if (node instanceof NameNode) {
-      this._properties.name += node.value;
-    } else if (node instanceof ParameterNode) {
-      this._properties.parameter += node.value;
-      this._properties.parameters.push(node.value);
-    } else if (node instanceof ParametersNode) {
-      this._properties.parameter += node.children.map((x) => x.value).join("");
-      this._properties.parameters.push(
-        ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
-      );
-    }
-  }
-}
+export class HeaderNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
+export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
 export class ChartNode extends ParentNode<CommandNode | MeasureNode> {}
 export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {}
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}

@@ -22,6 +22,7 @@ import {
   ParameterNode,
   ParametersNode,
   ParentNode,
+  StatementNode,
 } from "./node";
 
 /**
@@ -209,7 +210,7 @@ export class Parser {
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-        } else if (parent instanceof HeaderNode || parent instanceof CommandNode) {
+        } else if (parent instanceof StatementNode) {
           if (
             (parent instanceof HeaderNode && token.kind === "Header") ||
             (parent instanceof CommandNode && token.kind === "Command")
