@@ -45,6 +45,10 @@ export class Parser {
    * 一度でも譜面部分に入ったかどうか
    */
   private chartAfterOnce: boolean = false;
+  /**
+   * 小節数
+   */
+  private measure: number = 1;
 
   constructor(document: vscode.TextDocument) {
     const lexer = new Lexer(document);
@@ -59,35 +63,41 @@ export class Parser {
   }
 
   private childrenFindLastOrCreateCourse(parent: RootNode): CourseNode {
-    const findNode = findLast(parent.children, (x) => x instanceof CourseNode);
-    if (findNode instanceof CourseNode) {
-      return findNode;
-    } else {
+    const findNode = findLast(parent.children, (x) => x instanceof CourseNode) as
+      | CourseNode
+      | undefined;
+    if (findNode === undefined) {
       let node = new CourseNode(parent);
       parent.push(node);
       return node;
+    } else {
+      return findNode;
     }
   }
 
   private childrenFindLastOrCreateRootHeaders(parent: RootNode): RootHeadersNode {
-    const findNode = findLast(parent.children, (x) => x instanceof RootHeadersNode);
-    if (findNode instanceof RootHeadersNode) {
-      return findNode;
-    } else {
+    const findNode = findLast(parent.children, (x) => x instanceof RootHeadersNode) as
+      | RootHeadersNode
+      | undefined;
+    if (findNode === undefined) {
       let node = new RootHeadersNode(parent);
       parent.push(node);
       return node;
+    } else {
+      return findNode;
     }
   }
 
   private childrenFindLastOrCreateCourseHeaders(parent: CourseNode): CourseHeadersNode {
-    const findNode = findLast(parent.children, (x) => x instanceof CourseHeadersNode);
-    if (findNode instanceof CourseHeadersNode) {
-      return findNode;
-    } else {
+    const findNode = findLast(parent.children, (x) => x instanceof CourseHeadersNode) as
+      | CourseHeadersNode
+      | undefined;
+    if (findNode === undefined) {
       let node = new CourseHeadersNode(parent);
       parent.push(node);
       return node;
+    } else {
+      return findNode;
     }
   }
 
@@ -180,19 +190,19 @@ export class Parser {
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Unknown") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, undefined);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "Start") {
               let chart = new ChartNode(parent);
-              let start = new CommandNode(chart, separator);
+              let start = new CommandNode(chart, separator, undefined);
               start = this.parseNode(start);
               chart.push(start);
               this.position++;
               chart = this.parseNode(chart);
               parent.push(chart);
             } else if (section === "Inner" || section === "End") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, undefined);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(node.range ?? new Range(0, 0, 0, 0), "Invalid command position.");
@@ -259,20 +269,21 @@ export class Parser {
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, undefined);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(token.range, "Invalid command position.");
             } else if (section === "Inner" || section === "Unknown") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, this.measure);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "End") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, undefined);
               node = this.parseNode(node);
               parent.push(node);
               this.chartAfter = true;
               this.chartAfterOnce = true;
+              this.measure = 1;
               return parent;
             } else {
               addSyntaxError(
@@ -281,8 +292,9 @@ export class Parser {
               );
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
-            let node = new MeasureNode(parent);
+            let node = new MeasureNode(parent, this.measure);
             node = this.parseNode(node);
+            this.measure++;
             parent.push(node);
           } else if (token.kind === "EndOfLine") {
           } else {
@@ -296,12 +308,12 @@ export class Parser {
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, parent.properties.measure);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(token.range, "Invalid command position.");
             } else if (section === "Inner" || section === "Unknown") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, separator, parent.properties.measure);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "End") {

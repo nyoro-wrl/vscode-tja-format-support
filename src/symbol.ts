@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { DocumentSymbol, SymbolKind } from "vscode";
-import { Parser } from "./types/parser";
 import {
   ChartNode,
   CommandNode,
@@ -12,12 +11,17 @@ import {
   RootHeadersNode,
   RootNode,
 } from "./types/node";
+import { getRoot } from "./parser";
 
 export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
   provideDocumentSymbols(document: vscode.TextDocument, token) {
-    const nodeParser = new Parser(document);
-    const node = nodeParser.parse();
-    return nodeToSymbols(node);
+    const result: DocumentSymbol[] = [];
+    const node = getRoot(document);
+    if (node !== undefined) {
+      const symbols = nodeToSymbols(node);
+      result.push(...symbols);
+    }
+    return result;
   },
 });
 

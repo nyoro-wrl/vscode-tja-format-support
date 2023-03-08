@@ -10,6 +10,14 @@ type StatementProperties = {
   separator: Separator;
 };
 
+type CommandProperties = StatementProperties & {
+  readonly measure: number | undefined;
+};
+
+type MeasureProperties = {
+  readonly measure: number;
+};
+
 /**
  * ノード
  */
@@ -62,6 +70,25 @@ export class ParentNode<T extends Node = Node> extends Node {
 
   constructor(parent: ParentNode | undefined) {
     super(parent);
+  }
+
+  /**
+   * 子ノードを再帰的に検索
+   * @param predicate
+   * @returns
+   */
+  public findChildren(predicate: (node: Node) => boolean): Node | undefined {
+    for (const child of this.children) {
+      if (predicate(child)) {
+        return child;
+      }
+      if (child instanceof ParentNode) {
+        const result = child.findChildren(predicate);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+    }
   }
 
   /**
@@ -128,9 +155,37 @@ export class StatementNode<T extends Node> extends ParentNode<T> {
   }
 }
 export class HeaderNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
-export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
+export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {
+  protected override _properties: CommandProperties;
+
+  get properties(): Readonly<CommandProperties> {
+    return this._properties;
+  }
+
+  constructor(parent: ParentNode | undefined, separator: Separator, measure: number | undefined) {
+    super(parent, separator);
+    this._properties = {
+      name: "",
+      parameter: "",
+      parameters: [],
+      separator: separator,
+      measure: measure,
+    };
+  }
+}
 export class ChartNode extends ParentNode<CommandNode | MeasureNode> {}
-export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {}
+export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {
+  protected _properties: MeasureProperties;
+
+  get properties(): Readonly<MeasureProperties> {
+    return this._properties;
+  }
+
+  constructor(parent: ParentNode | undefined, measure: number) {
+    super(parent);
+    this._properties = { measure: measure };
+  }
+}
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}
 export class NameNode extends LeafNode {}
 export class ParameterNode extends LeafNode {}
