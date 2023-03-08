@@ -3,11 +3,11 @@ import { IStatement, StatementCollection } from "./statement";
 /**
  * ヘッダーの記載位置
  *
- *     "Global" // 共通ヘッダー
+ *     "Root" // 共通ヘッダー
  *     "Course" // 難易度別ヘッダー
  *     "Unknown" // 不明
  */
-type HeaderSection = "Global" | "Course" | "Unknown";
+type HeaderSection = "Root" | "Course" | "Unknown";
 
 /**
  * ヘッダー

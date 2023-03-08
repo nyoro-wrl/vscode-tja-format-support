@@ -1,68 +1,58 @@
 import { Range } from "vscode";
-import { commands } from "../constants/commands";
-import { headers } from "../constants/headers";
+import { mergeRanges, unionRanges } from "../util/range";
 import { Token } from "./lexer";
 import { Separator } from "./statement";
 
+type StatementPropeties = {
+  name: string;
+  parameter: string;
+  parameters: string[];
+  separator: Separator;
+};
+
 /**
- * ノードの種類
- *
- *     "Global" // 全体
- *     "GlobalHeaders" // 共通ヘッダー
- *     "CourseHeaders" // 難易度別ヘッダー
- *     "Course" // 難易度
- *     "Header" // ヘッダー
- *     "Command" // 命令
- *     "Statement" // ヘッダー・命令の名前
- *     "Parameters" // パラメーターの塊
- *     "Parameter" // パラメーター
- *     "Delimiter" // パラメーターの区切り文字
- *     "Chart" // 譜面
- *     "Measure" // 小節
- *     "Note" // ノーツ
- *     "MeasureEnd" // 小節の終わり
+ * ノード
  */
-export type NodeKind =
-  | "Global"
-  | "GlobalHeaders"
-  | "CourseHeaders"
-  | "Course"
-  | "Header"
-  | "Command"
-  | "Statement"
-  | "Parameters"
-  | "Parameter"
-  | "Delimiter"
-  | "Chart"
-  | "Measure"
-  | "Note"
-  | "MeasureEnd";
+export class Node {
+  readonly parent: Readonly<ParentNode> | undefined;
+  protected _range: Range | undefined;
 
-interface IComments {
-  comments: Comment[];
+  get range(): Readonly<Range> | undefined {
+    return this._range;
+  }
+
+  constructor(parent: ParentNode | undefined) {
+    this.parent = parent;
+  }
 }
 
-interface Comment {
-  kind: NodeKind;
-  text: string;
-  range: Range;
+/**
+ * 末端ノード
+ */
+export class LeafNode extends Node {
+  readonly value: string;
+  override readonly _range: Range;
+
+  get range(): Readonly<Range> {
+    return this._range;
+  }
+
+  constructor(parent: ParentNode | undefined, token: Token) {
+    super(parent);
+    this.value = token.value;
+    this._range = token.range;
+  }
 }
 
-export interface INode {
-  readonly kind: NodeKind;
-  children: readonly INode[];
-  ranges: readonly Range[];
-  readonly range: Range;
-}
-
-export class Node implements INode {
-  readonly kind: NodeKind;
-  private parent: Node | undefined;
-  private _children: Node[] = [];
+/**
+ * 親ノード
+ */
+export class ParentNode<T extends Node = Node> extends Node {
+  protected _children: T[] = [];
+  protected override _range: Range | undefined;
   protected _ranges: Range[] = [];
-  private _range: Range;
 
-  get children(): readonly Node[] {
+  get children(): readonly T[] {
     return this._children;
   }
 
@@ -70,26 +60,27 @@ export class Node implements INode {
     return this._ranges;
   }
 
-  get range(): Range {
-    return this._range;
-  }
-
-  constructor(kind: NodeKind, range: Range, parent: Node | undefined) {
-    this.kind = kind;
-    this.parent = parent;
-    this._range = range;
-    this.pushRange(range);
+  constructor(parent: ParentNode | undefined) {
+    super(parent);
   }
 
   /**
    * childrenにNodeを追加
    * @param node
    */
-  public push(node: Node): void {
+  public push(node: T): void {
     this._children.push(node);
-    this.pushRange(...node.ranges);
+    if (node instanceof ParentNode) {
+      this.pushRange(...node.ranges);
+    } else if (node instanceof LeafNode) {
+      this.pushRange(node.range);
+    }
   }
 
+  /**
+   * 範囲の追加
+   * @param ranges
+   */
   protected pushRange(...ranges: Range[]): void {
     for (const range of ranges) {
       this._ranges.push(range);
@@ -99,113 +90,75 @@ export class Node implements INode {
     if (range !== undefined) {
       this._range = range;
     }
-    if (this.parent !== undefined) {
+    if (this.parent !== undefined && this.parent instanceof ParentNode) {
       this.parent.pushRange(...this._ranges);
     }
   }
 }
 
-export class ParameterNode extends Node {
-  readonly separator: Separator;
+export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {}
+export class RootHeadersNode extends ParentNode<HeaderNode> {}
+export class CourseNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {}
+export class CourseHeadersNode extends ParentNode<HeaderNode> {}
+export class HeaderNode extends ParentNode<NameNode | ParameterNode | ParametersNode> {
+  protected _propeties: StatementPropeties;
 
-  constructor(kind: NodeKind, range: Range, separator: Separator, parent: Node | undefined) {
-    super(kind, range, parent);
-    this.separator = separator;
+  get propeties(): Readonly<StatementPropeties> {
+    return this._propeties;
   }
-}
 
-export class HeaderNode extends ParameterNode {
-  constructor(token: Token, parent: Node | undefined) {
-    const separator = headers.get(token.value)?.separator ?? "Unknown";
-    super("Header", token.range, separator, parent);
+  constructor(parent: ParentNode | undefined, separator: Separator) {
+    super(parent);
+    this._propeties = { name: "", parameter: "", parameters: [], separator: separator };
   }
-}
 
-export class CommandNode extends ParameterNode {
-  constructor(token: Token, parent: Node | undefined) {
-    const separator = commands.get(token.value)?.separator ?? "Unknown";
-    super("Command", token.range, separator, parent);
-  }
-}
-
-export class TextNode extends Node {
-  readonly text: string;
-
-  constructor(kind: NodeKind, token: Token, parent: Node | undefined) {
-    super(kind, token.range, parent);
-    this.text = token.value;
-  }
-}
-
-/**
- * Range[]内の重複する範囲を統合する
- * @param ranges
- * @returns
- */
-function mergeRanges(ranges: Range[]): Range[] {
-  // 配列の要素を範囲の開始位置でソートする
-  ranges.sort((a, b) => {
-    if (a.start.isBefore(b.start)) {
-      return -1;
-    } else if (a.start.isAfter(b.start)) {
-      return 1;
-    } else {
-      return 0;
-    }
-  });
-
-  const mergedRanges: Range[] = [];
-
-  // 配列の要素を順番に比較して、範囲を統合する
-  let currentRange: Range | undefined = ranges[0];
-  for (let i = 1; i < ranges.length; i++) {
-    const range = ranges[i];
-
-    // 現在の範囲と比較範囲の重なりを求める
-    const intersection = currentRange.intersection(range);
-
-    if (!intersection) {
-      // 重なりがない場合は現在の範囲を結果に追加して比較範囲に移る
-      mergedRanges.push(currentRange);
-      currentRange = range;
-    } else {
-      // 重なりがある場合は現在の範囲を更新する
-      currentRange = currentRange.union(range);
+  public override push(node: NameNode | ParameterNode | ParametersNode) {
+    super.push(node);
+    if (node instanceof NameNode) {
+      this._propeties.name += node.value;
+    } else if (node instanceof ParameterNode) {
+      this._propeties.parameter += node.value;
+      this._propeties.parameters.push(node.value);
+    } else if (node instanceof ParametersNode) {
+      this._propeties.parameter += node.children.map((x) => x.value).join("");
+      this._propeties.parameters.push(
+        ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
+      );
     }
   }
-
-  // 最後の範囲を結果に追加する
-  if (currentRange) {
-    mergedRanges.push(currentRange);
-  }
-
-  return mergedRanges;
 }
+export class CommandNode extends ParentNode<NameNode | ParameterNode | ParametersNode> {
+  protected _propeties: StatementPropeties;
 
-/**
- * Range[]を一つにまとめる
- * @param ranges
- * @returns
- */
-export function unionRanges(ranges: readonly Range[]): Range | undefined {
-  if (ranges.length === 0) {
-    return undefined;
+  get propeties(): Readonly<StatementPropeties> {
+    return this._propeties;
   }
 
-  let minStart = ranges[0].start;
-  let maxEnd = ranges[0].end;
+  constructor(parent: ParentNode | undefined, separator: Separator) {
+    super(parent);
+    this._propeties = { name: "", parameter: "", parameters: [], separator: separator };
+  }
 
-  for (let i = 1; i < ranges.length; i++) {
-    const range = ranges[i];
-
-    if (range.start.isBefore(minStart)) {
-      minStart = range.start;
-    }
-
-    if (range.end.isAfter(maxEnd)) {
-      maxEnd = range.end;
+  public override push(node: NameNode | ParameterNode | ParametersNode) {
+    super.push(node);
+    if (node instanceof NameNode) {
+      this._propeties.name += node.value;
+    } else if (node instanceof ParameterNode) {
+      this._propeties.parameter += node.value;
+      this._propeties.parameters.push(node.value);
+    } else if (node instanceof ParametersNode) {
+      this._propeties.parameter += node.children.map((x) => x.value).join("");
+      this._propeties.parameters.push(
+        ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
+      );
     }
   }
-
-  return new Range(minStart, maxEnd);
 }
+export class ChartNode extends ParentNode<CommandNode | MeasureNode> {}
+export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {}
+export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}
+export class NameNode extends LeafNode {}
+export class ParameterNode extends LeafNode {}
+export class DelimiterNode extends LeafNode {}
+export class NoteNode extends LeafNode {}
+export class MeasureEndNode extends LeafNode {}

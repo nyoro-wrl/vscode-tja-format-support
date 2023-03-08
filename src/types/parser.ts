@@ -3,12 +3,26 @@ import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
 import { addSyntaxError, clearDiagnostics } from "../error";
 import { Lexer, Token } from "./lexer";
-import { CommandNode, HeaderNode, Node, NodeKind, ParameterNode, TextNode } from "./node";
 import { findLast } from "lodash";
 import { tokenizedRawParameter } from "../util/lexer";
 import { Range } from "vscode";
-
-// TODO 1行の複数小節をエラーにする
+import {
+  ChartNode,
+  CommandNode,
+  CourseHeadersNode,
+  CourseNode,
+  DelimiterNode,
+  RootHeadersNode,
+  RootNode,
+  HeaderNode,
+  NameNode,
+  MeasureEndNode,
+  MeasureNode,
+  NoteNode,
+  ParameterNode,
+  ParametersNode,
+  ParentNode,
+} from "./node";
 
 /**
  * 構文解析
@@ -37,48 +51,66 @@ export class Parser {
     this.tokens = tokens;
   }
 
-  public parse(): Node {
+  public parse(): RootNode {
     clearDiagnostics();
-    const node = new Node("Global", new Range(0, 0, 0, 0), undefined);
+    const node = new RootNode(undefined);
     return this.parseNode(node);
   }
 
-  /**
-   * parent.childrenからkindが一致する最後の子要素を取得する。見つからない場合は作成する
-   * @param parent
-   * @param kind
-   * @returns
-   */
-  private findLastOrCreateChildren(parent: Node, kind: NodeKind, range: Range): Node {
-    let node = findLast(parent.children, (x) => x.kind === kind);
-    if (node === undefined) {
-      node = new Node(kind, range, parent);
+  private childrenFindLastOrCreateCourse(parent: RootNode): CourseNode {
+    const findNode = findLast(parent.children, (x) => x instanceof CourseNode);
+    if (findNode instanceof CourseNode) {
+      return findNode;
+    } else {
+      let node = new CourseNode(parent);
       parent.push(node);
+      return node;
     }
-    return node;
   }
 
-  private parseNode<T extends Node>(parent: T): T {
+  private childrenFindLastOrCreateRootHeaders(parent: RootNode): RootHeadersNode {
+    const findNode = findLast(parent.children, (x) => x instanceof RootHeadersNode);
+    if (findNode instanceof RootHeadersNode) {
+      return findNode;
+    } else {
+      let node = new RootHeadersNode(parent);
+      parent.push(node);
+      return node;
+    }
+  }
+
+  private childrenFindLastOrCreateCourseHeaders(parent: CourseNode): CourseHeadersNode {
+    const findNode = findLast(parent.children, (x) => x instanceof CourseHeadersNode);
+    if (findNode instanceof CourseHeadersNode) {
+      return findNode;
+    } else {
+      let node = new CourseHeadersNode(parent);
+      parent.push(node);
+      return node;
+    }
+  }
+
+  private parseNode<T extends ParentNode>(parent: T): T {
     for (; this.position < this.tokens.length; this.position++) {
       const token = this.tokens[this.position];
       if (token.kind === "Unknown") {
         addSyntaxError(token.range, "Invalid text.");
       } else {
-        if (parent.kind === "Global") {
+        if (parent instanceof RootNode) {
           if (token.kind === "Header") {
             const section = headers.get(token.value)?.section ?? "Unknown";
             if (section === "Course" || this.chartAfterOnce) {
               if (this.chartAfter) {
                 this.chartAfter = false;
-                let node = new Node("Course", token.range, parent);
+                let node = new CourseNode(parent);
                 node = this.parseNode(node);
                 parent.push(node);
               } else {
-                let node = this.findLastOrCreateChildren(parent, "Course", token.range);
+                let node = this.childrenFindLastOrCreateCourse(parent);
                 node = this.parseNode(node);
               }
-            } else if (section === "Global" || section === "Unknown") {
-              let node = this.findLastOrCreateChildren(parent, "GlobalHeaders", token.range);
+            } else if (section === "Root" || section === "Unknown") {
+              let node = this.childrenFindLastOrCreateRootHeaders(parent);
               node = this.parseNode(node);
             } else {
               addSyntaxError(
@@ -89,11 +121,11 @@ export class Parser {
           } else if (token.kind === "Command") {
             if (this.chartAfter) {
               this.chartAfter = false;
-              let node = new Node("Course", token.range, parent);
+              let node = new CourseNode(parent);
               node = this.parseNode(node);
               parent.push(node);
             } else {
-              let node = this.findLastOrCreateChildren(parent, "Course", token.range);
+              let node = this.childrenFindLastOrCreateCourse(parent);
               node = this.parseNode(node);
             }
           } else if (token.kind === "Notes") {
@@ -104,9 +136,10 @@ export class Parser {
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-        } else if (parent.kind === "GlobalHeaders" || parent.kind === "CourseHeaders") {
+        } else if (parent instanceof RootHeadersNode || parent instanceof CourseHeadersNode) {
           if (token.kind === "Header") {
-            let node = new HeaderNode(token, parent);
+            const separator = headers.get(token.value)?.separator ?? "Unknown";
+            let node = new HeaderNode(parent, separator);
             node = this.parseNode(node);
             parent.push(node);
             return parent;
@@ -121,7 +154,7 @@ export class Parser {
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-        } else if (parent.kind === "Course") {
+        } else if (parent instanceof CourseNode) {
           if (token.kind === "Header") {
             const section = headers.get(token.value)?.section ?? "Unknown";
             if (section === "Course" || section === "Unknown" || this.chartAfterOnce) {
@@ -129,10 +162,10 @@ export class Parser {
                 this.position--;
                 return parent;
               } else {
-                let node = this.findLastOrCreateChildren(parent, "CourseHeaders", token.range);
+                let node = this.childrenFindLastOrCreateCourseHeaders(parent);
                 node = this.parseNode(node);
               }
-            } else if (section === "Global") {
+            } else if (section === "Root") {
               this.position--;
               return parent;
             } else {
@@ -142,24 +175,26 @@ export class Parser {
               );
             }
           } else if (token.kind === "Command") {
-            const section = commands.get(token.value)?.section ?? "Unknown";
+            const info = commands.get(token.value);
+            const section = info?.section ?? "Unknown";
+            const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Unknown") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "Start") {
-              let chart = new Node("Chart", token.range, parent);
-              let start = new CommandNode(token, chart);
+              let chart = new ChartNode(parent);
+              let start = new CommandNode(chart, separator);
               start = this.parseNode(start);
               chart.push(start);
               this.position++;
               chart = this.parseNode(chart);
               parent.push(chart);
             } else if (section === "Inner" || section === "End") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(node.range, "Invalid command position.");
+              addSyntaxError(node.range ?? new Range(0, 0, 0, 0), "Invalid command position.");
             } else {
               addSyntaxError(
                 token.range,
@@ -174,37 +209,40 @@ export class Parser {
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-        } else if (parent.kind === "Header" || parent.kind === "Command") {
+        } else if (parent instanceof HeaderNode || parent instanceof CommandNode) {
           if (
-            (parent.kind === "Header" && token.kind === "Header") ||
-            (parent.kind === "Command" && token.kind === "Command")
+            (parent instanceof HeaderNode && token.kind === "Header") ||
+            (parent instanceof CommandNode && token.kind === "Command")
           ) {
-            const node = new TextNode("Statement", token, parent);
+            const node = new NameNode(parent, token);
             parent.push(node);
           } else if (token.kind === "RawParameter") {
-            if (parent instanceof ParameterNode) {
-              const rawParameter = new Node("Parameters", token.range, parent);
-              const parameters = tokenizedRawParameter(token, parent.separator);
-              if (parameters.length === 1) {
-                const node = new TextNode("Parameter", token, parent);
-                parent.push(node);
-              } else {
-                for (const parameter of parameters) {
-                  let kind: NodeKind;
-                  if (parameter.kind === "RawParameter" || parameter.kind === "Parameter") {
-                    kind = "Parameter";
-                  } else if (parameter.kind === "Delimiter") {
-                    kind = "Delimiter";
-                  } else {
-                    return parent;
-                  }
-                  const node = new TextNode(kind, parameter, rawParameter);
-                  rawParameter.push(node);
-                }
-                parent.push(rawParameter);
-              }
+            const rawParameter = new ParametersNode(parent);
+            const parameters = tokenizedRawParameter(token, parent.propeties.separator);
+            if (parameters.length === 1) {
+              const node = new ParameterNode(parent, token);
+              parent.push(node);
             } else {
-              addSyntaxError(token.range, "No processing defined for instance.");
+              for (const parameter of parameters) {
+                if (parameter.kind === "RawParameter" || parameter.kind === "Parameter") {
+                  const node = new ParameterNode(parent, {
+                    kind: parameter.kind,
+                    range: parameter.range,
+                    value: parameter.value,
+                  });
+                  rawParameter.push(node);
+                } else if (parameter.kind === "Delimiter") {
+                  const node = new DelimiterNode(parent, {
+                    kind: parameter.kind,
+                    range: parameter.range,
+                    value: parameter.value,
+                  });
+                  rawParameter.push(node);
+                } else {
+                  return parent;
+                }
+              }
+              parent.push(rawParameter);
             }
             return parent;
           } else if (token.kind === "EndOfLine") {
@@ -212,22 +250,24 @@ export class Parser {
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-        } else if (parent.kind === "Chart") {
+        } else if (parent instanceof ChartNode) {
           if (token.kind === "Header") {
             addSyntaxError(token.range, "Invalid header position.");
           } else if (token.kind === "Command") {
-            const section = commands.get(token.value)?.section ?? "Unknown";
+            const info = commands.get(token.value);
+            const section = info?.section ?? "Unknown";
+            const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(token.range, "Invalid command position.");
             } else if (section === "Inner" || section === "Unknown") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "End") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               this.chartAfter = true;
@@ -240,25 +280,27 @@ export class Parser {
               );
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
-            let node = new Node("Measure", token.range, parent);
+            let node = new MeasureNode(parent);
             node = this.parseNode(node);
             parent.push(node);
           } else if (token.kind === "EndOfLine") {
           } else {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
-        } else if (parent.kind === "Measure") {
+        } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
             addSyntaxError(token.range, "Invalid header position.");
           } else if (token.kind === "Command") {
-            const section = commands.get(token.value)?.section ?? "Unknown";
+            const info = commands.get(token.value);
+            const section = info?.section ?? "Unknown";
+            const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(token.range, "Invalid command position.");
             } else if (section === "Inner" || section === "Unknown") {
-              let node = new CommandNode(token, parent);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "End") {
@@ -273,10 +315,10 @@ export class Parser {
               );
             }
           } else if (token.kind === "Notes") {
-            const node = new TextNode("Note", token, parent);
+            const node = new NoteNode(parent, token);
             parent.push(node);
           } else if (token.kind === "MeasureEnd") {
-            const node = new TextNode("MeasureEnd", token, parent);
+            const node = new MeasureEndNode(parent, token);
             parent.push(node);
             return parent;
           } else if (token.kind === "EndOfLine") {
@@ -284,12 +326,12 @@ export class Parser {
             addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else {
-          addSyntaxError(token.range, `No processing defined for NodeKind = "${parent.kind}".`);
+          addSyntaxError(token.range, "No processing defined");
         }
       }
     }
     if (this.position >= this.tokens.length) {
-      if (parent.kind === "Chart") {
+      if (parent instanceof ChartNode) {
         const previewToken = this.tokens[this.position - 1];
         addSyntaxError(previewToken.range, "Missing #END.");
       }

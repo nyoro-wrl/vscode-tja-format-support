@@ -12,7 +12,7 @@ export const headers = new HeaderCollection({
     syntax: new MarkdownString().appendCodeblock("TITLE:<string>").value,
     snippet: new SnippetString().appendText("TITLE:").value,
     documentation: new MarkdownString().appendMarkdown("曲のタイトル。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   level: {
@@ -32,7 +32,7 @@ export const headers = new HeaderCollection({
     syntax: new MarkdownString().appendCodeblock("BPM:<bpm>").value,
     snippet: new SnippetString().appendText("BPM:").value,
     documentation: new MarkdownString().appendMarkdown("曲のBPM。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   wave: {
@@ -43,7 +43,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString()
       .appendMarkdown("音源ファイルのパス。  \n")
       .appendMarkdown("殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   offset: {
@@ -54,7 +54,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown(
       "譜面の開始位置と音源ファイルの再生時刻の差を秒数で指定します。"
     ).value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   balloon: {
@@ -76,7 +76,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString()
       .appendMarkdown("音源の音量。  \n")
       .appendMarkdown("基準値は100。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   sevol: {
@@ -87,7 +87,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString()
       .appendMarkdown("太鼓音の音量。  \n")
       .appendMarkdown("基準値は100。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   scoreinit: {
@@ -160,7 +160,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown(
       "選曲画面で流すデモの再生開始位置を秒で指定します。"
     ).value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   side: {
@@ -174,7 +174,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`Normal`か`1`を入力した場合、曲選択画面で表状態のときのみ曲が表示され、  \n")
       .appendMarkdown("`Ex`か`2`を入力した場合、曲選択画面で裏状態のときのみ曲が表示されます。  \n")
       .appendMarkdown("`Both`か`3`を入力した場合は常に表示されます（初期設定）。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   subtitle: {
@@ -185,7 +185,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString()
       .appendMarkdown("曲のサブタイトル。  \n")
       .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   song: {
@@ -197,7 +197,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("コースに使用する譜面。  \n")
       .appendMarkdown("`.tjc`ファイル上で有効なヘッダです。  \n")
       .appendMarkdown("`<filepath>`: tjaファイルをルートディレクトリから指定します。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   // 太鼓さん次郎2
@@ -208,7 +208,7 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("SIDEREV:").value,
     documentation: new MarkdownString().appendMarkdown("表裏で対になる譜面ファイルを指定します。")
       .value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   scoremode: {
@@ -220,7 +220,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("配点方式を指定します。  \n")
       .appendMarkdown("`<mode>`: `0` ~ `2`の値を指定します。  \n")
       .appendMarkdown("`0`でドンだフル、`1`でAC14、`2`で新筐体。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   total: {
@@ -274,7 +274,7 @@ export const headers = new HeaderCollection({
     syntax: new MarkdownString().appendCodeblock("GENRE:<genre>").value,
     snippet: new SnippetString().appendText("GENRE:").value,
     documentation: new MarkdownString().appendMarkdown("曲のジャンル。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   movieoffset: {
@@ -285,7 +285,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown(
       "音源ファイルの再生位置と背景動画ファイルの再生時刻の差を秒数で指定します。"
     ).value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   bgimage: {
@@ -294,7 +294,7 @@ export const headers = new HeaderCollection({
     syntax: new MarkdownString().appendCodeblock("BGIMAGE:<filepath>").value,
     snippet: new SnippetString().appendText("BGIMAGE:").value,
     documentation: new MarkdownString().appendMarkdown("背景画像ファイルのパス。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   bgmovie: {
@@ -303,7 +303,7 @@ export const headers = new HeaderCollection({
     syntax: new MarkdownString().appendCodeblock("BGMOVIE:<filepath>").value,
     snippet: new SnippetString().appendText("BGMOVIE:").value,
     documentation: new MarkdownString().appendMarkdown("背景動画ファイルのパス。").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   hiddenbranch: {
@@ -343,7 +343,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`r`: 連打数  \n")
       .appendMarkdown("`h`: 叩けた数  \n")
       .appendMarkdown("`c`: 最大コンボ数").value,
-    section: "Global",
+    section: "Root",
     separator: "Comma",
   },
   preimage: {
@@ -353,7 +353,7 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("PREIMAGE:").value,
     documentation: new MarkdownString().appendMarkdown("選曲画面に表示する画像ファイルのパス。")
       .value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   bgoffset: {
@@ -364,7 +364,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown(
       "譜面の再生位置と背景画像ファイルの再生時刻の差を秒数で指定します。"
     ).value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   dantick: {
@@ -382,7 +382,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`3`: 人段位①（銀）  \n")
       .appendMarkdown("`4`: 人段位②（金）  \n")
       .appendMarkdown("`5`: 外伝").value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
   dantickcolor: {
@@ -392,7 +392,7 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("DANTICKCOLOR:").value,
     documentation: new MarkdownString().appendMarkdown("段位の色をHTMLカラーコードで指定します。")
       .value,
-    section: "Global",
+    section: "Root",
     separator: "None",
   },
 });

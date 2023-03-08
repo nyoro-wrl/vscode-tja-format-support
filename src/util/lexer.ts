@@ -33,12 +33,13 @@ export function tokenizedRawParameter(rawParameter: Token, separator: Separator)
     const value = result.value;
     const range = new Range(
       rawParameter.range.start.line,
-      result.start,
+      result.start + rawParameter.range.start.character,
       rawParameter.range.end.line,
-      result.end
+      result.end + rawParameter.range.start.character
     );
     const parameter: Token = { kind: "Delimiter", value: value, range: range };
     parameters.push(parameter);
   }
+  parameters.sort((a, b) => a.range.start.character - b.range.start.character);
   return parameters;
 }
