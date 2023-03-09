@@ -6,10 +6,11 @@ import { IStatement, StatementCollection } from "./statement";
  *     "Outer" // 譜面の外側
  *     "Start" // 譜面の開始
  *     "Inner" // 譜面の内側
+ *     "MeasureHead" // 小節頭
  *     "End" // 譜面の終了
  *     "Unknows" // 不明
  */
-type CommandSection = "Outer" | "Start" | "Inner" | "End" | "Unknown";
+type CommandSection = "Outer" | "Start" | "Inner" | "MeasureHead" | "End" | "Unknown";
 
 /**
  * 命令

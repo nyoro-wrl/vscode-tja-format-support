@@ -14,13 +14,14 @@ export const jumpMeasure = vscode.commands.registerTextEditorCommand(
     ) as ChartNode | undefined;
 
     if (chartNode === undefined) {
+      vscode.window.showErrorMessage("譜面外です");
       return;
     }
 
     const maxMeasure = chartNode.properties.measure;
 
     const input = await vscode.window.showInputBox({
-      prompt: `移動先の小節を入力してください（最大${maxMeasure}）`,
+      prompt: "移動先の小節番号を入力してください",
       placeHolder: `1 ~ ${maxMeasure}`,
       validateInput: (text) => {
         if (!text) {
@@ -42,16 +43,14 @@ export const jumpMeasure = vscode.commands.registerTextEditorCommand(
     }
 
     const measure = Number(input);
-
     const jump = chartNode.find(
       (x) => x instanceof MeasureNode && x.properties.measure === measure
     );
-
     if (jump?.range !== undefined) {
       textEditor.selection = new Selection(jump.range.start, jump.range.end);
       textEditor.revealRange(jump.range, vscode.TextEditorRevealType.InCenter);
     }
-
+    // ステータスバーから呼ばれるため、フォーカスをドキュメントに戻す
     vscode.window.showTextDocument(textEditor.document);
   }
 );

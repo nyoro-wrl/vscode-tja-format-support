@@ -4,15 +4,18 @@ interface SplitPosition {
   end: number;
 }
 
-export function splitStringWithRegexDelimiter(
-  input: string,
-  delimiter: RegExp
-): [SplitPosition[], SplitPosition[]] {
+/**
+ * 区切り文字で分割し、分割した文字列とそれぞれの区切り文字の{文字列,開始位置,終了位置}を取得
+ * @param input
+ * @param sepalater
+ * @returns
+ */
+export function splitString(input: string, sepalater: RegExp): [SplitPosition[], SplitPosition[]] {
   const tokens: SplitPosition[] = [];
   const delimiters: SplitPosition[] = [];
   let match;
   let start = 0;
-  while ((match = delimiter.exec(input)) !== null) {
+  while ((match = sepalater.exec(input)) !== null) {
     if (match.index !== start) {
       tokens.push({
         value: input.slice(start, match.index),
@@ -23,9 +26,9 @@ export function splitStringWithRegexDelimiter(
     delimiters.push({
       value: match[0],
       start: match.index,
-      end: delimiter.lastIndex,
+      end: sepalater.lastIndex,
     });
-    start = delimiter.lastIndex;
+    start = sepalater.lastIndex;
   }
   if (start !== input.length) {
     tokens.push({

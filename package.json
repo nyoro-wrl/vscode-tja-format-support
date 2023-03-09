@@ -51,7 +51,8 @@
         "editor.unicodeHighlight.ambiguousCharacters": false,
         "editor.snippetSuggestions": "top",
         "editor.unicodeHighlight.invisibleCharacters": false,
-        "editor.suggest.showWords": false
+        "editor.suggest.showWords": false,
+        "editor.occurrencesHighlight": false
       },
       "editor.tokenColorCustomizations": {
         "textMateRules": [

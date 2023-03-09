@@ -26,7 +26,10 @@ export function getRoot(document: TextDocument): RootNode {
   }
   const result = root[key];
   if (result === undefined) {
-    throw new Error("Failed to getRoot.");
+    vscode.window.showErrorMessage("構文解析に失敗しました。");
+    throw new Error("構文解析に失敗しました。");
   }
   return result;
 }
+
+// TODO ファイルを閉じたときに構文解析結果を削除する

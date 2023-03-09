@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 import { Separator } from "../types/statement";
 
 /**
@@ -15,6 +16,7 @@ export function splitToRegExp(separator: Separator): RegExp {
     case "Unknown":
       return /(?!)/g;
     default:
+      vscode.window.showErrorMessage("No action defined for Separator.");
       throw new ReferenceError("No action defined for Separator.");
   }
 }

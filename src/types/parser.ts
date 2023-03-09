@@ -23,6 +23,7 @@ import {
   ParametersNode,
   ParentNode,
   StatementNode,
+  ChartTokenNode,
 } from "./node";
 
 /**
@@ -49,6 +50,14 @@ export class Parser {
    * 小節数
    */
   private measure: number = 1;
+  /**
+   * ゴーゴータイム
+   */
+  private gogotime: boolean = false;
+  /**
+   * 小節線の表示
+   */
+  private barlineShow: boolean = true;
 
   constructor(document: vscode.TextDocument) {
     const lexer = new Lexer(document);
@@ -105,7 +114,7 @@ export class Parser {
     for (; this.position < this.tokens.length; this.position++) {
       const token = this.tokens[this.position];
       if (token.kind === "Unknown") {
-        addSyntaxError(token.range, "Invalid text.");
+        addSyntaxError(token.range, "不正なテキストです。");
       } else {
         if (parent instanceof RootNode) {
           if (token.kind === "Header") {
@@ -140,9 +149,9 @@ export class Parser {
               node = this.parseNode(node);
             }
           } else if (token.kind === "Notes") {
-            addSyntaxError(token.range, "Missing #START.");
+            addSyntaxError(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addSyntaxError(token.range, "Invalid text.");
+            addSyntaxError(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
@@ -160,14 +169,13 @@ export class Parser {
             let node = new HeaderNode(parent, separator);
             node = this.parseNode(node);
             parent.push(node);
-            // return parent;
           } else if (token.kind === "Command") {
             this.position--;
             return parent;
           } else if (token.kind === "Notes") {
-            addSyntaxError(token.range, "Missing #START.");
+            addSyntaxError(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addSyntaxError(token.range, "Invalid text.");
+            addSyntaxError(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
@@ -209,11 +217,11 @@ export class Parser {
               this.position++;
               chart = this.parseNode(chart);
               parent.push(chart);
-            } else if (section === "Inner" || section === "End") {
+            } else if (section === "Inner" || section === "MeasureHead" || section === "End") {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(node.range ?? new Range(0, 0, 0, 0), "Invalid command position.");
+              addSyntaxError(node.range ?? new Range(0, 0, 0, 0), "#START がありません。");
             } else {
               addSyntaxError(
                 token.range,
@@ -221,9 +229,9 @@ export class Parser {
               );
             }
           } else if (token.kind === "Notes") {
-            addSyntaxError(token.range, "Missing #START.");
+            addSyntaxError(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addSyntaxError(token.range, "Invalid text.");
+            addSyntaxError(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
@@ -264,7 +272,6 @@ export class Parser {
               }
               parent.push(rawParameter);
             }
-            // return parent;
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
             return parent;
@@ -273,7 +280,7 @@ export class Parser {
           }
         } else if (parent instanceof ChartNode) {
           if (token.kind === "Header") {
-            addSyntaxError(token.range, "Invalid header position.");
+            addSyntaxError(token.range, "ヘッダーの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -282,11 +289,12 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(token.range, "Invalid command position.");
-            } else if (section === "Inner" || section === "Unknown") {
-              let node = new MeasureNode(parent, this.measure);
+              addSyntaxError(token.range, "命令の位置が不正です。");
+            } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
+              let node = new MeasureNode(parent, this.measure, this.barlineShow);
               node = this.parseNode(node);
               if (node.children.every((x) => x instanceof CommandNode)) {
+                // 命令のみの場合は小節から命令に置き換える
                 for (const child of node.children) {
                   const node = child as CommandNode;
                   parent.push(node);
@@ -302,6 +310,8 @@ export class Parser {
               this.chartAfter = true;
               this.chartAfterOnce = true;
               this.measure = 1;
+              this.gogotime = false;
+              this.barlineShow = true;
               return parent;
             } else {
               addSyntaxError(
@@ -310,7 +320,7 @@ export class Parser {
               );
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
-            let node = new MeasureNode(parent, this.measure);
+            let node = new MeasureNode(parent, this.measure, this.barlineShow);
             node = this.parseNode(node);
             this.measure++;
             parent.push(node);
@@ -321,7 +331,7 @@ export class Parser {
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
-            addSyntaxError(token.range, "Invalid header position.");
+            addSyntaxError(token.range, "ヘッダーの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -330,15 +340,30 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(token.range, "Invalid command position.");
-            } else if (section === "Inner" || section === "Unknown") {
+              addSyntaxError(token.range, "命令の位置が不正です。");
+            } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
+              if (commands.items.gogostart.regexp.test(node.properties.name)) {
+                this.gogotime = true;
+              } else if (commands.items.gogoend.regexp.test(node.properties.name)) {
+                this.gogotime = false;
+              } else if (commands.items.barlineoff.regexp.test(node.properties.name)) {
+                this.barlineShow = false;
+              } else if (commands.items.barlineon.regexp.test(node.properties.name)) {
+                this.barlineShow = true;
+              }
+              if (parent.find((x) => x instanceof ChartTokenNode) !== undefined) {
+                parent.properties.barlineShow = this.barlineShow;
+                if (section === "MeasureHead") {
+                  addSyntaxError(token.range, "命令の位置が不正です。");
+                }
+              }
             } else if (section === "End") {
               if (!parent.children.every((x) => x instanceof CommandNode)) {
                 const previewToken = this.tokens[this.position - 1];
-                addSyntaxError(previewToken.range, "Unclosed measure.");
+                addSyntaxError(previewToken.range, "小節が閉じられていません。");
               }
               this.position--;
               return parent;
@@ -349,10 +374,10 @@ export class Parser {
               );
             }
           } else if (token.kind === "Notes") {
-            const node = new NoteNode(parent, token);
+            const node = new NoteNode(parent, token, this.gogotime);
             parent.push(node);
           } else if (token.kind === "MeasureEnd") {
-            const node = new MeasureEndNode(parent, token);
+            const node = new MeasureEndNode(parent, token, this.gogotime);
             parent.push(node);
             return parent;
           } else if (token.kind === "EndOfLine") {
@@ -368,7 +393,7 @@ export class Parser {
     if (this.position >= this.tokens.length) {
       if (parent instanceof ChartNode) {
         const previewToken = this.tokens[this.position - 1];
-        addSyntaxError(previewToken.range, "Missing #END.");
+        addSyntaxError(previewToken.range, "#END がありません。");
       }
     }
     return parent;

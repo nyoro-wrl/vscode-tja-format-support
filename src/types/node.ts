@@ -1,4 +1,5 @@
 import { Range } from "vscode";
+import { commands } from "../constants/commands";
 import { mergeRanges, unionRanges } from "../util/range";
 import { Token } from "./lexer";
 import { Separator } from "./statement";
@@ -22,12 +23,17 @@ type ChartProperties = {
 
 type MeasureProperties = {
   readonly measure: number;
+  barlineShow: boolean;
+};
+
+type ChartTokenProperties = {
+  readonly gogotime: boolean;
 };
 
 /**
  * ノード
  */
-export class Node {
+export abstract class Node {
   readonly parent: ParentNode | undefined;
   protected _range: Range | undefined;
 
@@ -64,7 +70,7 @@ export class Node {
 /**
  * 末端ノード
  */
-export class LeafNode extends Node {
+export abstract class LeafNode extends Node {
   readonly value: string;
   override readonly _range: Range;
 
@@ -82,7 +88,7 @@ export class LeafNode extends Node {
 /**
  * 親ノード
  */
-export class ParentNode<T extends Node = Node> extends Node {
+export abstract class ParentNode<T extends Node = Node> extends Node {
   protected _children: T[] = [];
   protected override _range: Range | undefined;
   protected _ranges: Range[] = [];
@@ -181,13 +187,13 @@ export class ParentNode<T extends Node = Node> extends Node {
 }
 
 export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {}
-export class HeadersNode extends ParentNode<HeaderNode> {
+export abstract class HeadersNode extends ParentNode<HeaderNode> {
   properties: HeadersProperties = { headers: [] };
 }
 export class RootHeadersNode extends HeadersNode {}
 export class CourseNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {}
 export class CourseHeadersNode extends HeadersNode {}
-export class StatementNode<T extends Node> extends ParentNode<T> {
+export abstract class StatementNode<T extends Node> extends ParentNode<T> {
   properties: StatementProperties;
 
   constructor(parent: ParentNode | undefined, separator: Separator) {
@@ -222,9 +228,9 @@ export class ChartNode extends ParentNode<CommandNode | MeasureNode> {
   public override push(node: CommandNode | MeasureNode) {
     super.push(node);
     if (node instanceof CommandNode) {
-      if (node.properties.name === "START") {
+      if (commands.items.start.regexp.test(node.properties.name)) {
         this.properties.start = node.properties;
-      } else if (node.properties.name === "END") {
+      } else if (commands.items.end.regexp.test(node.properties.name)) {
         this.properties.end = node.properties;
       }
     } else if (node instanceof MeasureNode) {
@@ -235,14 +241,22 @@ export class ChartNode extends ParentNode<CommandNode | MeasureNode> {
 export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {
   properties: MeasureProperties;
 
-  constructor(parent: ParentNode | undefined, measure: number) {
+  constructor(parent: ParentNode | undefined, measure: number, barlineShow: boolean) {
     super(parent);
-    this.properties = { measure: measure };
+    this.properties = { measure: measure, barlineShow: barlineShow };
   }
 }
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}
 export class NameNode extends LeafNode {}
 export class ParameterNode extends LeafNode {}
 export class DelimiterNode extends LeafNode {}
-export class NoteNode extends LeafNode {}
-export class MeasureEndNode extends LeafNode {}
+export abstract class ChartTokenNode extends LeafNode {
+  properties: ChartTokenProperties;
+
+  constructor(parent: ParentNode | undefined, token: Token, gogoTime: boolean) {
+    super(parent, token);
+    this.properties = { gogotime: gogoTime };
+  }
+}
+export class NoteNode extends ChartTokenNode {}
+export class MeasureEndNode extends ChartTokenNode {}

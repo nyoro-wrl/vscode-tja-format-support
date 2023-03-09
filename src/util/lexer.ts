@@ -1,8 +1,9 @@
+import * as vscode from "vscode";
 import { Range } from "vscode";
 import { Token, TokenKind } from "../types/lexer";
 import { Separator } from "../types/statement";
 import { splitToRegExp } from "./statement";
-import { splitStringWithRegexDelimiter } from "./string";
+import { splitString } from "./string";
 
 /**
  * RawParameterをParameterに変換する
@@ -12,12 +13,13 @@ import { splitStringWithRegexDelimiter } from "./string";
  */
 export function tokenizedRawParameter(rawParameter: Token, separator: Separator): Token[] {
   if (rawParameter.kind !== "RawParameter") {
+    vscode.window.showErrorMessage('TokenKind must be "RawParameter".');
     throw new Error('TokenKind must be "RawParameter".');
   }
   const parameters: Token[] = [];
   const kind: TokenKind = separator === "Unknown" ? "RawParameter" : "Parameter";
   const regexp = splitToRegExp(separator);
-  const [texts, delimiters] = splitStringWithRegexDelimiter(rawParameter.value, regexp);
+  const [texts, delimiters] = splitString(rawParameter.value, regexp);
   for (const result of texts) {
     const value = result.value;
     const range = new Range(

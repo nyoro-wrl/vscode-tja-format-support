@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Range } from "vscode";
-import { splitStringWithRegexDelimiter } from "../util/string";
+import { splitString } from "../util/string";
 
 const headerLineRegExp = /^\s*([A-Z0-9]+):(.*)?\s*$/;
 const commandLineRegExp = /^\s*#([A-Z0-9]+)( (.*)+)?\s*$/;
@@ -216,7 +216,8 @@ export class Lexer {
       if (notesRegExp.test(text)) {
         const matches = notesRegExp.exec(text);
         if (matches === null) {
-          throw new Error();
+          vscode.window.showErrorMessage("字句解析に失敗しました。");
+          throw new Error("字句解析に失敗しました。");
         }
         const value = matches[1];
         const length = matches[1].length;
@@ -237,7 +238,8 @@ export class Lexer {
       } else if (measureEndRegExp.test(text)) {
         const matches = measureEndRegExp.exec(text);
         if (matches === null) {
-          throw new Error();
+          vscode.window.showErrorMessage("字句解析に失敗しました。");
+          throw new Error("字句解析に失敗しました。");
         }
         const value = matches[1];
         const length = matches[1].length;
@@ -258,7 +260,7 @@ export class Lexer {
         // 小節後のテキストを全てUnknownとして処理する
         const afterText = this.document.getText(this.range);
         if (/[^\s]+/.test(afterText)) {
-          const [matches, _] = splitStringWithRegexDelimiter(afterText, /\s+/g);
+          const [matches, _] = splitString(afterText, /\s+/g);
           for (const match of matches.filter((x) => x.value !== "")) {
             const range = new Range(
               this.range.start.line,
@@ -274,7 +276,8 @@ export class Lexer {
       } else if (spaceRegExp.test(text)) {
         const matches = spaceRegExp.exec(text);
         if (matches === null) {
-          throw new Error();
+          vscode.window.showErrorMessage("字句解析に失敗しました。");
+          throw new Error("字句解析に失敗しました。");
         }
         const length = matches[1].length;
         this.range = new Range(
@@ -286,7 +289,8 @@ export class Lexer {
       } else {
         const matches = /^([^0-9,\s]+)/.exec(text);
         if (matches === null) {
-          throw new Error();
+          vscode.window.showErrorMessage("字句解析に失敗しました。");
+          throw new Error("字句解析に失敗しました。");
         }
         const value = matches[1];
         const length = matches[1].length;

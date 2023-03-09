@@ -67,7 +67,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("拍子を変更します。  \n")
       .appendMarkdown("`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   scroll: {
     name: "SCROLL",
@@ -119,7 +119,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("一小節前から連打が始まる場合、その連打もカウントします。  \n\n")
       .appendMarkdown("分岐後は普通譜面`#N`、玄人譜面`#E`、達人譜面`#M`で記述します。").value,
     separator: "Comma",
-    section: "Inner",
+    section: "MeasureHead",
   },
   branchend: {
     name: "BRANCHEND",
@@ -130,7 +130,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("譜面分岐を終了します。  \n")
       .appendMarkdown("以降は全ての分岐で共通の譜面が流れます。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   n: {
     name: "N",
@@ -139,7 +139,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("N").value,
     documentation: new MarkdownString().appendMarkdown("普通譜面を記述します。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   e: {
     name: "E",
@@ -148,7 +148,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("E").value,
     documentation: new MarkdownString().appendMarkdown("玄人譜面を記述します。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   m: {
     name: "M",
@@ -157,7 +157,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("M").value,
     documentation: new MarkdownString().appendMarkdown("達人譜面を記述します。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   levelhold: {
     name: "LEVELHOLD",
@@ -169,7 +169,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("この命令がある小節に到達した場合、以後も譜面分岐が行われなくなります。")
       .value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   bmscroll: {
     name: "BMSCROLL",
@@ -200,7 +200,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("BARLINEOFF").value,
     documentation: new MarkdownString().appendMarkdown("小節線を非表示にします。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   barlineon: {
     name: "BARLINEON",
@@ -209,7 +209,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("BARLINEON").value,
     documentation: new MarkdownString().appendMarkdown("小節線を表示します。").value,
     separator: "None",
-    section: "Inner",
+    section: "MeasureHead",
   },
   // TJAPlayer2forPC
   lyric: {
@@ -286,7 +286,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("`<level>`: レベル  \n")
       .appendMarkdown("`<course>`: 難易度  \n").value,
     separator: "Comma",
-    section: "Inner",
+    section: "MeasureHead",
   },
   // TaikoManyGimmicks
   judgedelay: {

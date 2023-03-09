@@ -12,10 +12,12 @@ import { headers } from "./constants/headers";
 import { getRoot } from "./parser";
 import {
   ChartNode,
+  ChartTokenNode,
   CourseHeadersNode,
-  CourseNode,
   HeaderNode,
   HeadersNode,
+  MeasureEndNode,
+  MeasureNode,
   RootHeadersNode,
   RootNode,
 } from "./types/node";
@@ -114,6 +116,18 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         return;
       }
 
+      const beforeChartTokenNode = root.findLast(
+        (x) => x instanceof ChartTokenNode && x.range.start.line < position.line
+      ) as ChartTokenNode | undefined;
+      const beforeMeasureNode = root.findLast(
+        (x) =>
+          x instanceof MeasureNode && x.range !== undefined && x.range.start.line < position.line
+      ) as MeasureNode | undefined;
+      const gogoTime = beforeChartTokenNode?.properties.gogotime;
+      const barlineShow = beforeMeasureNode?.properties.barlineShow;
+      const measureHead =
+        beforeChartTokenNode === undefined || beforeChartTokenNode instanceof MeasureEndNode;
+
       let order = 0;
       for (const command of commands) {
         // 補完の非表示判定
@@ -121,24 +135,38 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
           (command.section === "Outer" || command.section === "Start") &&
           node.findParent((x) => x instanceof ChartNode)
         ) {
+          // コンテキストとの不一致
           continue;
         } else if (
-          (command.section === "Inner" || command.section === "End") &&
+          (command.section === "Inner" ||
+            command.section === "MeasureHead" ||
+            command.section === "End") &&
           !node.findParent((x) => x instanceof ChartNode)
         ) {
+          // コンテキストとの不一致
+          continue;
+        } else if (command.section === "MeasureHead" && !measureHead) {
+          // コンテキストとの不一致
           continue;
         } else if (command.section === "End" && node instanceof ChartNode && node.properties.end) {
+          // 既に#ENDが記載されている
           continue;
         }
 
         // 優先度の計算
         const sortText = new SortTextFactory();
         sortText.order4 += order;
+        if (!node.findParent((x) => x instanceof ChartNode)) {
+          // ヘッダーを優先したいため優先度を下げる
+          sortText.order1++;
+        }
         if (
-          node instanceof RootHeadersNode ||
-          node instanceof CourseNode ||
-          node instanceof CourseHeadersNode
+          (commands.items.gogostart.regexp.test(command.name) && gogoTime === true) ||
+          (commands.items.gogoend.regexp.test(command.name) && gogoTime === false) ||
+          (commands.items.barlineoff.regexp.test(command.name) && barlineShow === false) ||
+          (commands.items.barlineon.regexp.test(command.name) && barlineShow === true)
         ) {
+          // 直前のゴーゴー状態と一致しない場合は優先度を下げる
           sortText.order1++;
         }
 
