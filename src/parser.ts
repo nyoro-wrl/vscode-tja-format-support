@@ -5,18 +5,10 @@ import { Parser } from "./types/parser";
 
 const root: { [uri: string]: RootNode } = {};
 
-export const documentChange = vscode.workspace.onDidChangeTextDocument((event) => {
-  const editor = vscode.window.activeTextEditor;
-  const document = event.document;
-  if (editor && document === editor.document) {
-    documentParse(document);
-  }
-});
-
 export function documentParse(document: TextDocument): void {
-  const nodeParser = new Parser(document);
+  const parser = new Parser(document);
   const key = document.uri.toString();
-  root[key] = nodeParser.parse();
+  root[key] = parser.parse();
 }
 
 export function getRoot(document: TextDocument): RootNode {
@@ -31,5 +23,3 @@ export function getRoot(document: TextDocument): RootNode {
   }
   return result;
 }
-
-// TODO ファイルを閉じたときに構文解析結果を削除する

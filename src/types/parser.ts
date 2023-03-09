@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
-import { addSyntaxError, clearDiagnostics } from "../error";
+import { addDiagnostic, clearDiagnostics } from "../diagnostic";
 import { Lexer, Token } from "./lexer";
 import { findLast } from "lodash";
 import { tokenizedRawParameter } from "../util/lexer";
@@ -33,7 +33,7 @@ export class Parser {
   /**
    * 字句解析から取得したトークン配列
    */
-  private readonly tokens: Token[];
+  readonly tokens: Token[];
   /**
    * 処理中のトークン位置
    */
@@ -65,6 +65,10 @@ export class Parser {
     this.tokens = tokens;
   }
 
+  /**
+   * 構文解析して構文木を取得
+   * @returns
+   */
   public parse(): RootNode {
     clearDiagnostics();
     const node = new RootNode(undefined);
@@ -114,7 +118,7 @@ export class Parser {
     for (; this.position < this.tokens.length; this.position++) {
       const token = this.tokens[this.position];
       if (token.kind === "Unknown") {
-        addSyntaxError(token.range, "不正なテキストです。");
+        addDiagnostic(token.range, "不正なテキストです。");
       } else {
         if (parent instanceof RootNode) {
           if (token.kind === "Header") {
@@ -133,10 +137,7 @@ export class Parser {
               let node = this.childrenFindLastOrCreateRootHeaders(parent);
               node = this.parseNode(node);
             } else {
-              addSyntaxError(
-                token.range,
-                `No processing defined for HeaderSection = "${section}".`
-              );
+              addDiagnostic(token.range, `No processing defined for HeaderSection = "${section}".`);
             }
           } else if (token.kind === "Command") {
             if (this.chartAfter) {
@@ -149,13 +150,13 @@ export class Parser {
               node = this.parseNode(node);
             }
           } else if (token.kind === "Notes") {
-            addSyntaxError(token.range, "#START がありません。");
+            addDiagnostic(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addSyntaxError(token.range, "不正なテキストです。");
+            addDiagnostic(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else if (parent instanceof RootHeadersNode || parent instanceof CourseHeadersNode) {
           if (token.kind === "Header") {
@@ -173,13 +174,13 @@ export class Parser {
             this.position--;
             return parent;
           } else if (token.kind === "Notes") {
-            addSyntaxError(token.range, "#START がありません。");
+            addDiagnostic(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addSyntaxError(token.range, "不正なテキストです。");
+            addDiagnostic(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else if (parent instanceof CourseNode) {
           if (token.kind === "Header") {
@@ -196,10 +197,7 @@ export class Parser {
               this.position--;
               return parent;
             } else {
-              addSyntaxError(
-                token.range,
-                `No processing defined for HeaderSection = "${section}".`
-              );
+              addDiagnostic(token.range, `No processing defined for HeaderSection = "${section}".`);
             }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
@@ -221,21 +219,21 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(node.range ?? new Range(0, 0, 0, 0), "#START がありません。");
+              addDiagnostic(node.range ?? new Range(0, 0, 0, 0), "#START がありません。");
             } else {
-              addSyntaxError(
+              addDiagnostic(
                 token.range,
                 `No processing defined for CommandSection = "${section}".`
               );
             }
           } else if (token.kind === "Notes") {
-            addSyntaxError(token.range, "#START がありません。");
+            addDiagnostic(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addSyntaxError(token.range, "不正なテキストです。");
+            addDiagnostic(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else if (parent instanceof StatementNode) {
           if (
@@ -276,11 +274,11 @@ export class Parser {
             parent.pushRange(token.range);
             return parent;
           } else {
-            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else if (parent instanceof ChartNode) {
           if (token.kind === "Header") {
-            addSyntaxError(token.range, "ヘッダの位置が不正です。");
+            addDiagnostic(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -289,7 +287,7 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(token.range, "命令の位置が不正です。");
+              addDiagnostic(token.range, "命令の位置が不正です。");
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               let node = new MeasureNode(parent, this.measure, this.barlineShow);
               node = this.parseNode(node);
@@ -314,7 +312,7 @@ export class Parser {
               this.barlineShow = true;
               return parent;
             } else {
-              addSyntaxError(
+              addDiagnostic(
                 token.range,
                 `No processing defined for CommandSection = "${section}".`
               );
@@ -327,11 +325,11 @@ export class Parser {
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
-            addSyntaxError(token.range, "ヘッダの位置が不正です。");
+            addDiagnostic(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -340,7 +338,7 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addSyntaxError(token.range, "命令の位置が不正です。");
+              addDiagnostic(token.range, "命令の位置が不正です。");
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
@@ -357,18 +355,24 @@ export class Parser {
               if (parent.find((x) => x instanceof ChartTokenNode) !== undefined) {
                 parent.properties.barlineShow = this.barlineShow;
                 if (section === "MeasureHead") {
-                  addSyntaxError(token.range, "命令の位置が不正です。");
+                  addDiagnostic(token.range, "命令の位置が不正です。");
                 }
               }
             } else if (section === "End") {
               if (!parent.children.every((x) => x instanceof CommandNode)) {
-                const previewToken = this.tokens[this.position - 1];
-                addSyntaxError(previewToken.range, "小節が閉じられていません。");
+                const node = parent.findLast((x) => x instanceof NoteNode) as NoteNode | undefined;
+                if (node !== undefined) {
+                  addDiagnostic(
+                    new Range(node.range.end, node.range.end),
+                    "小節が閉じられていません。",
+                    "Saved"
+                  );
+                }
               }
               this.position--;
               return parent;
             } else {
-              addSyntaxError(
+              addDiagnostic(
                 token.range,
                 `No processing defined for CommandSection = "${section}".`
               );
@@ -383,10 +387,10 @@ export class Parser {
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addSyntaxError(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
           }
         } else {
-          addSyntaxError(token.range, "No processing defined");
+          addDiagnostic(token.range, "No processing defined");
         }
       }
     }
@@ -394,7 +398,7 @@ export class Parser {
       if (parent instanceof ChartNode) {
         const lastEol = findLast(this.tokens, (x) => x.kind === "EndOfLine");
         if (lastEol?.range !== undefined) {
-          addSyntaxError(lastEol.range, "#END がありません。");
+          addDiagnostic(lastEol.range, "#END がありません。");
         }
       }
     }
