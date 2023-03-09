@@ -40,7 +40,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       return;
     }
 
-    // 直前のヘッダーを調べて関連性の高いヘッダーを取得
+    // 直前のヘッダを調べて関連性の高いヘッダを取得
     const recommend: string[] = [];
     const headersNode = node.findParent((x) => x instanceof HeadersNode) as HeadersNode | undefined;
     if (headersNode !== undefined) {
@@ -63,7 +63,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       if (node instanceof HeadersNode) {
         for (const containHeader of node.properties.headers) {
           if (header.regexp.test(containHeader.name)) {
-            // 既存のヘッダーの場合は優先度を下げる
+            // 既存のヘッダの場合は優先度を下げる
             sortText.order2++;
           }
         }
@@ -75,7 +75,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
           sortText.order3++;
         }
         if (recommend.includes(header.name)) {
-          // 直前のヘッダーと関連性が高い場合は優先度を上げる
+          // 直前のヘッダと関連性が高い場合は優先度を上げる
           sortText.order1--;
         }
       }
@@ -157,7 +157,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         const sortText = new SortTextFactory();
         sortText.order4 += order;
         if (!node.findParent((x) => x instanceof ChartNode)) {
-          // ヘッダーを優先したいため優先度を下げる
+          // ヘッダを優先したいため優先度を下げる
           sortText.order1++;
         }
         if (

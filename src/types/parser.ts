@@ -280,7 +280,7 @@ export class Parser {
           }
         } else if (parent instanceof ChartNode) {
           if (token.kind === "Header") {
-            addSyntaxError(token.range, "ヘッダーの位置が不正です。");
+            addSyntaxError(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -331,7 +331,7 @@ export class Parser {
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
-            addSyntaxError(token.range, "ヘッダーの位置が不正です。");
+            addSyntaxError(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";

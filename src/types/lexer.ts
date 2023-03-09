@@ -11,10 +11,10 @@ const spaceRegExp = /^(\s+)/;
 /**
  * トークンの種類
  *
- *     "Header" // ヘッダー（先頭）
+ *     "Header" // ヘッダ（先頭）
  *     "Command" // 命令（先頭）
- *     "RawParameter" // ヘッダーまたは命令のパラメーター（分割なし）
- *     "Parameter" // ヘッダーまたは命令のパラメーター
+ *     "RawParameter" // ヘッダまたは命令のパラメーター（分割なし）
+ *     "Parameter" // ヘッダまたは命令のパラメーター
  *     "Delimiter" // パラメーターの区切り文字
  *     "Notes" // ノーツ
  *     "MeasureEnd" // 小節の終わり
@@ -145,7 +145,7 @@ export class Lexer {
   }
 
   /**
-   * 行がヘッダーかどうか
+   * 行がヘッダかどうか
    * @returns
    */
   private isHeader(): boolean {
@@ -154,7 +154,7 @@ export class Lexer {
   }
 
   /**
-   * ヘッダー行のトークンを取得
+   * ヘッダ行のトークンを取得
    * @returns
    */
   private getHeader(): Token[] {

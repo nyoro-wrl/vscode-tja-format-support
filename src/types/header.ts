@@ -1,24 +1,24 @@
 import { IStatement, StatementCollection } from "./statement";
 
 /**
- * ヘッダーの記載位置
+ * ヘッダの記載位置
  *
- *     "Root" // 共通ヘッダー
- *     "Course" // 難易度別ヘッダー
+ *     "Root" // 共通ヘッダ
+ *     "Course" // 難易度別ヘッダ
  *     "Unknown" // 不明
  */
 type HeaderSection = "Root" | "Course" | "Unknown";
 
 /**
- * ヘッダー
+ * ヘッダ
  */
 interface IHeader extends IStatement {
   /**
-   * ヘッダーの記載位置
+   * ヘッダの記載位置
    */
   readonly section: HeaderSection;
   /**
-   * この後に書かれる可能性の高いヘッダー
+   * この後に書かれる可能性の高いヘッダ
    */
   readonly recommend: string[];
 }

@@ -2,7 +2,7 @@ import { MarkdownString, SnippetString } from "vscode";
 import { HeaderCollection } from "../types/header";
 
 /**
- * ヘッダーの仕様一覧
+ * ヘッダの仕様一覧
  */
 export const headers = new HeaderCollection({
   // 太鼓さん次郎
