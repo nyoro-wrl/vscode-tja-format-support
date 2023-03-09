@@ -20,12 +20,11 @@ export const measureStatusBar = vscode.window.onDidChangeTextEditorSelection((ev
     // カーソル位置の小節を検索
     const measureNode = root.find(
       (x) =>
-        (x instanceof MeasureNode ||
-          (x instanceof CommandNode && x.properties.measure !== undefined)) &&
+        x instanceof MeasureNode &&
         x.range !== undefined &&
         x.range.start.line <= position.line &&
         x.range.end.line >= position.line
-    ) as MeasureNode | CommandNode | undefined;
+    ) as MeasureNode | undefined;
     const measure = measureNode?.properties.measure;
     // 最大小節数を取得
     const maxMeasure = (

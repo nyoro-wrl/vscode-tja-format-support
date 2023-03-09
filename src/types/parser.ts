@@ -25,9 +25,6 @@ import {
   StatementNode,
 } from "./node";
 
-// TODO 譜面内の命令は基本的にMeasureNodeに入れるようにする
-// TODO 命令のプロパティから小節を削除する
-
 /**
  * 構文解析
  */
@@ -201,19 +198,19 @@ export class Parser {
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Unknown") {
-              let node = new CommandNode(parent, separator, undefined);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "Start") {
               let chart = new ChartNode(parent);
-              let start = new CommandNode(chart, separator, undefined);
+              let start = new CommandNode(chart, separator);
               start = this.parseNode(start);
               chart.push(start);
               this.position++;
               chart = this.parseNode(chart);
               parent.push(chart);
             } else if (section === "Inner" || section === "End") {
-              let node = new CommandNode(parent, separator, undefined);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(node.range ?? new Range(0, 0, 0, 0), "Invalid command position.");
@@ -282,16 +279,24 @@ export class Parser {
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(parent, separator, undefined);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(token.range, "Invalid command position.");
             } else if (section === "Inner" || section === "Unknown") {
-              let node = new CommandNode(parent, separator, this.measure);
+              let node = new MeasureNode(parent, this.measure);
               node = this.parseNode(node);
-              parent.push(node);
+              if (node.children.every((x) => x instanceof CommandNode)) {
+                for (const child of node.children) {
+                  const node = child as CommandNode;
+                  parent.push(node);
+                }
+              } else {
+                this.measure++;
+                parent.push(node);
+              }
             } else if (section === "End") {
-              let node = new CommandNode(parent, separator, undefined);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               this.chartAfter = true;
@@ -322,17 +327,19 @@ export class Parser {
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(parent, separator, parent.properties.measure);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
               addSyntaxError(token.range, "Invalid command position.");
             } else if (section === "Inner" || section === "Unknown") {
-              let node = new CommandNode(parent, separator, parent.properties.measure);
+              let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "End") {
-              const previewToken = this.tokens[this.position - 1];
-              addSyntaxError(previewToken.range, "Unclosed measure.");
+              if (!parent.children.every((x) => x instanceof CommandNode)) {
+                const previewToken = this.tokens[this.position - 1];
+                addSyntaxError(previewToken.range, "Unclosed measure.");
+              }
               this.position--;
               return parent;
             } else {

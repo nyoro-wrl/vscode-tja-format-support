@@ -20,10 +20,6 @@ type ChartProperties = {
   measure: number;
 };
 
-type CommandProperties = StatementProperties & {
-  readonly measure: number | undefined;
-};
-
 type MeasureProperties = {
   readonly measure: number;
 };
@@ -219,20 +215,7 @@ export class StatementNode<T extends Node> extends ParentNode<T> {
   }
 }
 export class HeaderNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
-export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {
-  override properties: CommandProperties;
-
-  constructor(parent: ParentNode | undefined, separator: Separator, measure: number | undefined) {
-    super(parent, separator);
-    this.properties = {
-      name: "",
-      parameter: "",
-      parameters: [],
-      separator: separator,
-      measure: measure,
-    };
-  }
-}
+export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
 export class ChartNode extends ParentNode<CommandNode | MeasureNode> {
   properties: ChartProperties = { start: undefined, end: undefined, measure: 0 };
 
