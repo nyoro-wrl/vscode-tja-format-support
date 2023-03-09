@@ -7,6 +7,8 @@ import {
   CourseNode,
   HeaderNode,
   Node,
+  ParameterNode,
+  ParametersNode,
   ParentNode,
   RootHeadersNode,
   RootNode,
@@ -29,18 +31,29 @@ function nodeToSymbols<T extends Node>(node: T): DocumentSymbol[] {
     let symbol: DocumentSymbol | undefined;
     // 親をシンボル化する場合はinstanceofで判定してsymbolを作成する
     if (node instanceof RootHeadersNode) {
-      // TODO 曲のタイトルで書き換える
-      symbol = new DocumentSymbol("Title", "", SymbolKind.Enum, node.range, node.range);
+      const title = node.properties.headers.find((x) => x.name === "TITLE")?.parameter ?? "";
+      symbol = new DocumentSymbol("TITLE: " + title, "", SymbolKind.Enum, node.range, node.range);
     } else if (node instanceof CourseNode) {
-      // TODO 難易度で書き換える
-      symbol = new DocumentSymbol("Course", "", SymbolKind.Class, node.range, node.range);
+      const course =
+        (
+          node.find((x) => x instanceof CourseHeadersNode) as CourseHeadersNode | undefined
+        )?.properties.headers.find((x) => x.name === "COURSE")?.parameter ?? "";
+      symbol = new DocumentSymbol(
+        "COURSE: " + course,
+        "",
+        SymbolKind.Class,
+        node.range,
+        node.range
+      );
     } else if (node instanceof HeaderNode) {
       symbol = new DocumentSymbol(
         node.properties.name + ":",
         node.properties.parameter,
         SymbolKind.Constant,
         node.range,
-        node.range
+        node.find((x) => x instanceof ParametersNode)?.range ??
+          node.find((x) => x instanceof ParameterNode)?.range ??
+          node.range
       );
     } else if (node instanceof CommandNode && node.parent instanceof CourseNode) {
       symbol = new DocumentSymbol(
@@ -51,8 +64,8 @@ function nodeToSymbols<T extends Node>(node: T): DocumentSymbol[] {
         node.range
       );
     } else if (node instanceof ChartNode) {
-      // TODO detailにプレイヤーを追記する
-      symbol = new DocumentSymbol("Chart", "", SymbolKind.Variable, node.range, node.range);
+      const player = node.properties.start?.parameter ?? "";
+      symbol = new DocumentSymbol("#START", player, SymbolKind.Variable, node.range, node.range);
     }
 
     if (symbol !== undefined) {

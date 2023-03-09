@@ -17,6 +17,10 @@ interface IHeader extends IStatement {
    * ヘッダーの記載位置
    */
   readonly section: HeaderSection;
+  /**
+   * この後に書かれる可能性の高いヘッダー
+   */
+  readonly recommend: string[];
 }
 
 interface IHeaderRecord extends Record<string, IHeader> {

@@ -3,11 +3,21 @@ import { mergeRanges, unionRanges } from "../util/range";
 import { Token } from "./lexer";
 import { Separator } from "./statement";
 
+type HeadersProperties = {
+  readonly headers: StatementProperties[];
+};
+
 type StatementProperties = {
   name: string;
   parameter: string;
   parameters: string[];
   separator: Separator;
+};
+
+type ChartProperties = {
+  start: StatementProperties | undefined;
+  end: StatementProperties | undefined;
+  measure: number;
 };
 
 type CommandProperties = StatementProperties & {
@@ -22,7 +32,7 @@ type MeasureProperties = {
  * ノード
  */
 export class Node {
-  readonly parent: Readonly<ParentNode> | undefined;
+  readonly parent: ParentNode | undefined;
   protected _range: Range | undefined;
 
   get range(): Readonly<Range> | undefined {
@@ -31,6 +41,27 @@ export class Node {
 
   constructor(parent: ParentNode | undefined) {
     this.parent = parent;
+  }
+
+  /**
+   * 親ノードを再帰的に検索し、最初に一致したNodeを返す
+   * @param predicate
+   * @param includeSelf 自身を検索対象に含む
+   * @returns
+   */
+  public findParent(
+    predicate: (node: Node) => boolean,
+    includeSelf: boolean = true
+  ): Node | undefined {
+    if (includeSelf && predicate(this)) {
+      return this;
+    }
+    if (this.parent !== undefined) {
+      const result = this.parent.findParent(predicate);
+      if (result !== undefined) {
+        return result;
+      }
+    }
   }
 }
 
@@ -73,12 +104,13 @@ export class ParentNode<T extends Node = Node> extends Node {
   }
 
   /**
-   * 自分と子ノードを再帰的に検索し、最初に一致したNodeを返す
+   * 子ノードを再帰的に検索し、最初に一致したNodeを返す
    * @param predicate
+   * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public find(predicate: (node: Node) => boolean): Node | undefined {
-    if (predicate(this)) {
+  public find(predicate: (node: Node) => boolean, includeSelf: boolean = true): Node | undefined {
+    if (includeSelf && predicate(this)) {
       return this;
     }
     for (const child of this.children) {
@@ -87,18 +119,24 @@ export class ParentNode<T extends Node = Node> extends Node {
         if (result !== undefined) {
           return result;
         }
+      } else if (predicate(child)) {
+        return child;
       }
     }
   }
 
   /**
-   * 自分と子ノードを再帰的に検索し、最後に一致したNodeを返す
+   * 子ノードを再帰的に検索し、最後に一致したNodeを返す
    * @param predicate
+   * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public findLast(predicate: (node: Node) => boolean): Node | undefined {
+  public findLast(
+    predicate: (node: Node) => boolean,
+    includeSelf: boolean = true
+  ): Node | undefined {
     let result: Node | undefined;
-    if (predicate(this)) {
+    if (includeSelf && predicate(this)) {
       result = this;
     }
     for (const child of this.children) {
@@ -107,6 +145,8 @@ export class ParentNode<T extends Node = Node> extends Node {
         if (node !== undefined) {
           result = node;
         }
+      } else if (predicate(child)) {
+        result = child;
       }
     }
     return result;
@@ -145,47 +185,46 @@ export class ParentNode<T extends Node = Node> extends Node {
 }
 
 export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {}
-export class RootHeadersNode extends ParentNode<HeaderNode> {}
+export class HeadersNode extends ParentNode<HeaderNode> {
+  properties: HeadersProperties = { headers: [] };
+}
+export class RootHeadersNode extends HeadersNode {}
 export class CourseNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {}
-export class CourseHeadersNode extends ParentNode<HeaderNode> {}
+export class CourseHeadersNode extends HeadersNode {}
 export class StatementNode<T extends Node> extends ParentNode<T> {
-  protected _properties: StatementProperties;
-
-  get properties(): Readonly<StatementProperties> {
-    return this._properties;
-  }
+  properties: StatementProperties;
 
   constructor(parent: ParentNode | undefined, separator: Separator) {
     super(parent);
-    this._properties = { name: "", parameter: "", parameters: [], separator: separator };
+    this.properties = { name: "", parameter: "", parameters: [], separator: separator };
   }
 
   public override push(node: T) {
     super.push(node);
     if (node instanceof NameNode) {
-      this._properties.name += node.value;
+      this.properties.name += node.value;
     } else if (node instanceof ParameterNode) {
-      this._properties.parameter += node.value;
-      this._properties.parameters.push(node.value);
+      this.properties.parameter += node.value;
+      this.properties.parameters.push(node.value);
     } else if (node instanceof ParametersNode) {
-      this._properties.parameter += node.children.map((x) => x.value).join("");
-      this._properties.parameters.push(
+      this.properties.parameter += node.children.map((x) => x.value).join("");
+      this.properties.parameters.push(
         ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
       );
+    }
+
+    if (this.parent instanceof HeadersNode) {
+      this.parent.properties.headers.push(this.properties);
     }
   }
 }
 export class HeaderNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
 export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {
-  protected override _properties: CommandProperties;
-
-  get properties(): Readonly<CommandProperties> {
-    return this._properties;
-  }
+  override properties: CommandProperties;
 
   constructor(parent: ParentNode | undefined, separator: Separator, measure: number | undefined) {
     super(parent, separator);
-    this._properties = {
+    this.properties = {
       name: "",
       parameter: "",
       parameters: [],
@@ -194,17 +233,28 @@ export class CommandNode extends StatementNode<NameNode | ParameterNode | Parame
     };
   }
 }
-export class ChartNode extends ParentNode<CommandNode | MeasureNode> {}
-export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {
-  protected _properties: MeasureProperties;
+export class ChartNode extends ParentNode<CommandNode | MeasureNode> {
+  properties: ChartProperties = { start: undefined, end: undefined, measure: 0 };
 
-  get properties(): Readonly<MeasureProperties> {
-    return this._properties;
+  public override push(node: CommandNode | MeasureNode) {
+    super.push(node);
+    if (node instanceof CommandNode) {
+      if (node.properties.name === "START") {
+        this.properties.start = node.properties;
+      } else if (node.properties.name === "END") {
+        this.properties.end = node.properties;
+      }
+    } else if (node instanceof MeasureNode) {
+      this.properties.measure = node.properties.measure;
+    }
   }
+}
+export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {
+  properties: MeasureProperties;
 
   constructor(parent: ParentNode | undefined, measure: number) {
     super(parent);
-    this._properties = { measure: measure };
+    this.properties = { measure: measure };
   }
 }
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}

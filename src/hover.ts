@@ -9,24 +9,23 @@ const hover = vscode.languages.registerHoverProvider("tja", {
       symbol: new MarkdownString(),
       documentation: new MarkdownString(),
     };
-    const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
+    const wordRange = document.getWordRangeAtPosition(position, /^\s*#?[a-zA-Z0-9]+:?/);
     if (wordRange === undefined) {
       return Promise.reject("no word here");
     }
 
     const line = document.lineAt(position.line).text;
     const currentWord = line.slice(wordRange.start.character, wordRange.end.character);
-    const nextChar = line.slice(wordRange.end.character, wordRange.end.character + 1);
 
-    if (nextChar === ":") {
+    if (/:$/.test(currentWord)) {
       // ヘッダ
-      const key = currentWord;
+      const key = currentWord.slice(0, currentWord.length - 1);
       const item = headers.get(key);
       if (item !== undefined) {
         hover.symbol = new MarkdownString(item.syntax);
         hover.documentation = new MarkdownString(item.documentation);
       }
-    } else if (currentWord[0] === "#") {
+    } else if (/^#/.test(currentWord)) {
       // 命令
       const key = currentWord.slice(1);
       const item = commands.get(key);

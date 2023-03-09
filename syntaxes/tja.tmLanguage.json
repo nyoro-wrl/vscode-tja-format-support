@@ -28,7 +28,7 @@
     },
     "header": {
       "comment": "ヘッダ",
-      "begin": "^(?=[A-Z0-9]*:)",
+      "begin": "^(?=\\s*[A-Z0-9]*:)",
       "end": "$",
       "patterns": [
         {
@@ -37,11 +37,11 @@
         },
         {
           "name": "header",
-          "match": "^[A-Z0-9]*"
+          "match": "(?<=^\\s*)[A-Z0-9]+(?=:)"
         },
         {
           "name": "header.prefix",
-          "match": "(?<=^SUBTITLE:)([+][+]|--)"
+          "match": "(?<=^\\s*SUBTITLE:)([+][+]|--)"
         }
       ]
     },
@@ -56,11 +56,11 @@
         },
         {
           "name": "command.branch",
-          "match": "(?=\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)\\s"
+          "match": "(?<=^\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)\\s"
         },
         {
           "name": "command",
-          "match": "(?=\\s*)#[A-Z0-9]+\\s"
+          "match": "(?<=^\\s*)#[A-Z0-9]*\\s"
         },
         {
           "name": "command.variable",

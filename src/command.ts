@@ -1,0 +1,57 @@
+import * as vscode from "vscode";
+import { Selection } from "vscode";
+import { getRoot } from "./parser";
+import { ChartNode, MeasureNode } from "./types/node";
+
+export const jumpMeasure = vscode.commands.registerTextEditorCommand(
+  "tja.jumpMeasure",
+  async (textEditor, edit) => {
+    // 現在のカーソル位置が譜面内か検証する
+    const position = textEditor.selection.active;
+    const root = getRoot(textEditor.document);
+    const chartNode = root.findLast(
+      (x) => x instanceof ChartNode && x.range !== undefined && x.range.contains(position)
+    ) as ChartNode | undefined;
+
+    if (chartNode === undefined) {
+      return;
+    }
+
+    const maxMeasure = chartNode.properties.measure;
+
+    const input = await vscode.window.showInputBox({
+      prompt: `移動先の小節を入力してください（最大${maxMeasure}）`,
+      placeHolder: `1 ~ ${maxMeasure}`,
+      validateInput: (text) => {
+        if (!text) {
+          return;
+        }
+        if (Number.isNaN(Number(text))) {
+          return "数値を入力してください";
+        }
+        const number = Number(text);
+        if (!Number.isInteger(number)) {
+          return "整数を入力してください";
+        } else if (!(number >= 1 && number <= maxMeasure)) {
+          return "範囲外です";
+        }
+      },
+    });
+    if (input === undefined) {
+      return;
+    }
+
+    const measure = Number(input);
+
+    const jump = chartNode.find(
+      (x) => x instanceof MeasureNode && x.properties.measure === measure
+    );
+
+    if (jump?.range !== undefined) {
+      textEditor.selection = new Selection(jump.range.start, jump.range.end);
+      textEditor.revealRange(jump.range, vscode.TextEditorRevealType.InCenter);
+    }
+
+    vscode.window.showTextDocument(textEditor.document);
+  }
+);

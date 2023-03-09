@@ -25,6 +25,9 @@ import {
   StatementNode,
 } from "./node";
 
+// TODO 譜面内の命令は基本的にMeasureNodeに入れるようにする
+// TODO 命令のプロパティから小節を削除する
+
 /**
  * 構文解析
  */

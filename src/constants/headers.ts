@@ -14,6 +14,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown("曲のタイトル。").value,
     section: "Root",
     separator: "None",
+    recommend: ["SUBTITLE"],
   },
   level: {
     name: "LEVEL",
@@ -25,6 +26,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("自然数で表記します。").value,
     section: "Course",
     separator: "None",
+    recommend: [],
   },
   bpm: {
     name: "BPM",
@@ -34,6 +36,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown("曲のBPM。").value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   wave: {
     name: "WAVE",
@@ -45,6 +48,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。").value,
     section: "Root",
     separator: "None",
+    recommend: ["OFFSET"],
   },
   offset: {
     name: "OFFSET",
@@ -56,6 +60,7 @@ export const headers = new HeaderCollection({
     ).value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   balloon: {
     name: "BALLOON",
@@ -67,6 +72,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("省略した場合は一律5打になります。").value,
     section: "Course",
     separator: "Comma",
+    recommend: ["BALLOONNOR", "BALLOONEXP", "BALLOONMAS"],
   },
   songvol: {
     name: "SONGVOL",
@@ -78,6 +84,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("基準値は100。").value,
     section: "Root",
     separator: "None",
+    recommend: ["SEVOL"],
   },
   sevol: {
     name: "SEVOL",
@@ -89,6 +96,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("基準値は100。").value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   scoreinit: {
     name: "SCOREINIT",
@@ -100,6 +108,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("10コンボ未満の時に小音符を良判定で叩いたときの得点を指定します。").value,
     section: "Course",
     separator: "None",
+    recommend: ["SCOREDIFF"],
   },
   scorediff: {
     name: "SCOREDIFF",
@@ -111,6 +120,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("一定のコンボ数ごとに加算される一打あたりの点数を指定します。").value,
     section: "Course",
     separator: "None",
+    recommend: [],
   },
   course: {
     name: "COURSE",
@@ -126,6 +136,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`Dan`または`6`を入れると段位道場譜面として認識されます。").value,
     section: "Course",
     separator: "None",
+    recommend: ["LEVEL"],
   },
   style: {
     name: "STYLE",
@@ -140,6 +151,7 @@ export const headers = new HeaderCollection({
       ).value,
     section: "Course",
     separator: "None",
+    recommend: [],
   },
   life: {
     name: "LIFE",
@@ -151,6 +163,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("不可を出すたびにライフが減り、0になると強制的に演奏が中断されます。").value,
     section: "Course",
     separator: "None",
+    recommend: [],
   },
   demostart: {
     name: "DEMOSTART",
@@ -162,6 +175,7 @@ export const headers = new HeaderCollection({
     ).value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   side: {
     name: "SIDE",
@@ -176,6 +190,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`Both`か`3`を入力した場合は常に表示されます（初期設定）。").value,
     section: "Root",
     separator: "None",
+    recommend: ["SIDEREV"],
   },
   subtitle: {
     name: "SUBTITLE",
@@ -187,6 +202,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   song: {
     name: "SONG",
@@ -199,6 +215,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`<filepath>`: tjaファイルをルートディレクトリから指定します。").value,
     section: "Root",
     separator: "None",
+    recommend: ["SONG"],
   },
   // 太鼓さん次郎2
   siderev: {
@@ -210,6 +227,7 @@ export const headers = new HeaderCollection({
       .value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   scoremode: {
     name: "SCOREMODE",
@@ -222,6 +240,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`0`でドンだフル、`1`でAC14、`2`で新筐体。").value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   total: {
     name: "TOTAL",
@@ -233,6 +252,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("全良でゲージが満タンになる基準値を100とします。  \n").value,
     section: "Course",
     separator: "None",
+    recommend: [],
   },
   // TJAPlayer2forPC
   balloonnor: {
@@ -245,6 +265,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("省略した場合は一律5打になります。").value,
     section: "Course",
     separator: "Comma",
+    recommend: ["BALLOONEXP", "BALLOONMAS"],
   },
   balloonexp: {
     name: "BALLOONEXP",
@@ -256,6 +277,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("省略した場合は一律5打になります。").value,
     section: "Course",
     separator: "Comma",
+    recommend: ["BALLOONMAS"],
   },
   balloonmas: {
     name: "BALLOONMAS",
@@ -267,6 +289,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("省略した場合は一律5打になります。").value,
     section: "Course",
     separator: "Comma",
+    recommend: [],
   },
   genre: {
     name: "GENRE",
@@ -276,6 +299,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown("曲のジャンル。").value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   movieoffset: {
     name: "MOVIEOFFSET",
@@ -287,6 +311,7 @@ export const headers = new HeaderCollection({
     ).value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   bgimage: {
     name: "BGIMAGE",
@@ -296,6 +321,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown("背景画像ファイルのパス。").value,
     section: "Root",
     separator: "None",
+    recommend: ["BGMOVIE", "BGOFFSET"],
   },
   bgmovie: {
     name: "BGMOVIE",
@@ -305,6 +331,7 @@ export const headers = new HeaderCollection({
     documentation: new MarkdownString().appendMarkdown("背景動画ファイルのパス。").value,
     section: "Root",
     separator: "None",
+    recommend: ["MOVIEOFFSET"],
   },
   hiddenbranch: {
     name: "HIDDENBRANCH",
@@ -315,10 +342,11 @@ export const headers = new HeaderCollection({
       .value,
     section: "Course",
     separator: "None",
+    recommend: [],
   },
   // OpenTaiko
   exam: {
-    name: "EXAMn",
+    name: "EXAM",
     regexp: /^EXAM[0-9]+$/,
     syntax: new MarkdownString().appendCodeblock("EXAM1:<type>,<red>,<gold>,<range>").value,
     snippet: new SnippetString().appendText("EXAM").appendPlaceholder("n").appendText(":").value,
@@ -345,6 +373,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`c`: 最大コンボ数").value,
     section: "Root",
     separator: "Comma",
+    recommend: [],
   },
   preimage: {
     name: "PREIMAGE",
@@ -355,6 +384,7 @@ export const headers = new HeaderCollection({
       .value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   bgoffset: {
     name: "BGOFFSET",
@@ -366,6 +396,7 @@ export const headers = new HeaderCollection({
     ).value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
   dantick: {
     name: "DANTICK",
@@ -384,6 +415,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`5`: 外伝").value,
     section: "Root",
     separator: "None",
+    recommend: ["DANTICKCOLOR"],
   },
   dantickcolor: {
     name: "DANTICKCOLOR",
@@ -394,5 +426,6 @@ export const headers = new HeaderCollection({
       .value,
     section: "Root",
     separator: "None",
+    recommend: [],
   },
 });
