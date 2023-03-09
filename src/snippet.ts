@@ -145,10 +145,17 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         ) {
           // コンテキストとの不一致
           continue;
-        } else if (command.section === "MeasureHead" && !measureHead) {
+        } else if (
+          (command.section === "MeasureHead" || command.section === "End") &&
+          !measureHead
+        ) {
           // コンテキストとの不一致
           continue;
-        } else if (command.section === "End" && node instanceof ChartNode && node.properties.end) {
+        } else if (
+          command.section === "End" &&
+          node instanceof ChartNode &&
+          node.properties.end !== undefined
+        ) {
           // 既に#ENDが記載されている
           continue;
         }

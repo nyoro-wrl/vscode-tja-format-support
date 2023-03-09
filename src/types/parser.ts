@@ -392,8 +392,10 @@ export class Parser {
     }
     if (this.position >= this.tokens.length) {
       if (parent instanceof ChartNode) {
-        const previewToken = this.tokens[this.position - 1];
-        addSyntaxError(previewToken.range, "#END がありません。");
+        const lastEol = findLast(this.tokens, (x) => x.kind === "EndOfLine");
+        if (lastEol?.range !== undefined) {
+          addSyntaxError(lastEol.range, "#END がありません。");
+        }
       }
     }
     return parent;
