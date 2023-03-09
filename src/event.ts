@@ -1,29 +1,80 @@
 import * as vscode from "vscode";
-import { showSavedDiagnostic } from "./diagnostic";
-import { documentParse } from "./parser";
-import { measureShowStatusBar } from "./statusBar";
+import { Documents } from "./documents";
+import { hideMeasureStatusBar, updateMeasureStatusBar } from "./statusBar";
+
+/**
+ * カーソル位置の更新
+ */
+export const changeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection((event) => {
+  const document = event.textEditor.document;
+  if (document.languageId !== "tja") {
+    hideMeasureStatusBar();
+    Documents.delete(document);
+    return;
+  }
+  updateMeasureStatusBar(document, event.selections[0].active);
+});
+
+/**
+ * テキストエディタの変更
+ */
+export const changeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
+  const document = textEditor?.document;
+  if (document === undefined || document.languageId !== "tja") {
+    hideMeasureStatusBar();
+    if (document !== undefined) {
+      Documents.delete(document);
+    }
+    return;
+  }
+});
+
+/**
+ * ドキュメントを開く
+ */
+export const openTextDocument = vscode.workspace.onDidOpenTextDocument((document) => {
+  if (document.languageId !== "tja") {
+    hideMeasureStatusBar();
+    Documents.delete(document);
+    return;
+  }
+  Documents.get(document).root;
+  Documents.get(document).showSavedDiagnostic();
+});
 
 /**
  * ドキュメントの更新
  */
 export const changeTextDocument = vscode.workspace.onDidChangeTextDocument((event) => {
   const document = event.document;
-  // 構文解析
-  documentParse(document);
-});
-
-/**
- * カーソル位置の更新
- */
-export const changeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection((event) => {
-  // 小節のステータスバー表示
-  measureShowStatusBar(event.textEditor.document, event.selections[0].active);
+  if (document.languageId !== "tja") {
+    hideMeasureStatusBar();
+    Documents.delete(document);
+    return;
+  }
+  Documents.get(document).root;
 });
 
 /**
  * ドキュメントの保存
  */
-export const saveTextDocument = vscode.workspace.onDidSaveTextDocument((event) => {
-  // 保存時のエラー表示
-  showSavedDiagnostic();
+export const saveTextDocument = vscode.workspace.onDidSaveTextDocument((document) => {
+  if (document.languageId !== "tja") {
+    hideMeasureStatusBar();
+    Documents.delete(document);
+    return;
+  }
+  Documents.get(document).showSavedDiagnostic();
+});
+
+/**
+ * ドキュメントを閉じる
+ */
+export const closeTextDocument = vscode.workspace.onDidCloseTextDocument((document) => {
+  if (document.languageId !== "tja") {
+    hideMeasureStatusBar();
+    Documents.delete(document);
+    return;
+  }
+  Documents.delete(document);
 });

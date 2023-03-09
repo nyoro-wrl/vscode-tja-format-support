@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import { commands } from "./constants/commands";
 import { headers } from "./constants/headers";
-import { getRoot } from "./parser";
+import { Documents } from "./documents";
 import {
   ChartNode,
   ChartTokenNode,
@@ -34,7 +34,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       return;
     }
 
-    const root = getRoot(document);
+    const root = Documents.get(document).root;
     const node = root.findLast((x) => x.range !== undefined && x.range.contains(position));
     if (node === undefined || node.findParent((x) => x instanceof ChartNode)) {
       return;
@@ -110,7 +110,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         return;
       }
 
-      const root = getRoot(document);
+      const root = Documents.get(document).root;
       const node = root.findLast((x) => x.range !== undefined && x.range.contains(position));
       if (node === undefined || node instanceof RootNode) {
         return;

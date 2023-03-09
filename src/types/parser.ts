@@ -1,11 +1,9 @@
-import * as vscode from "vscode";
 import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
-import { addDiagnostic, clearDiagnostics } from "../diagnostic";
 import { Lexer, Token } from "./lexer";
 import { findLast } from "lodash";
 import { tokenizedRawParameter } from "../util/lexer";
-import { Range } from "vscode";
+import { Range, TextDocument } from "vscode";
 import {
   ChartNode,
   CommandNode,
@@ -25,11 +23,13 @@ import {
   StatementNode,
   ChartTokenNode,
 } from "./node";
+import { Documents } from "../documents";
 
 /**
  * 構文解析
  */
 export class Parser {
+  readonly document: TextDocument;
   /**
    * 字句解析から取得したトークン配列
    */
@@ -59,8 +59,9 @@ export class Parser {
    */
   private barlineShow: boolean = true;
 
-  constructor(document: vscode.TextDocument) {
-    const lexer = new Lexer(document);
+  constructor(document: TextDocument) {
+    this.document = document;
+    const lexer = new Lexer(this.document);
     const tokens = lexer.tokenized();
     this.tokens = tokens;
   }
@@ -70,7 +71,7 @@ export class Parser {
    * @returns
    */
   public parse(): RootNode {
-    clearDiagnostics();
+    Documents.get(this.document).clearDiagnostics();
     const node = new RootNode(undefined);
     return this.parseNode(node);
   }
@@ -118,7 +119,7 @@ export class Parser {
     for (; this.position < this.tokens.length; this.position++) {
       const token = this.tokens[this.position];
       if (token.kind === "Unknown") {
-        addDiagnostic(token.range, "不正なテキストです。");
+        Documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
       } else {
         if (parent instanceof RootNode) {
           if (token.kind === "Header") {
@@ -137,7 +138,10 @@ export class Parser {
               let node = this.childrenFindLastOrCreateRootHeaders(parent);
               node = this.parseNode(node);
             } else {
-              addDiagnostic(token.range, `No processing defined for HeaderSection = "${section}".`);
+              Documents.get(this.document).addDiagnostic(
+                token.range,
+                `No processing defined for HeaderSection = "${section}".`
+              );
             }
           } else if (token.kind === "Command") {
             if (this.chartAfter) {
@@ -150,13 +154,16 @@ export class Parser {
               node = this.parseNode(node);
             }
           } else if (token.kind === "Notes") {
-            addDiagnostic(token.range, "#START がありません。");
+            Documents.get(this.document).addDiagnostic(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addDiagnostic(token.range, "不正なテキストです。");
+            Documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            Documents.get(this.document).addDiagnostic(
+              token.range,
+              `No processing defined for TokenKind = "${token.kind}".`
+            );
           }
         } else if (parent instanceof RootHeadersNode || parent instanceof CourseHeadersNode) {
           if (token.kind === "Header") {
@@ -174,13 +181,16 @@ export class Parser {
             this.position--;
             return parent;
           } else if (token.kind === "Notes") {
-            addDiagnostic(token.range, "#START がありません。");
+            Documents.get(this.document).addDiagnostic(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addDiagnostic(token.range, "不正なテキストです。");
+            Documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            Documents.get(this.document).addDiagnostic(
+              token.range,
+              `No processing defined for TokenKind = "${token.kind}".`
+            );
           }
         } else if (parent instanceof CourseNode) {
           if (token.kind === "Header") {
@@ -197,7 +207,10 @@ export class Parser {
               this.position--;
               return parent;
             } else {
-              addDiagnostic(token.range, `No processing defined for HeaderSection = "${section}".`);
+              Documents.get(this.document).addDiagnostic(
+                token.range,
+                `No processing defined for HeaderSection = "${section}".`
+              );
             }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
@@ -219,21 +232,27 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addDiagnostic(node.range ?? new Range(0, 0, 0, 0), "#START がありません。");
+              Documents.get(this.document).addDiagnostic(
+                node.range ?? new Range(0, 0, 0, 0),
+                "#START がありません。"
+              );
             } else {
-              addDiagnostic(
+              Documents.get(this.document).addDiagnostic(
                 token.range,
                 `No processing defined for CommandSection = "${section}".`
               );
             }
           } else if (token.kind === "Notes") {
-            addDiagnostic(token.range, "#START がありません。");
+            Documents.get(this.document).addDiagnostic(token.range, "#START がありません。");
           } else if (token.kind === "MeasureEnd") {
-            addDiagnostic(token.range, "不正なテキストです。");
+            Documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            Documents.get(this.document).addDiagnostic(
+              token.range,
+              `No processing defined for TokenKind = "${token.kind}".`
+            );
           }
         } else if (parent instanceof StatementNode) {
           if (
@@ -274,11 +293,14 @@ export class Parser {
             parent.pushRange(token.range);
             return parent;
           } else {
-            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            Documents.get(this.document).addDiagnostic(
+              token.range,
+              `No processing defined for TokenKind = "${token.kind}".`
+            );
           }
         } else if (parent instanceof ChartNode) {
           if (token.kind === "Header") {
-            addDiagnostic(token.range, "ヘッダの位置が不正です。");
+            Documents.get(this.document).addDiagnostic(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -287,7 +309,7 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addDiagnostic(token.range, "命令の位置が不正です。");
+              Documents.get(this.document).addDiagnostic(token.range, "命令の位置が不正です。");
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               let node = new MeasureNode(parent, this.measure, this.barlineShow);
               node = this.parseNode(node);
@@ -312,7 +334,7 @@ export class Parser {
               this.barlineShow = true;
               return parent;
             } else {
-              addDiagnostic(
+              Documents.get(this.document).addDiagnostic(
                 token.range,
                 `No processing defined for CommandSection = "${section}".`
               );
@@ -325,11 +347,14 @@ export class Parser {
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            Documents.get(this.document).addDiagnostic(
+              token.range,
+              `No processing defined for TokenKind = "${token.kind}".`
+            );
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
-            addDiagnostic(token.range, "ヘッダの位置が不正です。");
+            Documents.get(this.document).addDiagnostic(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -338,7 +363,7 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              addDiagnostic(token.range, "命令の位置が不正です。");
+              Documents.get(this.document).addDiagnostic(token.range, "命令の位置が不正です。");
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
@@ -355,14 +380,14 @@ export class Parser {
               if (parent.find((x) => x instanceof ChartTokenNode) !== undefined) {
                 parent.properties.barlineShow = this.barlineShow;
                 if (section === "MeasureHead") {
-                  addDiagnostic(token.range, "命令の位置が不正です。");
+                  Documents.get(this.document).addDiagnostic(token.range, "命令の位置が不正です。");
                 }
               }
             } else if (section === "End") {
               if (!parent.children.every((x) => x instanceof CommandNode)) {
                 const node = parent.findLast((x) => x instanceof NoteNode) as NoteNode | undefined;
                 if (node !== undefined) {
-                  addDiagnostic(
+                  Documents.get(this.document).addDiagnostic(
                     new Range(node.range.end, node.range.end),
                     "小節が閉じられていません。",
                     "Saved"
@@ -372,7 +397,7 @@ export class Parser {
               this.position--;
               return parent;
             } else {
-              addDiagnostic(
+              Documents.get(this.document).addDiagnostic(
                 token.range,
                 `No processing defined for CommandSection = "${section}".`
               );
@@ -387,10 +412,13 @@ export class Parser {
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            addDiagnostic(token.range, `No processing defined for TokenKind = "${token.kind}".`);
+            Documents.get(this.document).addDiagnostic(
+              token.range,
+              `No processing defined for TokenKind = "${token.kind}".`
+            );
           }
         } else {
-          addDiagnostic(token.range, "No processing defined");
+          Documents.get(this.document).addDiagnostic(token.range, "No processing defined");
         }
       }
     }
@@ -398,7 +426,7 @@ export class Parser {
       if (parent instanceof ChartNode) {
         const lastEol = findLast(this.tokens, (x) => x.kind === "EndOfLine");
         if (lastEol?.range !== undefined) {
-          addDiagnostic(lastEol.range, "#END がありません。");
+          Documents.get(this.document).addDiagnostic(lastEol.range, "#END がありません。");
         }
       }
     }

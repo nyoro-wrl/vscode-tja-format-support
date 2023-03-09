@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Position, StatusBarAlignment, TextDocument } from "vscode";
-import { getRoot } from "./parser";
+import { Documents } from "./documents";
 import { ChartNode, MeasureNode } from "./types/node";
 
 const measureStatusBarItem = vscode.window.createStatusBarItem(StatusBarAlignment.Right, 200);
@@ -11,8 +11,8 @@ measureStatusBarItem.command = {
 };
 measureStatusBarItem.tooltip = "小節に移動";
 
-export function measureShowStatusBar(document: TextDocument, position: Position): void {
-  const root = getRoot(document);
+export function updateMeasureStatusBar(document: TextDocument, position: Position): void {
+  const root = Documents.get(document).root;
   // カーソル位置の小節を検索
   const measureNode = root.find(
     (x) =>
@@ -30,6 +30,11 @@ export function measureShowStatusBar(document: TextDocument, position: Position)
     measureStatusBarItem.text = `小節: ${measure} / ${maxMeasure}`;
     measureStatusBarItem.show();
   } else {
+    measureStatusBarItem.text = "";
     measureStatusBarItem.hide();
   }
+}
+
+export function hideMeasureStatusBar() {
+  measureStatusBarItem.hide();
 }
