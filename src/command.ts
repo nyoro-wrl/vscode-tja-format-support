@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Selection } from "vscode";
-import { Documents } from "./documents";
+import { documents } from "./documents";
 import { ChartNode, MeasureNode } from "./types/node";
 
 export const jumpMeasure = vscode.commands.registerTextEditorCommand(
@@ -8,7 +8,7 @@ export const jumpMeasure = vscode.commands.registerTextEditorCommand(
   async (textEditor, edit) => {
     // 現在のカーソル位置が譜面内か検証する
     const position = textEditor.selection.active;
-    const root = Documents.get(textEditor.document).root;
+    const root = documents.get(textEditor.document).parse();
     const chartNode = root.findLast(
       (x) => x instanceof ChartNode && x.range !== undefined && x.range.contains(position)
     ) as ChartNode | undefined;

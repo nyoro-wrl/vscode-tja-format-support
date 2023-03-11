@@ -1,9 +1,12 @@
 import * as vscode from "vscode";
 import { Position, StatusBarAlignment, TextDocument } from "vscode";
-import { Documents } from "./documents";
+import { documents } from "./documents";
 import { ChartNode, MeasureNode } from "./types/node";
 
-const measureStatusBarItem = vscode.window.createStatusBarItem(StatusBarAlignment.Right, 200);
+export const measureStatusBarItem = vscode.window.createStatusBarItem(
+  StatusBarAlignment.Right,
+  200
+);
 measureStatusBarItem.name = "小節";
 measureStatusBarItem.command = {
   command: "tja.jumpMeasure",
@@ -12,9 +15,9 @@ measureStatusBarItem.command = {
 measureStatusBarItem.tooltip = "小節に移動";
 
 export function updateMeasureStatusBar(document: TextDocument, position: Position): void {
-  const root = Documents.get(document).root;
+  const root = documents.get(document).parse();
   // カーソル位置の小節を検索
-  const measureNode = root.find(
+  const measureNode = root.findLast(
     (x) =>
       x instanceof MeasureNode &&
       x.range !== undefined &&

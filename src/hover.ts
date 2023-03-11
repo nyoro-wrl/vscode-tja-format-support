@@ -5,13 +5,12 @@ import { headers } from "./constants/headers";
 
 export const headerHover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
-    const wordRange = document.getWordRangeAtPosition(position, /^\s*[A-Z0-9]+:/);
+    const wordRange = document.getWordRangeAtPosition(position, /(?<=^\s*)[A-Z0-9]+(?=:)/);
     if (wordRange === undefined) {
       return Promise.reject("no word here");
     }
     const currentWord = document.getText(wordRange);
-    const key = currentWord.slice(0, -1);
-    const item = headers.get(key);
+    const item = headers.get(currentWord);
     if (item !== undefined) {
       const symbol = new MarkdownString(item.syntax);
       const documentation = new MarkdownString(item.documentation);
@@ -22,13 +21,12 @@ export const headerHover = vscode.languages.registerHoverProvider("tja", {
 
 export const commandHover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
-    const wordRange = document.getWordRangeAtPosition(position, /^\s*#[A-Z0-9]+/);
+    const wordRange = document.getWordRangeAtPosition(position, /(?<=^\s*#)[A-Z0-9]+/);
     if (wordRange === undefined) {
       return Promise.reject("no word here");
     }
     const currentWord = document.getText(wordRange);
-    const key = currentWord.slice(1);
-    const item = commands.get(key);
+    const item = commands.get(currentWord);
     if (item !== undefined) {
       const symbol = new MarkdownString(item.syntax);
       const documentation = new MarkdownString(item.documentation);

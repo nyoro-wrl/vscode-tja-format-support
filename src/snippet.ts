@@ -9,10 +9,11 @@ import {
 } from "vscode";
 import { commands } from "./constants/commands";
 import { headers } from "./constants/headers";
-import { Documents } from "./documents";
+import { documents } from "./documents";
 import {
   ChartNode,
   ChartTokenNode,
+  CommandNode,
   CourseHeadersNode,
   HeaderNode,
   HeadersNode,
@@ -34,7 +35,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       return;
     }
 
-    const root = Documents.get(document).root;
+    const root = documents.get(document).parse();
     const node = root.findLast((x) => x.range !== undefined && x.range.contains(position));
     if (node === undefined || node.findParent((x) => x instanceof ChartNode)) {
       return;
@@ -59,7 +60,8 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
     for (const header of headers) {
       // 優先度の計算
       const sortText = new SortTextFactory();
-      sortText.order4 += order;
+      sortText.order4 += header.order;
+      sortText.order5 += order;
       if (node instanceof HeadersNode) {
         for (const containHeader of node.properties.headers) {
           if (header.regexp.test(containHeader.name)) {
@@ -101,7 +103,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
     provideCompletionItems(document, position, token, context) {
       const snippets: CompletionItem[] = [];
 
-      const wordRange = document.getWordRangeAtPosition(position, /([a-zA-Z0-9]+|#[a-zA-Z0-9]*)/);
+      const wordRange = document.getWordRangeAtPosition(position, /([a-zA-Z]+|#[a-zA-Z]*)/);
       const word = document.getText(wordRange);
       const containSharp = /^#/.test(word);
       const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
@@ -110,21 +112,22 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         return;
       }
 
-      const root = Documents.get(document).root;
+      const root = documents.get(document).parse();
       const node = root.findLast((x) => x.range !== undefined && x.range.contains(position));
       if (node === undefined || node instanceof RootNode) {
         return;
       }
 
-      const beforeChartTokenNode = root.findLast(
-        (x) => x instanceof ChartTokenNode && x.range.start.line < position.line
-      ) as ChartTokenNode | undefined;
       const beforeMeasureNode = root.findLast(
         (x) =>
           x instanceof MeasureNode && x.range !== undefined && x.range.start.line < position.line
       ) as MeasureNode | undefined;
-      const gogoTime = beforeChartTokenNode?.properties.gogotime;
-      const barlineShow = beforeMeasureNode?.properties.barlineShow;
+      const beforeChartTokenNode = root.findLast(
+        (x) => x instanceof ChartTokenNode && x.range.start.line < position.line
+      ) as ChartTokenNode | undefined;
+      const showBarline = beforeMeasureNode?.properties.showBarline;
+      const isGogotime = beforeChartTokenNode?.properties.isGogotime;
+      const isDummyNote = beforeChartTokenNode?.properties.isDummyNote;
       const measureHead =
         beforeChartTokenNode === undefined || beforeChartTokenNode instanceof MeasureEndNode;
 
@@ -146,12 +149,6 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
           // コンテキストとの不一致
           continue;
         } else if (
-          (command.section === "MeasureHead" || command.section === "End") &&
-          !measureHead
-        ) {
-          // コンテキストとの不一致
-          continue;
-        } else if (
           command.section === "End" &&
           node instanceof ChartNode &&
           node.properties.end !== undefined
@@ -162,18 +159,24 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
 
         // 優先度の計算
         const sortText = new SortTextFactory();
-        sortText.order4 += order;
+        sortText.order4 += command.order;
+        sortText.order5 += order;
         if (!node.findParent((x) => x instanceof ChartNode)) {
           // ヘッダを優先したいため優先度を下げる
           sortText.order1++;
         }
+        if ((command.section === "MeasureHead" || command.section === "End") && !measureHead) {
+          sortText.order1++;
+        }
         if (
-          (commands.items.gogostart.regexp.test(command.name) && gogoTime === true) ||
-          (commands.items.gogoend.regexp.test(command.name) && gogoTime === false) ||
-          (commands.items.barlineoff.regexp.test(command.name) && barlineShow === false) ||
-          (commands.items.barlineon.regexp.test(command.name) && barlineShow === true)
+          (commands.items.barlineoff.regexp.test(command.name) && showBarline === false) ||
+          (commands.items.barlineon.regexp.test(command.name) && showBarline === true) ||
+          (commands.items.gogostart.regexp.test(command.name) && isGogotime === true) ||
+          (commands.items.gogoend.regexp.test(command.name) && isGogotime === false) ||
+          (commands.items.dummystart.regexp.test(command.name) && isDummyNote === true) ||
+          (commands.items.dummyend.regexp.test(command.name) && isDummyNote === false)
         ) {
-          // 直前のゴーゴー状態と一致しない場合は優先度を下げる
+          // コンテキストと合わない場合は優先度を下げる
           sortText.order1++;
         }
 
@@ -187,6 +190,34 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         snippets.push(snippet);
         order++;
       }
+
+      // 未定義の命令を補完に載せる
+      const chart = node.findParent((x) => x instanceof ChartNode) as ChartNode | undefined;
+      const unknownCommands = (chart?.findAll(
+        (x) =>
+          x instanceof CommandNode &&
+          commands.get(x.properties.name) === undefined &&
+          x.range !== undefined &&
+          x.range.contains(position) === false
+      ) ?? []) as CommandNode[];
+      for (const unknownCommand of unknownCommands) {
+        // 優先度の計算
+        const sortText = new SortTextFactory();
+        sortText.order3++;
+        if (!node.findParent((x) => x instanceof ChartNode)) {
+          // ヘッダを優先したいため優先度を下げる
+          sortText.order1++;
+        }
+
+        const name = unknownCommand.properties.name;
+        const snippet = new CompletionItem("#" + name, vscode.CompletionItemKind.Function);
+        snippet.insertText = new SnippetString((containSharp ? "" : "#") + name);
+        snippet.documentation = "譜面内で定義された命令";
+        snippet.kind = CompletionItemKind.Function;
+        snippet.sortText = sortText.toString();
+        snippets.push(snippet);
+      }
+
       return snippets;
     },
   },
@@ -202,13 +233,15 @@ class SortTextFactory {
   order2: number = 500;
   order3: number = 500;
   order4: number = 500;
+  order5: number = 500;
 
   public toString(): string {
     return (
       zeroPadding(this.order1, 3) +
       zeroPadding(this.order2, 3) +
       zeroPadding(this.order3, 3) +
-      zeroPadding(this.order4, 3)
+      zeroPadding(this.order4, 3) +
+      zeroPadding(this.order5, 3)
     );
   }
 }

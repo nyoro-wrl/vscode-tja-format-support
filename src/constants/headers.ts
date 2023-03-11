@@ -15,6 +15,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["SUBTITLE"],
+    order: 0,
   },
   level: {
     name: "LEVEL",
@@ -27,6 +28,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: [],
+    order: 0,
   },
   bpm: {
     name: "BPM",
@@ -37,6 +39,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 0,
   },
   wave: {
     name: "WAVE",
@@ -49,6 +52,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["OFFSET"],
+    order: 0,
   },
   offset: {
     name: "OFFSET",
@@ -61,6 +65,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 0,
   },
   balloon: {
     name: "BALLOON",
@@ -73,6 +78,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "Comma",
     recommend: ["BALLOONNOR", "BALLOONEXP", "BALLOONMAS"],
+    order: 1,
   },
   songvol: {
     name: "SONGVOL",
@@ -85,6 +91,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["SEVOL"],
+    order: 1,
   },
   sevol: {
     name: "SEVOL",
@@ -97,6 +104,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   scoreinit: {
     name: "SCOREINIT",
@@ -109,6 +117,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: ["SCOREDIFF"],
+    order: 1,
   },
   scorediff: {
     name: "SCOREDIFF",
@@ -121,6 +130,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   course: {
     name: "COURSE",
@@ -137,6 +147,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: ["LEVEL"],
+    order: 0,
   },
   style: {
     name: "STYLE",
@@ -152,6 +163,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   life: {
     name: "LIFE",
@@ -164,6 +176,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: [],
+    order: 2,
   },
   demostart: {
     name: "DEMOSTART",
@@ -176,6 +189,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 0,
   },
   side: {
     name: "SIDE",
@@ -191,6 +205,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["SIDEREV"],
+    order: 2,
   },
   subtitle: {
     name: "SUBTITLE",
@@ -203,6 +218,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 0,
   },
   song: {
     name: "SONG",
@@ -216,6 +232,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["SONG"],
+    order: 2,
   },
   // 太鼓さん次郎2
   siderev: {
@@ -228,6 +245,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 2,
   },
   scoremode: {
     name: "SCOREMODE",
@@ -241,6 +259,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   total: {
     name: "TOTAL",
@@ -253,6 +272,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   // TJAPlayer2forPC
   balloonnor: {
@@ -266,6 +286,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "Comma",
     recommend: ["BALLOONEXP", "BALLOONMAS"],
+    order: 1,
   },
   balloonexp: {
     name: "BALLOONEXP",
@@ -278,6 +299,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "Comma",
     recommend: ["BALLOONMAS"],
+    order: 1,
   },
   balloonmas: {
     name: "BALLOONMAS",
@@ -290,6 +312,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "Comma",
     recommend: [],
+    order: 1,
   },
   genre: {
     name: "GENRE",
@@ -300,6 +323,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   movieoffset: {
     name: "MOVIEOFFSET",
@@ -312,6 +336,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   bgimage: {
     name: "BGIMAGE",
@@ -322,6 +347,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["BGMOVIE", "BGOFFSET"],
+    order: 1,
   },
   bgmovie: {
     name: "BGMOVIE",
@@ -332,6 +358,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["MOVIEOFFSET"],
+    order: 1,
   },
   hiddenbranch: {
     name: "HIDDENBRANCH",
@@ -343,6 +370,7 @@ export const headers = new HeaderCollection({
     section: "Course",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   // OpenTaiko
   exam: {
@@ -374,6 +402,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "Comma",
     recommend: [],
+    order: 2,
   },
   preimage: {
     name: "PREIMAGE",
@@ -385,6 +414,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   bgoffset: {
     name: "BGOFFSET",
@@ -397,6 +427,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 1,
   },
   dantick: {
     name: "DANTICK",
@@ -416,6 +447,7 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: ["DANTICKCOLOR"],
+    order: 2,
   },
   dantickcolor: {
     name: "DANTICKCOLOR",
@@ -427,5 +459,6 @@ export const headers = new HeaderCollection({
     section: "Root",
     separator: "None",
     recommend: [],
+    order: 2,
   },
 });

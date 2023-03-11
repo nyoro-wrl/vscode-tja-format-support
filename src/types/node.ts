@@ -1,34 +1,34 @@
 import { Range } from "vscode";
 import { commands } from "../constants/commands";
-import { mergeRanges, unionRanges } from "../util/range";
 import { Token } from "./lexer";
 import { Separator } from "./statement";
 
-type HeadersProperties = {
+interface HeadersProperties {
   readonly headers: StatementProperties[];
-};
+}
 
-type StatementProperties = {
+interface StatementProperties {
   name: string;
   parameter: string;
   parameters: string[];
   separator: Separator;
-};
+}
 
-type ChartProperties = {
+interface ChartProperties {
   start: StatementProperties | undefined;
   end: StatementProperties | undefined;
   measure: number;
-};
+}
 
-type MeasureProperties = {
+interface MeasureProperties {
   readonly measure: number;
-  barlineShow: boolean;
-};
+  showBarline: boolean;
+}
 
-type ChartTokenProperties = {
-  readonly gogotime: boolean;
-};
+interface ChartTokenProperties {
+  readonly isGogotime: boolean;
+  readonly isDummyNote: boolean;
+}
 
 /**
  * ノード
@@ -91,14 +91,9 @@ export abstract class LeafNode extends Node {
 export abstract class ParentNode<T extends Node = Node> extends Node {
   protected _children: T[] = [];
   protected override _range: Range | undefined;
-  protected _ranges: Range[] = [];
 
   get children(): readonly T[] {
     return this._children;
-  }
-
-  get ranges(): readonly Range[] {
-    return this._ranges;
   }
 
   constructor(parent: ParentNode | undefined) {
@@ -125,6 +120,30 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
         return child;
       }
     }
+  }
+
+  /**
+   * 子ノードを再帰的に検索し、一致した全てのNodeを返す
+   * @param predicate
+   * @param includeSelf 自身を検索対象に含む
+   * @returns
+   */
+  public findAll(predicate: (node: Node) => boolean, includeSelf: boolean = true): Node[] {
+    const results: Node[] = [];
+    if (includeSelf && predicate(this)) {
+      results.push(this);
+    }
+    for (const child of this.children) {
+      if (child instanceof ParentNode) {
+        const result = child.find(predicate);
+        if (result !== undefined) {
+          results.push(result);
+        }
+      } else if (predicate(child)) {
+        results.push(child);
+      }
+    }
+    return results;
   }
 
   /**
@@ -160,28 +179,23 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    */
   public push(node: T): void {
     this._children.push(node);
-    if (node instanceof ParentNode) {
-      this.pushRange(...node.ranges);
-    } else if (node instanceof LeafNode) {
+    if (node.range !== undefined) {
       this.pushRange(node.range);
     }
   }
 
   /**
    * 範囲の追加
-   * @param ranges
+   * @param range
    */
-  public pushRange(...ranges: Range[]): void {
-    for (const range of ranges) {
-      this._ranges.push(range);
-    }
-    this._ranges = mergeRanges(this._ranges);
-    const range = unionRanges(this._ranges);
-    if (range !== undefined) {
+  public pushRange(range: Range): void {
+    if (this._range === undefined) {
       this._range = range;
+    } else {
+      this._range = this._range.union(range);
     }
     if (this.parent !== undefined && this.parent instanceof ParentNode) {
-      this.parent.pushRange(...this._ranges);
+      this.parent.pushRange(range);
     }
   }
 }
@@ -241,9 +255,9 @@ export class ChartNode extends ParentNode<CommandNode | MeasureNode> {
 export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {
   properties: MeasureProperties;
 
-  constructor(parent: ParentNode | undefined, measure: number, barlineShow: boolean) {
+  constructor(parent: ParentNode | undefined, measure: number, showBarline: boolean) {
     super(parent);
-    this.properties = { measure: measure, barlineShow: barlineShow };
+    this.properties = { measure: measure, showBarline: showBarline };
   }
 }
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}
@@ -253,9 +267,14 @@ export class DelimiterNode extends LeafNode {}
 export abstract class ChartTokenNode extends LeafNode {
   properties: ChartTokenProperties;
 
-  constructor(parent: ParentNode | undefined, token: Token, gogoTime: boolean) {
+  constructor(
+    parent: ParentNode | undefined,
+    token: Token,
+    isGogotime: boolean,
+    isDummyNote: boolean
+  ) {
     super(parent, token);
-    this.properties = { gogotime: gogoTime };
+    this.properties = { isGogotime: isGogotime, isDummyNote: isDummyNote };
   }
 }
 export class NoteNode extends ChartTokenNode {}

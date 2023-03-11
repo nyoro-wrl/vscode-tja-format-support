@@ -65,6 +65,7 @@ export class Lexer {
   public tokenized(): Token[] {
     const tokens: Token[] = [];
     for (let line = 0; line < this.document.lineCount; line++) {
+      // テキスト
       const textLine = this.document.lineAt(line);
       this.range = textLine.range;
       this.deleteCommentRange();
@@ -75,6 +76,8 @@ export class Lexer {
       } else {
         tokens.push(...this.getChart());
       }
+
+      // 行末
       const eolRange = new Range(line, this.range.end.character, line, this.range.end.character);
       const eolToken: Token = { kind: "EndOfLine", value: "", range: eolRange };
       tokens.push(eolToken);

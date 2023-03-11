@@ -56,11 +56,11 @@
         },
         {
           "name": "command.branch",
-          "match": "(?<=^\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)\\s"
+          "match": "(?<=^\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)(?=\\s)"
         },
         {
           "name": "command",
-          "match": "(?<=^\\s*)#[A-Z0-9]*\\s"
+          "match": "(?<=^\\s*)#[A-Z0-9]*(?=\\s)"
         },
         {
           "name": "command.variable",

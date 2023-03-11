@@ -33,6 +33,14 @@ export interface IStatement {
    * パラメーターの区切り文字
    */
   readonly separator: Separator;
+  /**
+   * 優先度
+   *
+   *     0 // トップレベルに表示
+   *     1 // 比較的使う
+   *     2 // 明確な目的がないと使わない
+   */
+  readonly order: number;
 }
 
 interface IStatementCollection<T extends IStatement> extends ICollection<T> {
