@@ -1,11 +1,12 @@
 import * as vscode from "vscode";
-import { headerHover, commandHover } from "./hover";
+import { headerHover, commandHover, balloonHover } from "./hover";
 import { commandSnippet, headerSnippet } from "./snippet";
 import { symbol } from "./symbol";
 import { jumpMeasure } from "./command";
 import { diagnostics, documents } from "./documents";
 import { hideMeasureStatusBar, measureStatusBarItem, updateMeasureStatusBar } from "./statusBar";
 import { TextDocument } from "vscode";
+import { balloonNoteDefinition, balloonParameterDefinition } from "./definition";
 
 // イベントハンドラ
 export const onDidFirstParsedTextDocumentEmitter = new vscode.EventEmitter<TextDocument>();
@@ -26,6 +27,9 @@ export function activate(context: vscode.ExtensionContext) {
     symbol,
     headerHover,
     commandHover,
+    balloonHover,
+    balloonParameterDefinition,
+    balloonNoteDefinition,
     headerSnippet,
     commandSnippet,
     jumpMeasure,

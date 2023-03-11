@@ -51,7 +51,7 @@ export const commands = new CommandCollection({
     documentation: new MarkdownString().appendMarkdown("ゴーゴータイムを開始します。").value,
     separator: "None",
     section: "Inner",
-    order: 0,
+    order: 1,
   },
   gogoend: {
     name: "GOGOEND",
@@ -61,7 +61,7 @@ export const commands = new CommandCollection({
     documentation: new MarkdownString().appendMarkdown("ゴーゴータイムを終了します。").value,
     separator: "None",
     section: "Inner",
-    order: 0,
+    order: 1,
   },
   measure: {
     name: "MEASURE",

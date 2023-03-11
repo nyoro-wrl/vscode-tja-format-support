@@ -14,6 +14,10 @@ interface StatementProperties {
   separator: Separator;
 }
 
+interface ParameterProperties {
+  index: number;
+}
+
 interface ChartProperties {
   start: StatementProperties | undefined;
   end: StatementProperties | undefined;
@@ -28,6 +32,10 @@ interface MeasureProperties {
 interface ChartTokenProperties {
   readonly isGogotime: boolean;
   readonly isDummyNote: boolean;
+}
+
+interface NoteProperties extends ChartTokenProperties {
+  readonly balloonId: number | undefined;
 }
 
 /**
@@ -135,10 +143,8 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
     }
     for (const child of this.children) {
       if (child instanceof ParentNode) {
-        const result = child.find(predicate);
-        if (result !== undefined) {
-          results.push(result);
-        }
+        const result = child.findAll(predicate);
+        results.push(...result);
       } else if (predicate(child)) {
         results.push(child);
       }
@@ -262,7 +268,14 @@ export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndN
 }
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}
 export class NameNode extends LeafNode {}
-export class ParameterNode extends LeafNode {}
+export class ParameterNode extends LeafNode {
+  properties: ParameterProperties;
+
+  constructor(parent: ParentNode<Node> | undefined, token: Token, index: number) {
+    super(parent, token);
+    this.properties = { index: index };
+  }
+}
 export class DelimiterNode extends LeafNode {}
 export abstract class ChartTokenNode extends LeafNode {
   properties: ChartTokenProperties;
@@ -277,5 +290,18 @@ export abstract class ChartTokenNode extends LeafNode {
     this.properties = { isGogotime: isGogotime, isDummyNote: isDummyNote };
   }
 }
-export class NoteNode extends ChartTokenNode {}
+export class NoteNode extends ChartTokenNode {
+  properties: NoteProperties;
+
+  constructor(
+    parent: ParentNode | undefined,
+    token: Token,
+    isGogotime: boolean,
+    isDummyNote: boolean,
+    balloonId: number | undefined
+  ) {
+    super(parent, token, isGogotime, isDummyNote);
+    this.properties = { isGogotime: isGogotime, isDummyNote: isDummyNote, balloonId: balloonId };
+  }
+}
 export class MeasureEndNode extends ChartTokenNode {}
