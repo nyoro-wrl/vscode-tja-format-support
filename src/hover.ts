@@ -1,56 +1,36 @@
 import * as vscode from "vscode";
-import { Hover } from "vscode";
-import { headerDocuments, commandDocuments } from "./documents";
+import { Hover, MarkdownString } from "vscode";
+import { commands } from "./constants/commands";
+import { headers } from "./constants/headers";
 
-const hover = vscode.languages.registerHoverProvider("tja", {
+export const headerHover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
-    const hover = {
-      symbol: new vscode.MarkdownString(),
-      documentation: new vscode.MarkdownString(),
-    };
-    const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9#]+/);
+    const wordRange = document.getWordRangeAtPosition(position, /(?<=^\s*)[A-Z0-9]+(?=:)/);
     if (wordRange === undefined) {
       return Promise.reject("no word here");
     }
-
-    const line = document.lineAt(position.line).text;
-    const currentWord = line.slice(wordRange.start.character, wordRange.end.character);
-    const nextChar = line.slice(wordRange.end.character, wordRange.end.character + 1);
-
-    if (wordRange.start.character === 0) {
-      if (nextChar === ":") {
-        // ヘッダ
-        const key = currentWord;
-        const item = headerDocuments.get(key);
-        if (item !== undefined && item.keyMatch) {
-          hover.symbol = new vscode.MarkdownString(item.definition);
-          hover.documentation = new vscode.MarkdownString(item.documentation);
-        } else {
-          // 見つからない場合はエイリアスを探索
-          for (const header of headerDocuments.values()) {
-            if (header.alias?.test(key)) {
-              hover.symbol = new vscode.MarkdownString(header.definition);
-              hover.documentation = new vscode.MarkdownString(header.documentation);
-            }
-          }
-        }
-      }
-    } else {
-      if (currentWord[0] === "#") {
-        // 命令
-        const key = currentWord.slice(1);
-        const item = commandDocuments.get(key);
-        if (item !== undefined && item.keyMatch) {
-          hover.symbol = new vscode.MarkdownString(item.definition);
-          hover.documentation = new vscode.MarkdownString(item.documentation);
-        }
-      }
-    }
-
-    if (hover.symbol.value !== "" || hover.documentation.value !== "") {
-      return new Hover([hover.symbol, hover.documentation]);
+    const currentWord = document.getText(wordRange);
+    const item = headers.get(currentWord);
+    if (item !== undefined) {
+      const symbol = new MarkdownString(item.syntax);
+      const documentation = new MarkdownString(item.documentation);
+      return new Hover([symbol, documentation]);
     }
   },
 });
 
-export default hover;
+export const commandHover = vscode.languages.registerHoverProvider("tja", {
+  provideHover(document, position, token) {
+    const wordRange = document.getWordRangeAtPosition(position, /(?<=^\s*#)[A-Z0-9]+/);
+    if (wordRange === undefined) {
+      return Promise.reject("no word here");
+    }
+    const currentWord = document.getText(wordRange);
+    const item = commands.get(currentWord);
+    if (item !== undefined) {
+      const symbol = new MarkdownString(item.syntax);
+      const documentation = new MarkdownString(item.documentation);
+      return new Hover([symbol, documentation]);
+    }
+  },
+});

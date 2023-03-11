@@ -8,7 +8,7 @@
       "include": "#header"
     },
     {
-      "include": "#statement"
+      "include": "#command"
     },
     {
       "include": "#notes"
@@ -28,7 +28,7 @@
     },
     "header": {
       "comment": "ヘッダ",
-      "begin": "^(?=[A-Z0-9]*:)",
+      "begin": "^(?=\\s*[A-Z0-9]*:)",
       "end": "$",
       "patterns": [
         {
@@ -37,15 +37,15 @@
         },
         {
           "name": "header",
-          "match": "^[A-Z0-9]*"
+          "match": "(?<=^\\s*)[A-Z0-9]+(?=:)"
         },
         {
           "name": "header.prefix",
-          "match": "(?<=^SUBTITLE:)([+][+]|--)"
+          "match": "(?<=^\\s*SUBTITLE:)([+][+]|--)"
         }
       ]
     },
-    "statement": {
+    "command": {
       "comment": "命令",
       "begin": "^(?=\\s*#[A-Z]+\\s)",
       "end": "$",
@@ -55,15 +55,15 @@
           "include": "#comments"
         },
         {
-          "name": "statement.branch",
-          "match": "(?=\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)\\s"
+          "name": "command.branch",
+          "match": "(?<=^\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)(?=\\s)"
         },
         {
-          "name": "statement",
-          "match": "(?=\\s*)#[A-Z0-9]+\\s"
+          "name": "command",
+          "match": "(?<=^\\s*)#[A-Z0-9]*(?=\\s)"
         },
         {
-          "name": "statement.variable",
+          "name": "command.variable",
           "match": "[^,]"
         }
       ]
@@ -89,7 +89,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.roll",
@@ -113,7 +113,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.roll.big",
@@ -137,7 +137,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.balloon",
@@ -161,7 +161,7 @@
             },
             {
               "comment": "命令",
-              "include": "#statement"
+              "include": "#command"
             },
             {
               "name": "note.balloon.big",
@@ -175,7 +175,7 @@
         },
         {
           "comment": "命令",
-          "include": "#statement"
+          "include": "#command"
         },
         {
           "name": "note.don",
