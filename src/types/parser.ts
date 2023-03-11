@@ -62,6 +62,14 @@ export class Parser {
    * ダミーノーツ
    */
   private isDummyNote: boolean = false;
+  /**
+   * 風船音符
+   */
+  private isBalloon: boolean = false;
+  /**
+   * 風船音符のID
+   */
+  private balloonId: number = -1;
 
   constructor(document: TextDocument) {
     this.document = document;
@@ -252,16 +260,21 @@ export class Parser {
             const rawParameter = new ParametersNode(parent);
             const parameters = tokenizedRawParameter(token, parent.properties.separator);
             if (parameters.length === 1) {
-              const node = new ParameterNode(parent, token);
+              const node = new ParameterNode(parent, token, 0);
               parent.push(node);
             } else {
+              let parameterIndex = 0;
               for (const parameter of parameters) {
                 if (parameter.kind === "RawParameter" || parameter.kind === "Parameter") {
-                  const node = new ParameterNode(parent, {
-                    kind: parameter.kind,
-                    range: parameter.range,
-                    value: parameter.value,
-                  });
+                  const node = new ParameterNode(
+                    parent,
+                    {
+                      kind: parameter.kind,
+                      range: parameter.range,
+                      value: parameter.value,
+                    },
+                    parameterIndex++
+                  );
                   rawParameter.push(node);
                 } else if (parameter.kind === "Delimiter") {
                   const node = new DelimiterNode(parent, {
@@ -318,6 +331,8 @@ export class Parser {
               this.showBarline = true;
               this.isGogotime = false;
               this.isDummyNote = false;
+              this.isBalloon = false;
+              this.balloonId = -1;
               return parent;
             } else {
               documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
@@ -362,6 +377,13 @@ export class Parser {
                 this.isDummyNote = true;
               } else if (commands.items.dummyend.regexp.test(node.properties.name)) {
                 this.isDummyNote = false;
+              } else if (
+                commands.items.n.regexp.test(node.properties.name) ||
+                commands.items.e.regexp.test(node.properties.name) ||
+                commands.items.m.regexp.test(node.properties.name) ||
+                commands.items.branchend.regexp.test(node.properties.name)
+              ) {
+                this.isBalloon = false;
               }
               if (parent.find((x) => x instanceof ChartTokenNode) !== undefined) {
                 parent.properties.showBarline = this.showBarline;
@@ -395,8 +417,18 @@ export class Parser {
               documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
             }
           } else if (token.kind === "Notes") {
-            const node = new NoteNode(parent, token, this.isGogotime, this.isDummyNote);
+            if (/[79]/.test(token.value)) {
+              this.isBalloon = true;
+              this.balloonId++;
+            } else if (/[123456]/.test(token.value)) {
+              this.isBalloon = false;
+            }
+            const balloonId = this.isBalloon ? this.balloonId : undefined;
+            const node = new NoteNode(parent, token, this.isGogotime, this.isDummyNote, balloonId);
             parent.push(node);
+            if (this.isBalloon && /8/.test(token.value)) {
+              this.isBalloon = false;
+            }
           } else if (token.kind === "MeasureEnd") {
             const node = new MeasureEndNode(parent, token, this.isGogotime, this.isDummyNote);
             parent.push(node);
