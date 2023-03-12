@@ -3,7 +3,7 @@ import { Hover, MarkdownString } from "vscode";
 import { commands } from "./constants/commands";
 import { headers } from "./constants/headers";
 import { documents } from "./documents";
-import { CourseNode, HeaderNode, NoteNode, ParameterNode } from "./types/node";
+import { HeaderNode, NoteNode, ParameterNode, StyleNode } from "./types/node";
 
 export const headerHover = vscode.languages.registerHoverProvider("tja", {
   provideHover(document, position, token) {
@@ -57,7 +57,7 @@ export const balloonHover = vscode.languages.registerHoverProvider("tja", {
       return;
     }
     const balloonHeader = (
-      balloonNote.findParent((x) => x instanceof CourseNode) as CourseNode | undefined
+      balloonNote.findParent((x) => x instanceof StyleNode) as StyleNode | undefined
     )?.find((x) => x instanceof HeaderNode && x.properties.name === "BALLOON") as
       | HeaderNode
       | undefined;
@@ -68,8 +68,7 @@ export const balloonHover = vscode.languages.registerHoverProvider("tja", {
       (x) => x instanceof ParameterNode
     ) as ParameterNode[];
     if (balloonParameters.length <= balloonId) {
-      const symbol = new MarkdownString("打数が指定されていません");
-      return new Hover([symbol], wordRange);
+      return;
     }
     const balloonParameter = balloonParameters[balloonId];
     const symbol = new MarkdownString(balloonParameter.value);

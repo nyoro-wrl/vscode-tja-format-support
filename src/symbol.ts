@@ -4,7 +4,7 @@ import { documents } from "./documents";
 import {
   ChartNode,
   CommandNode,
-  CourseHeadersNode,
+  StyleHeadersNode,
   CourseNode,
   HeaderNode,
   Node,
@@ -92,7 +92,7 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
       // 親をスルーして子をシンボル化する場合はinstanceofで判定する
       if (
         node instanceof RootNode ||
-        node instanceof CourseHeadersNode ||
+        node instanceof StyleHeadersNode ||
         node instanceof StyleNode
       ) {
         for (const child of node.children) {

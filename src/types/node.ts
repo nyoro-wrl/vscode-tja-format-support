@@ -18,7 +18,7 @@ interface CouseProperties {
   course: string;
 }
 
-interface StyleProperties {
+interface StyleProperties extends HeadersProperties {
   style: string;
 }
 
@@ -255,8 +255,8 @@ export class CourseNode extends ParentNode<StyleNode> {
   public push(node: StyleNode) {
     super._push(node);
 
-    const courseHeaders = node.find((x) => x instanceof CourseHeadersNode) as
-      | CourseHeadersNode
+    const courseHeaders = node.find((x) => x instanceof StyleHeadersNode) as
+      | StyleHeadersNode
       | undefined;
     if (courseHeaders !== undefined) {
       const courseHeader = courseHeaders.properties.headers.find((x) => x.name === "COURSE");
@@ -266,17 +266,18 @@ export class CourseNode extends ParentNode<StyleNode> {
     }
   }
 }
-export class StyleNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {
-  properties: StyleProperties = { style: "" };
+export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | ChartNode> {
+  properties: StyleProperties = { style: "", headers: [] };
 
   /**
    * childrenにNodeを追加
    * @param node
    */
-  public push(node: CourseHeadersNode | CommandNode | ChartNode) {
+  public push(node: StyleHeadersNode | CommandNode | ChartNode) {
     super._push(node);
 
-    if (node instanceof CourseHeadersNode) {
+    if (node instanceof StyleHeadersNode) {
+      this.properties.headers.push(...node.properties.headers);
       const styleHeader = node.properties.headers.find((x) => x.name === "STYLE");
       if (styleHeader !== undefined) {
         this.properties.style = styleHeader.parameter;
@@ -284,7 +285,7 @@ export class StyleNode extends ParentNode<CourseHeadersNode | CommandNode | Char
     }
   }
 }
-export class CourseHeadersNode extends HeadersNode {
+export class StyleHeadersNode extends HeadersNode {
   /**
    * childrenにNodeを追加
    * @param node

@@ -119,6 +119,7 @@ const initialParsedTextDocument = onDidFirstParsedTextDocumentEmitter.event(asyn
   const activeTextEditor = vscode.window.activeTextEditor;
   if (document === activeTextEditor?.document) {
     updateMeasureStatusBar(document, activeTextEditor.selection.active);
+    documents.get(document).showUneditedDiagnostic();
   }
 });
 

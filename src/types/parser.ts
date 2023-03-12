@@ -7,7 +7,7 @@ import { DiagnosticSeverity, Range, TextDocument } from "vscode";
 import {
   ChartNode,
   CommandNode,
-  CourseHeadersNode,
+  StyleHeadersNode,
   CourseNode,
   DelimiterNode,
   RootHeadersNode,
@@ -20,7 +20,6 @@ import {
   ParameterNode,
   ParametersNode,
   ParentNode,
-  StatementNode,
   ChartTokenNode,
   StyleNode,
 } from "./node";
@@ -132,16 +131,16 @@ export class Parser {
   }
 
   /**
-   * 子から最後のCourseHeadersNodeを検索（ない場合は作成）し、パースする
+   * 子から最後のStyleHeadersNodeを検索（ない場合は作成）し、パースする
    * @param parent
    * @returns
    */
-  private parseFindLastOrPushCourseHeaders(parent: StyleNode): CourseHeadersNode {
-    let findNode = findLast(parent.children, (x) => x instanceof CourseHeadersNode) as
-      | CourseHeadersNode
+  private parseFindLastOrPushStyleHeaders(parent: StyleNode): StyleHeadersNode {
+    let findNode = findLast(parent.children, (x) => x instanceof StyleHeadersNode) as
+      | StyleHeadersNode
       | undefined;
     if (findNode === undefined) {
-      let node = new CourseHeadersNode(parent);
+      let node = new StyleHeadersNode(parent);
       node = this.parseNode(node);
       parent.push(node);
       return node;
@@ -192,7 +191,7 @@ export class Parser {
           } else {
             documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
           }
-        } else if (parent instanceof RootHeadersNode || parent instanceof CourseHeadersNode) {
+        } else if (parent instanceof RootHeadersNode || parent instanceof StyleHeadersNode) {
           if (token.kind === "Header") {
             const info = headers.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -271,7 +270,7 @@ export class Parser {
                 this.position--;
                 return parent;
               } else {
-                this.parseFindLastOrPushCourseHeaders(parent);
+                this.parseFindLastOrPushStyleHeaders(parent);
               }
             } else if (section === "Root") {
               this.position--;
@@ -491,6 +490,33 @@ export class Parser {
             const balloonId = this.isBalloon ? this.balloonId : undefined;
             const node = new NoteNode(parent, token, this.isGogotime, this.isDummyNote, balloonId);
             parent.push(node);
+            if (balloonId !== undefined && this.isBalloon && /[79]/.test(token.value)) {
+              const styleNode = parent.findParent((x) => x instanceof StyleNode) as
+                | StyleNode
+                | undefined;
+              if (styleNode !== undefined) {
+                const balloonHeader = styleNode.properties.headers.find(
+                  (x) => x.name === "BALLOON"
+                );
+                const wordRange = this.document.getWordRangeAtPosition(
+                  token.range.end,
+                  /([79]0*8?|0*8|0+)/
+                );
+                if (
+                  wordRange !== undefined &&
+                  (balloonHeader === undefined || balloonHeader.parameters.length <= balloonId)
+                ) {
+                  documents
+                    .get(this.document)
+                    .addDiagnostic(
+                      wordRange,
+                      "風船音符の打数が定義されていません。",
+                      "Unedited",
+                      DiagnosticSeverity.Warning
+                    );
+                }
+              }
+            }
             if (this.isBalloon && /8/.test(token.value)) {
               this.isBalloon = false;
             }
