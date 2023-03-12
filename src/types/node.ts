@@ -14,6 +14,14 @@ interface StatementProperties {
   separator: Separator;
 }
 
+interface CouseProperties {
+  course: string;
+}
+
+interface StyleProperties {
+  style: string;
+}
+
 interface ParameterProperties {
   index: number;
 }
@@ -183,7 +191,7 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    * childrenにNodeを追加
    * @param node
    */
-  public push(node: T): void {
+  protected _push(node: T): void {
     this._children.push(node);
     if (node.range !== undefined) {
       this.pushRange(node.range);
@@ -206,13 +214,85 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   }
 }
 
-export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {}
+export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: RootHeadersNode | CourseNode) {
+    super._push(node);
+  }
+}
 export abstract class HeadersNode extends ParentNode<HeaderNode> {
   properties: HeadersProperties = { headers: [] };
+
+  /**
+   * childrenにNodeを追加
+   * @param node
+   *
+   */
+  protected _pushHeaders(node: HeaderNode) {
+    super._push(node);
+    this.properties.headers.push(node.properties);
+  }
 }
-export class RootHeadersNode extends HeadersNode {}
-export class CourseNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {}
-export class CourseHeadersNode extends HeadersNode {}
+export class RootHeadersNode extends HeadersNode {
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: HeaderNode) {
+    super._pushHeaders(node);
+  }
+}
+export class CourseNode extends ParentNode<StyleNode> {
+  properties: CouseProperties = { course: "" };
+
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: StyleNode) {
+    super._push(node);
+
+    const courseHeaders = node.find((x) => x instanceof CourseHeadersNode) as
+      | CourseHeadersNode
+      | undefined;
+    if (courseHeaders !== undefined) {
+      const courseHeader = courseHeaders.properties.headers.find((x) => x.name === "COURSE");
+      if (courseHeader !== undefined) {
+        this.properties.course = courseHeader.parameter;
+      }
+    }
+  }
+}
+export class StyleNode extends ParentNode<CourseHeadersNode | CommandNode | ChartNode> {
+  properties: StyleProperties = { style: "" };
+
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: CourseHeadersNode | CommandNode | ChartNode) {
+    super._push(node);
+
+    if (node instanceof CourseHeadersNode) {
+      const styleHeader = node.properties.headers.find((x) => x.name === "STYLE");
+      if (styleHeader !== undefined) {
+        this.properties.style = styleHeader.parameter;
+      }
+    }
+  }
+}
+export class CourseHeadersNode extends HeadersNode {
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: HeaderNode) {
+    super._pushHeaders(node);
+  }
+}
 export abstract class StatementNode<T extends Node> extends ParentNode<T> {
   properties: StatementProperties;
 
@@ -221,8 +301,12 @@ export abstract class StatementNode<T extends Node> extends ParentNode<T> {
     this.properties = { name: "", parameter: "", parameters: [], separator: separator };
   }
 
-  public override push(node: T) {
-    super.push(node);
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  protected _pushStatement(node: T) {
+    super._push(node);
     if (node instanceof NameNode) {
       this.properties.name += node.value;
     } else if (node instanceof ParameterNode) {
@@ -234,19 +318,35 @@ export abstract class StatementNode<T extends Node> extends ParentNode<T> {
         ...node.children.filter((x) => x instanceof ParameterNode).map((x) => x.value)
       );
     }
-
-    if (this.parent instanceof HeadersNode) {
-      this.parent.properties.headers.push(this.properties);
-    }
   }
 }
-export class HeaderNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
-export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {}
+export class HeaderNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: NameNode | ParameterNode | ParametersNode) {
+    super._pushStatement(node);
+  }
+}
+export class CommandNode extends StatementNode<NameNode | ParameterNode | ParametersNode> {
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: NameNode | ParameterNode | ParametersNode) {
+    super._pushStatement(node);
+  }
+}
 export class ChartNode extends ParentNode<CommandNode | MeasureNode> {
   properties: ChartProperties = { start: undefined, end: undefined, measure: 0 };
 
-  public override push(node: CommandNode | MeasureNode) {
-    super.push(node);
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: CommandNode | MeasureNode) {
+    super._push(node);
     if (node instanceof CommandNode) {
       if (commands.items.start.regexp.test(node.properties.name)) {
         this.properties.start = node.properties;
@@ -265,8 +365,24 @@ export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndN
     super(parent);
     this.properties = { measure: measure, showBarline: showBarline };
   }
+
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: NoteNode | CommandNode | MeasureEndNode) {
+    super._push(node);
+  }
 }
-export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {}
+export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: ParameterNode | DelimiterNode) {
+    super._push(node);
+  }
+}
 export class NameNode extends LeafNode {}
 export class ParameterNode extends LeafNode {
   properties: ParameterProperties;
