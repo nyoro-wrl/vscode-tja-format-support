@@ -160,7 +160,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown(
         "`Single`または`1`は一人プレイ、`Double`または`2`は二人プレイの譜面であることを示します。"
       ).value,
-    section: "Course",
+    section: "Style",
     separator: "None",
     recommend: [],
     order: 1,

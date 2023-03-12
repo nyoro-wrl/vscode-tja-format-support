@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Location } from "vscode";
 import { documents } from "./documents";
-import { NoteNode, CourseNode, HeaderNode, ParameterNode } from "./types/node";
+import { NoteNode, HeaderNode, ParameterNode, StyleNode } from "./types/node";
 
 /**
  * 風船打数から風船音符にジャンプ（雑実装）
@@ -31,13 +31,13 @@ export const balloonParameterDefinition = vscode.languages.registerDefinitionPro
       return;
     }
     const balloonId = parameterNode.properties.index;
-    const courseNode = balloonHeader.findParent((x) => x instanceof CourseNode) as
-      | CourseNode
+    const styleNode = balloonHeader.findParent((x) => x instanceof StyleNode) as
+      | StyleNode
       | undefined;
-    if (courseNode === undefined) {
+    if (styleNode === undefined) {
       return;
     }
-    const balloonNotes = courseNode.find(
+    const balloonNotes = styleNode.find(
       (x) => x instanceof NoteNode && x.properties.balloonId === balloonId
     ) as NoteNode | undefined;
     if (balloonNotes === undefined) {
@@ -73,7 +73,7 @@ export const balloonNoteDefinition = vscode.languages.registerDefinitionProvider
       return;
     }
     const balloonHeader = (
-      balloonNote.findParent((x) => x instanceof CourseNode) as CourseNode | undefined
+      balloonNote.findParent((x) => x instanceof StyleNode) as StyleNode | undefined
     )?.find((x) => x instanceof HeaderNode && x.properties.name === "BALLOON") as
       | HeaderNode
       | undefined;

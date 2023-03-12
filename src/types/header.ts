@@ -5,9 +5,10 @@ import { IStatement, StatementCollection } from "./statement";
  *
  *     "Root" // 共通ヘッダ
  *     "Course" // 難易度別ヘッダ
+ *     "Style" // プレイスタイル別ヘッダ
  *     "Unknown" // 不明
  */
-type HeaderSection = "Root" | "Course" | "Unknown";
+type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
 
 /**
  * ヘッダ

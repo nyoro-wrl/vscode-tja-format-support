@@ -4,7 +4,7 @@ import { documents } from "./documents";
 import {
   ChartNode,
   CommandNode,
-  CourseHeadersNode,
+  StyleHeadersNode,
   CourseNode,
   HeaderNode,
   Node,
@@ -13,6 +13,7 @@ import {
   ParentNode,
   RootHeadersNode,
   RootNode,
+  StyleNode,
 } from "./types/node";
 
 export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
@@ -34,17 +35,28 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
       const title = node.properties.headers.find((x) => x.name === "TITLE")?.parameter ?? "";
       symbol = new DocumentSymbol("TITLE: " + title, "", SymbolKind.Enum, node.range, node.range);
     } else if (node instanceof CourseNode) {
-      const course =
-        (
-          node.find((x) => x instanceof CourseHeadersNode) as CourseHeadersNode | undefined
-        )?.properties.headers.find((x) => x.name === "COURSE")?.parameter ?? "";
       symbol = new DocumentSymbol(
-        "COURSE: " + course,
+        "COURSE: " + node.properties.course,
         "",
         SymbolKind.Class,
         node.range,
         node.range
       );
+    } else if (node instanceof StyleNode) {
+      // CourseにStyleが複数ある場合はStyleをシンボル化する
+      const courseNode = node.findParent((x) => x instanceof CourseNode) as CourseNode | undefined;
+      if (courseNode !== undefined) {
+        const styleNodes = courseNode.findAll((x) => x instanceof StyleNode) as StyleNode[];
+        if (styleNodes.length > 1) {
+          symbol = new DocumentSymbol(
+            "STYLE: " + node.properties.style,
+            "",
+            SymbolKind.Class,
+            node.range,
+            node.range
+          );
+        }
+      }
     } else if (node instanceof HeaderNode) {
       symbol = new DocumentSymbol(
         node.properties.name + ":",
@@ -78,7 +90,11 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
       symbols.push(symbol);
     } else {
       // 親をスルーして子をシンボル化する場合はinstanceofで判定する
-      if (node instanceof RootNode || node instanceof CourseHeadersNode) {
+      if (
+        node instanceof RootNode ||
+        node instanceof StyleHeadersNode ||
+        node instanceof StyleNode
+      ) {
         for (const child of node.children) {
           const childSymbols = nodeToSymbols(child);
           symbols.push(...childSymbols);

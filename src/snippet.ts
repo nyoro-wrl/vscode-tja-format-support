@@ -14,7 +14,7 @@ import {
   ChartNode,
   ChartTokenNode,
   CommandNode,
-  CourseHeadersNode,
+  StyleHeadersNode,
   HeaderNode,
   HeadersNode,
   MeasureEndNode,
@@ -71,7 +71,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
         }
         if (
           (node instanceof RootHeadersNode && header.section === "Course") ||
-          (node instanceof CourseHeadersNode && header.section === "Root")
+          (node instanceof StyleHeadersNode && header.section === "Root")
         ) {
           // コンテキストと合わない場合は優先度を下げる
           sortText.order3++;
