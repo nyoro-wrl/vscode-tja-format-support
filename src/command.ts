@@ -8,7 +8,7 @@ export const jumpMeasure = vscode.commands.registerTextEditorCommand(
   async (textEditor, edit) => {
     // 現在のカーソル位置が譜面内か検証する
     const position = textEditor.selection.active;
-    const root = documents.get(textEditor.document).parse();
+    const root = documents.get(textEditor.document).getRootNode();
     const chartNode = root.findLast(
       (x) => x instanceof ChartNode && x.range !== undefined && x.range.contains(position)
     ) as ChartNode | undefined;

@@ -108,7 +108,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("譜面分岐の判定に使う連打数、精度をリセットします。  \n")
       .appendMarkdown("分岐したい箇所の一小節以上前に置いてください。").value,
     separator: "None",
-    section: "MeasureHead",
+    section: "Branch",
     order: 2,
   },
   branchstart: {
@@ -128,7 +128,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("一小節前から連打が始まる場合、その連打もカウントします。  \n\n")
       .appendMarkdown("分岐後は普通譜面`#N`、玄人譜面`#E`、達人譜面`#M`で記述します。").value,
     separator: "Comma",
-    section: "MeasureHead",
+    section: "Branch",
     order: 2,
   },
   branchend: {
@@ -140,7 +140,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("譜面分岐を終了します。  \n")
       .appendMarkdown("以降は全ての分岐で共通の譜面が流れます。").value,
     separator: "None",
-    section: "MeasureHead",
+    section: "Branch",
     order: 2,
   },
   n: {
@@ -150,7 +150,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("N").value,
     documentation: new MarkdownString().appendMarkdown("普通譜面を記述します。").value,
     separator: "None",
-    section: "MeasureHead",
+    section: "Branch",
     order: 2,
   },
   e: {
@@ -160,7 +160,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("E").value,
     documentation: new MarkdownString().appendMarkdown("玄人譜面を記述します。").value,
     separator: "None",
-    section: "MeasureHead",
+    section: "Branch",
     order: 2,
   },
   m: {
@@ -170,7 +170,7 @@ export const commands = new CommandCollection({
     snippet: new SnippetString().appendText("M").value,
     documentation: new MarkdownString().appendMarkdown("達人譜面を記述します。").value,
     separator: "None",
-    section: "MeasureHead",
+    section: "Branch",
     order: 2,
   },
   levelhold: {

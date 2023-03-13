@@ -13,7 +13,7 @@ import {
   RootHeadersNode,
   RootNode,
   HeaderNode,
-  NameNode,
+  StatementNameNode,
   MeasureEndNode,
   MeasureNode,
   NoteNode,
@@ -22,6 +22,11 @@ import {
   ParentNode,
   ChartTokenNode,
   StyleNode,
+  BranchNode,
+  NBranchSectionNode,
+  EBranchSectionNode,
+  MBranchSectionNode,
+  BranchSectionNode,
 } from "./node";
 import { documents } from "../documents";
 
@@ -84,7 +89,7 @@ export class Parser {
    */
   public parse(): RootNode {
     documents.get(this.document).clearDiagnostics();
-    let node = new RootNode(undefined);
+    let node = new RootNode();
     node = this.parseNode(node);
     documents.get(this.document).showRealtimeDiagnostic();
     return node;
@@ -294,7 +299,12 @@ export class Parser {
               this.position++;
               chart = this.parseNode(chart);
               parent.push(chart);
-            } else if (section === "Inner" || section === "MeasureHead" || section === "End") {
+            } else if (
+              section === "Inner" ||
+              section === "MeasureHead" ||
+              section === "Branch" ||
+              section === "End"
+            ) {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
@@ -318,47 +328,42 @@ export class Parser {
             (parent instanceof HeaderNode && token.kind === "Header") ||
             (parent instanceof CommandNode && token.kind === "Command")
           ) {
-            const node = new NameNode(parent, token);
+            const node = new StatementNameNode(parent, token);
             parent.push(node);
           } else if (token.kind === "RawParameter") {
             const rawParameter = new ParametersNode(parent);
             const parameters = tokenizedRawParameter(token, parent.properties.separator);
-            if (parameters.length === 1) {
-              const node = new ParameterNode(parent, token, 0);
-              parent.push(node);
-            } else {
-              let parameterIndex = 0;
-              for (const parameter of parameters) {
-                if (parameter.kind === "RawParameter" || parameter.kind === "Parameter") {
-                  const node = new ParameterNode(
-                    parent,
-                    {
-                      kind: parameter.kind,
-                      range: parameter.range,
-                      value: parameter.value,
-                    },
-                    parameterIndex++
-                  );
-                  rawParameter.push(node);
-                } else if (parameter.kind === "Delimiter") {
-                  const node = new DelimiterNode(parent, {
+            let parameterIndex = 0;
+            for (const parameter of parameters) {
+              if (parameter.kind === "RawParameter" || parameter.kind === "Parameter") {
+                const node = new ParameterNode(
+                  rawParameter,
+                  {
                     kind: parameter.kind,
                     range: parameter.range,
                     value: parameter.value,
-                  });
-                  rawParameter.push(node);
-                } else {
-                  return parent;
-                }
+                  },
+                  parameterIndex++
+                );
+                rawParameter.push(node);
+              } else if (parameter.kind === "Delimiter") {
+                const node = new DelimiterNode(rawParameter, {
+                  kind: parameter.kind,
+                  range: parameter.range,
+                  value: parameter.value,
+                });
+                rawParameter.push(node);
+              } else {
+                return parent;
               }
-              parent.push(rawParameter);
             }
+            parent.push(rawParameter);
           } else if (token.kind === "EndOfLine") {
             return parent;
           } else {
             documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
           }
-        } else if (parent instanceof ChartNode) {
+        } else if (parent instanceof ChartNode || parent instanceof BranchSectionNode) {
           if (token.kind === "Header") {
             documents.get(this.document).addDiagnostic(token.range, "ヘッダの位置が不正です。");
           } else if (token.kind === "Command") {
@@ -375,7 +380,10 @@ export class Parser {
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               let node = new MeasureNode(parent, this.measure, this.showBarline);
               node = this.parseNode(node);
-              if (node.children.every((x) => x instanceof CommandNode)) {
+              if (
+                node.children.length > 0 &&
+                node.children.every((x) => x instanceof CommandNode)
+              ) {
                 // 命令のみの場合は小節から命令に置き換える
                 for (const child of node.children) {
                   const node = child as CommandNode;
@@ -385,19 +393,99 @@ export class Parser {
                 this.measure++;
                 parent.push(node);
               }
+            } else if (section === "Branch") {
+              if (info === commands.items.branchstart) {
+                if (parent instanceof BranchSectionNode) {
+                  // 分岐から抜ける
+                  this.position--;
+                  return parent;
+                } else {
+                  // 譜面分岐の開始
+                  let branch = new BranchNode(parent, this.measure);
+                  let command = new CommandNode(branch, separator);
+                  command = this.parseNode(command);
+                  branch.push(command);
+                  this.position++;
+                  branch = this.parseNode(branch);
+                  parent.push(branch);
+                  this.measure = branch.properties.startMeasure + branch.properties.measureCount;
+                }
+              } else if (
+                info === commands.items.n ||
+                info === commands.items.e ||
+                info === commands.items.m ||
+                info === commands.items.branchend
+              ) {
+                if (parent instanceof BranchSectionNode) {
+                  // 分岐から抜ける
+                  this.position--;
+                  return parent;
+                } else {
+                  // 普通の命令と同じ対応をした上で構文エラーとする
+                  let node = new MeasureNode(parent, this.measure, this.showBarline);
+                  node = this.parseNode(node);
+                  if (
+                    node.children.length > 0 &&
+                    node.children.every((x) => x instanceof CommandNode)
+                  ) {
+                    // 命令のみの場合は小節から命令に置き換える
+                    for (const child of node.children) {
+                      const node = child as CommandNode;
+                      parent.push(node);
+                    }
+                  } else {
+                    this.measure++;
+                    parent.push(node);
+                  }
+                  if (node.range !== undefined) {
+                    documents
+                      .get(this.document)
+                      .addDiagnostic(token.range, "#BRANCHSTART がありません。");
+                  }
+                }
+              } else {
+                if (parent instanceof BranchSectionNode) {
+                  // 分岐から抜ける
+                  this.position--;
+                  return parent;
+                } else {
+                  // 普通の命令と同じ対応をする
+                  let node = new MeasureNode(parent, this.measure, this.showBarline);
+                  node = this.parseNode(node);
+                  if (
+                    node.children.length > 0 &&
+                    node.children.every((x) => x instanceof CommandNode)
+                  ) {
+                    // 命令のみの場合は小節から命令に置き換える
+                    for (const child of node.children) {
+                      const node = child as CommandNode;
+                      parent.push(node);
+                    }
+                  } else {
+                    this.measure++;
+                    parent.push(node);
+                  }
+                }
+              }
             } else if (section === "End") {
-              let node = new CommandNode(parent, separator);
-              node = this.parseNode(node);
-              parent.push(node);
-              this.chartAfter = true;
-              this.chartAfterOnce = true;
-              this.measure = 1;
-              this.showBarline = true;
-              this.isGogotime = false;
-              this.isDummyNote = false;
-              this.isBalloon = false;
-              this.balloonId = -1;
-              return parent;
+              if (parent instanceof BranchSectionNode) {
+                // 分岐を抜ける
+                this.position--;
+                return parent;
+              } else {
+                let node = new CommandNode(parent, separator);
+                node = this.parseNode(node);
+                parent.push(node);
+                this.chartAfter = true;
+                this.chartAfterOnce = true;
+                this.measure = 1;
+                this.showBarline = true;
+                this.isGogotime = false;
+                this.isDummyNote = false;
+                this.isBalloon = false;
+                this.balloonId = -1;
+                return parent;
+              }
             } else {
               documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
             }
@@ -410,6 +498,77 @@ export class Parser {
             parent.pushRange(token.range);
           } else {
             documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
+          }
+        } else if (parent instanceof BranchNode) {
+          if (token.kind === "Header") {
+            documents.get(this.document).addDiagnostic(token.range, "ヘッダの位置が不正です。");
+          } else if (token.kind === "Command") {
+            const info = commands.get(token.value);
+            const separator = info?.separator ?? "Unknown";
+            if (
+              info === commands.items.n ||
+              info === commands.items.e ||
+              info === commands.items.m
+            ) {
+              let branchSection: BranchSectionNode;
+              // 小節番号を都度戻す
+              this.measure = parent.properties.startMeasure;
+              if (info === commands.items.n) {
+                branchSection = new NBranchSectionNode(parent);
+              } else if (info === commands.items.e) {
+                branchSection = new EBranchSectionNode(parent);
+              } else {
+                branchSection = new MBranchSectionNode(parent);
+              }
+              let command = new CommandNode(branchSection, separator);
+              command = this.parseNode(command);
+              branchSection.push(command);
+              this.position++;
+              branchSection = this.parseNode(branchSection);
+              parent.push(branchSection);
+              // 分岐ごとの小節数を調べる
+              const sections = parent.findAll(
+                (x) => x instanceof BranchSectionNode
+              ) as BranchSectionNode[];
+              for (const section of sections.filter(
+                (x) => x.properties.measureCount !== parent.properties.measureCount
+              )) {
+                const nem = section.find((x) => x instanceof CommandNode) as
+                  | CommandNode
+                  | undefined;
+                if (nem !== undefined && nem.range !== undefined) {
+                  documents
+                    .get(this.document)
+                    .addDiagnostic(
+                      nem.range,
+                      "譜面分岐の小節数が一致しません。",
+                      "Unedited",
+                      DiagnosticSeverity.Warning
+                    );
+                }
+              }
+            } else if (info === commands.items.branchend) {
+              let node = new CommandNode(parent, separator);
+              node = this.parseNode(node);
+              parent.push(node);
+              return parent;
+            } else {
+              documents
+                .get(this.document)
+                .addDiagnostic(
+                  token.range,
+                  "暗黙的に #BRANCHEND が挿入されています。",
+                  "Realtime",
+                  DiagnosticSeverity.Hint
+                );
+              this.position--;
+              return parent;
+            }
+          } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
+            documents.get(this.document).addDiagnostic(token.range, "譜面分岐の区分がありません。");
+            this.position--;
+            return parent;
+          } else if (token.kind === "EndOfLine") {
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
@@ -429,23 +588,23 @@ export class Parser {
               let node = new CommandNode(parent, separator);
               node = this.parseNode(node);
               parent.push(node);
-              if (commands.items.barlineoff.regexp.test(node.properties.name)) {
+              if (info === commands.items.barlineoff) {
                 this.showBarline = false;
-              } else if (commands.items.barlineon.regexp.test(node.properties.name)) {
+              } else if (info === commands.items.barlineon) {
                 this.showBarline = true;
-              } else if (commands.items.gogostart.regexp.test(node.properties.name)) {
+              } else if (info === commands.items.gogostart) {
                 this.isGogotime = true;
-              } else if (commands.items.gogoend.regexp.test(node.properties.name)) {
+              } else if (info === commands.items.gogoend) {
                 this.isGogotime = false;
-              } else if (commands.items.dummystart.regexp.test(node.properties.name)) {
+              } else if (info === commands.items.dummystart) {
                 this.isDummyNote = true;
-              } else if (commands.items.dummyend.regexp.test(node.properties.name)) {
+              } else if (info === commands.items.dummyend) {
                 this.isDummyNote = false;
               } else if (
-                commands.items.n.regexp.test(node.properties.name) ||
-                commands.items.e.regexp.test(node.properties.name) ||
-                commands.items.m.regexp.test(node.properties.name) ||
-                commands.items.branchend.regexp.test(node.properties.name)
+                info === commands.items.n ||
+                info === commands.items.e ||
+                info === commands.items.m ||
+                info === commands.items.branchend
               ) {
                 this.isBalloon = false;
               }
@@ -462,8 +621,38 @@ export class Parser {
                     );
                 }
               }
+            } else if (section === "Branch") {
+              if (info === commands.items.section) {
+                // 普通の命令と同じ対応をする
+                let node = new CommandNode(parent, separator);
+                node = this.parseNode(node);
+                parent.push(node);
+                if (parent.find((x) => x instanceof ChartTokenNode) !== undefined) {
+                  parent.properties.showBarline = this.showBarline;
+                  if (node.range !== undefined) {
+                    documents
+                      .get(this.document)
+                      .addDiagnostic(
+                        node.range,
+                        "小節の途中に配置されています。",
+                        "Realtime",
+                        DiagnosticSeverity.Warning
+                      );
+                  }
+                }
+              } else if (
+                parent.children.length > 0 &&
+                parent.children.every((x) => x instanceof CommandNode)
+              ) {
+                // 命令のみの場合は抜ける
+                this.position--;
+                return parent;
+              }
             } else if (section === "End") {
-              if (!parent.children.every((x) => x instanceof CommandNode)) {
+              if (
+                parent.children.length > 0 &&
+                !parent.children.every((x) => x instanceof CommandNode)
+              ) {
                 const node = parent.findLast((x) => x instanceof NoteNode) as NoteNode | undefined;
                 if (node !== undefined) {
                   documents
@@ -527,7 +716,9 @@ export class Parser {
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
-            documents.get(this.document).addDiagnostic(token.range, "不正なテキストです。");
+            documents
+              .get(this.document)
+              .addDiagnostic(token.range, "不正なテキストです。", "Unedited");
           }
         } else {
           documents.get(this.document).addDiagnostic(token.range, "No processing defined");

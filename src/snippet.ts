@@ -35,7 +35,7 @@ export const headerSnippet = vscode.languages.registerCompletionItemProvider("tj
       return;
     }
 
-    const root = documents.get(document).parse();
+    const root = documents.get(document).getRootNode();
     const node = root.findLast((x) => x.range !== undefined && x.range.contains(position));
     if (node === undefined || node.findParent((x) => x instanceof ChartNode)) {
       return;
@@ -112,7 +112,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         return;
       }
 
-      const root = documents.get(document).parse();
+      const root = documents.get(document).getRootNode();
       const node = root.findLast((x) => x.range !== undefined && x.range.contains(position));
       if (node === undefined || node instanceof RootNode) {
         return;

@@ -12,6 +12,9 @@ import { Parser } from "./types/parser";
  */
 type DiagnosticTiming = "Realtime" | "Unedited";
 
+/**
+ * 拡張機能内で管理しているドキュメント情報
+ */
 class DocumentInfo {
   private readonly document: TextDocument;
   private parsedText: string = "";
@@ -23,7 +26,11 @@ class DocumentInfo {
     this.document = document;
   }
 
-  public parse(): RootNode {
+  /**
+   * 構文木の取得
+   * @returns
+   */
+  public getRootNode(): RootNode {
     const initial = this._root === undefined;
     if (this._root === undefined || this.parsedText !== this.document.getText()) {
       const parser = new Parser(this.document);
@@ -81,7 +88,10 @@ class DocumentInfo {
   }
 }
 
-class Documents implements vscode.Disposable {
+/**
+ * 拡張機能内で管理しているドキュメントのコレクション
+ */
+class DocumentInfoCollection implements vscode.Disposable {
   private documents: { [key: string]: DocumentInfo } = {};
 
   get(document: TextDocument): Readonly<DocumentInfo> {
@@ -106,4 +116,5 @@ class Documents implements vscode.Disposable {
 }
 
 export const diagnostics = vscode.languages.createDiagnosticCollection("tja");
-export const documents = new Documents();
+
+export const documents = new DocumentInfoCollection();

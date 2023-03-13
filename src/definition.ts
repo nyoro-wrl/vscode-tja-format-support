@@ -13,7 +13,7 @@ export const balloonParameterDefinition = vscode.languages.registerDefinitionPro
       return;
     }
 
-    const root = documents.get(document).parse();
+    const root = documents.get(document).getRootNode();
     const balloonHeader = root.find(
       (x) =>
         x instanceof HeaderNode &&
@@ -63,7 +63,7 @@ export const balloonNoteDefinition = vscode.languages.registerDefinitionProvider
       return;
     }
 
-    const root = documents.get(document).parse();
+    const root = documents.get(document).getRootNode();
     const balloonNote = root.find(
       (x) =>
         x instanceof NoteNode && x.range.contains(position) && x.properties.balloonId !== undefined

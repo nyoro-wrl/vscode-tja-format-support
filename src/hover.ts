@@ -47,7 +47,7 @@ export const balloonHover = vscode.languages.registerHoverProvider("tja", {
       return;
     }
 
-    const root = documents.get(document).parse();
+    const root = documents.get(document).getRootNode();
     const balloonNote = root.find(
       (x) =>
         x instanceof NoteNode && x.range.contains(position) && x.properties.balloonId !== undefined

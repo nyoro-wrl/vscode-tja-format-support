@@ -19,8 +19,9 @@ import {
 export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
   provideDocumentSymbols(document: vscode.TextDocument, token) {
     const result: DocumentSymbol[] = [];
-    const root = documents.get(document).parse();
+    const root = documents.get(document).getRootNode();
     const symbols = nodeToSymbols(root);
+    // const symbols = allNodeToSymbols(root);
     result.push(...symbols);
     return result;
   },
@@ -44,18 +45,15 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
       );
     } else if (node instanceof StyleNode) {
       // CourseにStyleが複数ある場合はStyleをシンボル化する
-      const courseNode = node.findParent((x) => x instanceof CourseNode) as CourseNode | undefined;
-      if (courseNode !== undefined) {
-        const styleNodes = courseNode.findAll((x) => x instanceof StyleNode) as StyleNode[];
-        if (styleNodes.length > 1) {
-          symbol = new DocumentSymbol(
-            "STYLE: " + node.properties.style,
-            "",
-            SymbolKind.Class,
-            node.range,
-            node.range
-          );
-        }
+      const styleNodes = node.parent.findAll((x) => x instanceof StyleNode) as StyleNode[];
+      if (styleNodes.length > 1) {
+        symbol = new DocumentSymbol(
+          "STYLE: " + node.properties.style,
+          "",
+          SymbolKind.Class,
+          node.range,
+          node.range
+        );
       }
     } else if (node instanceof HeaderNode) {
       symbol = new DocumentSymbol(

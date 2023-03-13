@@ -15,7 +15,7 @@ measureStatusBarItem.command = {
 measureStatusBarItem.tooltip = "小節に移動";
 
 export function updateMeasureStatusBar(document: TextDocument, position: Position): void {
-  const root = documents.get(document).parse();
+  const root = documents.get(document).getRootNode();
   // カーソル位置の小節を検索
   const measureNode = root.findLast(
     (x) =>
