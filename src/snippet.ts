@@ -122,6 +122,7 @@ export const commandSnippet = vscode.languages.registerCompletionItemProvider(
         (x) =>
           x instanceof MeasureNode && x.range !== undefined && x.range.start.line < position.line
       ) as MeasureNode | undefined;
+      // TODO 直前が譜面分岐だと正しい情報がとれない
       const beforeChartTokenNode = root.findLast(
         (x) => x instanceof ChartTokenNode && x.range.start.line < position.line
       ) as ChartTokenNode | undefined;

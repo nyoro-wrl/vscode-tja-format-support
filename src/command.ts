@@ -3,6 +3,8 @@ import { Selection } from "vscode";
 import { documents } from "./documents";
 import { ChartNode, MeasureNode } from "./types/node";
 
+// TODO 譜面分岐に対応させる
+
 export const jumpMeasure = vscode.commands.registerTextEditorCommand(
   "tja.jumpMeasure",
   async (textEditor, edit) => {

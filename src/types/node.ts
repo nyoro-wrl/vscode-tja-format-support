@@ -1,6 +1,7 @@
 import { Range } from "vscode";
 import { commands } from "../constants/commands";
 import { Token } from "./lexer";
+import { ChartState, MixBoolean } from "./state";
 import { Separator } from "./statement";
 
 interface HeadersProperties {
@@ -10,18 +11,13 @@ interface HeadersProperties {
 interface StatementProperties {
   name: string;
   parameter: string;
-  parameters: string[];
-  separator: Separator;
-}
-
-interface ChartTokenProperties {
-  readonly isGogotime: boolean;
-  readonly isDummyNote: boolean;
+  readonly parameters: string[];
+  readonly separator: Separator;
 }
 
 interface CouseProperties {
   course: string;
-  styles: StyleProperties[];
+  readonly styles: StyleProperties[];
 }
 
 interface StyleProperties extends HeadersProperties {
@@ -34,25 +30,33 @@ interface ChartProperties {
   measure: number;
 }
 
+export interface ChartStateProperties {
+  measure: number;
+  showBarline: MixBoolean;
+  isGogotime: MixBoolean;
+  isDummyNote: MixBoolean;
+}
+
+interface ChartStateCommandProperties extends StatementProperties {
+  chartState: ChartStateProperties;
+}
+
 interface BranchProperties {
-  readonly startMeasure: number;
+  readonly startChartState: ChartState;
+  readonly endChartState: ChartState;
   measureCount: number;
 }
 
 interface BranchSectionProperties {
   measureCount: number;
-}
-
-interface MeasureProperties {
-  readonly measure: number;
-  showBarline: boolean;
+  endChartState: ChartStateProperties;
 }
 
 interface ParameterProperties {
   index: number;
 }
 
-interface NoteProperties extends ChartTokenProperties {
+interface NoteProperties extends ChartStateProperties {
   readonly balloonId: number | undefined;
 }
 
@@ -272,18 +276,31 @@ export abstract class StatementNode extends ParentNode<StatementNameNode | Param
 /**
  * 譜面分岐の区分（普通譜面･玄人譜面･達人譜面）ノード
  */
-export abstract class BranchSectionNode extends ParentNode<CommandNode | MeasureNode> {
-  properties: BranchSectionProperties = { measureCount: 0 };
+export abstract class BranchSectionNode extends ParentNode<
+  CommandNode | ChartStateCommandNode | MeasureNode
+> {
+  properties: BranchSectionProperties;
+
+  constructor(parent: BranchNode) {
+    super(parent);
+    this.properties = { measureCount: 0, endChartState: parent.properties.startChartState };
+  }
 
   /**
    * childrenにNodeを追加
    * @param node
    */
-  public push(node: CommandNode | MeasureNode) {
+  public push(node: CommandNode | ChartStateCommandNode | MeasureNode) {
     super._push(node);
 
     if (node instanceof MeasureNode) {
       this.properties.measureCount++;
+      this.properties.endChartState = { ...node.properties };
+    } else if (node instanceof ChartStateCommandNode && node.properties.chartState !== undefined) {
+      // 小節番号以外を適用する
+      const chartState = { ...node.properties.chartState };
+      chartState.measure = this.properties.endChartState.measure;
+      this.properties.endChartState = chartState;
     }
   }
 }
@@ -292,16 +309,13 @@ export abstract class BranchSectionNode extends ParentNode<CommandNode | Measure
  * 音符と小節末（,）ノード
  */
 export abstract class ChartTokenNode extends LeafNode {
-  properties: ChartTokenProperties;
+  readonly parent: MeasureNode;
+  properties: ChartStateProperties;
 
-  constructor(
-    parent: ParentNode | undefined,
-    token: Token,
-    isGogotime: boolean,
-    isDummyNote: boolean
-  ) {
+  constructor(parent: MeasureNode, token: Token, chartState: ChartStateProperties) {
     super(parent, token);
-    this.properties = { isGogotime: isGogotime, isDummyNote: isDummyNote };
+    this.parent = parent;
+    this.properties = { ...chartState };
   }
 }
 
@@ -469,10 +483,41 @@ export class CommandNode extends StatementNode {
   }
 }
 
+export class ChartStateCommandNode extends CommandNode {
+  readonly parent: BranchSectionNode | ChartNode | MeasureNode;
+  properties: ChartStateCommandProperties;
+
+  constructor(
+    parent: BranchSectionNode | ChartNode | MeasureNode,
+    separator: Separator,
+    chartState: ChartStateProperties
+  ) {
+    super(parent, separator);
+    this.parent = parent;
+    this.properties = {
+      name: "",
+      parameter: "",
+      parameters: [],
+      separator: separator,
+      chartState: { ...chartState },
+    };
+  }
+
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: StatementNameNode | ParametersNode) {
+    super._pushStatement(node);
+  }
+}
+
 /**
  * 譜面ノード
  */
-export class ChartNode extends ParentNode<CommandNode | MeasureNode | BranchNode> {
+export class ChartNode extends ParentNode<
+  CommandNode | ChartStateCommandNode | MeasureNode | BranchNode
+> {
   readonly parent: StyleNode;
   properties: ChartProperties = { start: undefined, end: undefined, measure: 0 };
 
@@ -485,7 +530,7 @@ export class ChartNode extends ParentNode<CommandNode | MeasureNode | BranchNode
    * childrenにNodeを追加
    * @param node
    */
-  public push(node: CommandNode | MeasureNode | BranchNode) {
+  public push(node: CommandNode | ChartStateCommandNode | MeasureNode | BranchNode) {
     super._push(node);
     if (node instanceof CommandNode) {
       if (commands.items.start.regexp.test(node.properties.name)) {
@@ -495,7 +540,6 @@ export class ChartNode extends ParentNode<CommandNode | MeasureNode | BranchNode
       }
     } else if (node instanceof MeasureNode) {
       this.properties.measure = node.properties.measure;
-    } else if (node instanceof MeasureNode) {
     }
   }
 }
@@ -503,21 +547,23 @@ export class ChartNode extends ParentNode<CommandNode | MeasureNode | BranchNode
 /**
  * 小節ノード
  */
-export class MeasureNode extends ParentNode<NoteNode | CommandNode | MeasureEndNode> {
+export class MeasureNode extends ParentNode<
+  NoteNode | CommandNode | ChartStateCommandNode | MeasureEndNode
+> {
   readonly parent: ChartNode | BranchSectionNode;
-  properties: MeasureProperties;
+  properties: ChartStateProperties;
 
-  constructor(parent: ChartNode | BranchSectionNode, measure: number, showBarline: boolean) {
+  constructor(parent: ChartNode | BranchSectionNode, chartState: ChartStateProperties) {
     super(parent);
     this.parent = parent;
-    this.properties = { measure: measure, showBarline: showBarline };
+    this.properties = { ...chartState };
   }
 
   /**
    * childrenにNodeを追加
    * @param node
    */
-  public push(node: NoteNode | CommandNode | MeasureEndNode) {
+  public push(node: NoteNode | CommandNode | ChartStateCommandNode | MeasureEndNode) {
     super._push(node);
   }
 }
@@ -549,10 +595,14 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
   readonly parent: ChartNode;
   properties: BranchProperties;
 
-  constructor(parent: ChartNode, startMeasure: number) {
+  constructor(parent: ChartNode, startChartState: ChartState) {
     super(parent);
     this.parent = parent;
-    this.properties = { startMeasure: startMeasure, measureCount: 0 };
+    this.properties = {
+      startChartState: { ...startChartState },
+      endChartState: { ...startChartState },
+      measureCount: 0,
+    };
   }
 
   /**
@@ -567,6 +617,20 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
       this.properties.measureCount < node.properties.measureCount
     ) {
       this.properties.measureCount = node.properties.measureCount;
+    }
+    if (node instanceof BranchSectionNode) {
+      if (this.properties.endChartState.measure < node.properties.endChartState.measure) {
+        this.properties.endChartState.measure = node.properties.endChartState.measure;
+      }
+      if (this.properties.endChartState.showBarline !== node.properties.endChartState.showBarline) {
+        this.properties.endChartState.showBarline = "mix";
+      }
+      if (this.properties.endChartState.isGogotime !== node.properties.endChartState.isGogotime) {
+        this.properties.endChartState.isGogotime = "mix";
+      }
+      if (this.properties.endChartState.isDummyNote !== node.properties.endChartState.isDummyNote) {
+        this.properties.endChartState.isDummyNote = "mix";
+      }
     }
   }
 }
@@ -634,13 +698,12 @@ export class NoteNode extends ChartTokenNode {
   constructor(
     parent: MeasureNode,
     token: Token,
-    isGogotime: boolean,
-    isDummyNote: boolean,
+    chartState: ChartStateProperties,
     balloonId: number | undefined
   ) {
-    super(parent, token, isGogotime, isDummyNote);
+    super(parent, token, chartState);
     this.parent = parent;
-    this.properties = { isGogotime: isGogotime, isDummyNote: isDummyNote, balloonId: balloonId };
+    this.properties = { ...chartState, balloonId: balloonId };
   }
 }
 
@@ -650,8 +713,8 @@ export class NoteNode extends ChartTokenNode {
 export class MeasureEndNode extends ChartTokenNode {
   readonly parent: MeasureNode;
 
-  constructor(parent: MeasureNode, token: Token, isGogotime: boolean, isDummyNote: boolean) {
-    super(parent, token, isGogotime, isDummyNote);
+  constructor(parent: MeasureNode, token: Token, chartState: ChartStateProperties) {
+    super(parent, token, { ...chartState });
     this.parent = parent;
   }
 }
