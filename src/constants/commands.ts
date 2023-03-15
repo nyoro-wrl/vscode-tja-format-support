@@ -108,7 +108,7 @@ export const commands = new CommandCollection({
       .appendMarkdown("譜面分岐の判定に使う連打数、精度をリセットします。  \n")
       .appendMarkdown("分岐したい箇所の一小節以上前に置いてください。").value,
     separator: "None",
-    section: "Branch",
+    section: "MeasureHead",
     order: 2,
   },
   branchstart: {

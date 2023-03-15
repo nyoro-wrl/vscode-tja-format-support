@@ -1,120 +1,87 @@
 import * as vscode from "vscode";
-import { Diagnostic, DiagnosticSeverity, Range, TextDocument } from "vscode";
-import { onDidFirstParsedTextDocumentEmitter as onDidInitialParsedTextDocumentEmitter } from "./extension";
+import { TextDocument } from "vscode";
+import { Diagnostics } from "./diagnostics";
+import { Parser } from "./parser";
 import { RootNode } from "./types/node";
-import { Parser } from "./types/parser";
 
-/**
- * 診断を表示するタイミング
- *
- *     "Realtime" // 即時に表示する
- *     "Unedited" // 未編集時に表示する
- */
-type DiagnosticTiming = "Realtime" | "Unedited";
-
-/**
- * 拡張機能内で管理しているドキュメント情報
- */
-class DocumentInfo {
-  private readonly document: TextDocument;
-  private parsedText: string = "";
-  protected _root: RootNode | undefined;
-  private realtimeDiagnostics: Diagnostic[] = [];
-  private uneditedDiagnostics: Diagnostic[] = [];
-
-  constructor(document: TextDocument) {
-    this.document = document;
-  }
-
+export class Documents implements vscode.Disposable {
+  private rootNodes: Record<string, RootNode> = {};
+  private diagnostics: Diagnostics = new Diagnostics();
+  private readonly disposables: vscode.Disposable[] = [];
   /**
-   * 構文木の取得
-   * @returns
+   * ドキュメントの構文解析が完了したとき
    */
-  public getRootNode(): RootNode {
-    const initial = this._root === undefined;
-    if (this._root === undefined || this.parsedText !== this.document.getText()) {
-      const parser = new Parser(this.document);
-      this._root = parser.parse();
-      this.parsedText = this.document.getText();
-      if (initial) {
-        onDidInitialParsedTextDocumentEmitter.fire(this.document);
-      }
-    }
-    return this._root;
-  }
-
+  readonly onDidParsedTextDocument;
   /**
-   * 診断の追加
-   * @param range
-   * @param message
-   * @param timing
-   * @param severity
+   * ドキュメントの初回の構文解析が完了したとき
    */
-  public addDiagnostic(
-    range: Range,
-    message: string,
-    timing: DiagnosticTiming = "Realtime",
-    severity: DiagnosticSeverity = DiagnosticSeverity.Error
-  ): void {
-    const diagnostic = new Diagnostic(range, message, severity);
-    if (timing === "Realtime") {
-      this.realtimeDiagnostics.push(diagnostic);
-    } else if (timing === "Unedited") {
-      this.uneditedDiagnostics.push(diagnostic);
-    }
-  }
+  readonly onDidFirstParsedTextDocument;
 
-  /**
-   * 即時の診断を表示する
-   */
-  public showRealtimeDiagnostic(): void {
-    diagnostics.set(this.document.uri, this.realtimeDiagnostics);
-  }
+  constructor() {
+    this.onDidParsedTextDocument = new vscode.EventEmitter<TextDocument>();
+    this.onDidFirstParsedTextDocument = new vscode.EventEmitter<TextDocument>();
 
-  /**
-   * 未編集時の診断を表示する
-   */
-  public showUneditedDiagnostic(): void {
-    diagnostics.set(this.document.uri, [...this.realtimeDiagnostics, ...this.uneditedDiagnostics]);
-  }
-
-  /**
-   * 診断の削除
-   */
-  public clearDiagnostics(): void {
-    this.realtimeDiagnostics.length = 0;
-    this.uneditedDiagnostics.length = 0;
-    diagnostics.delete(this.document.uri);
-  }
-}
-
-/**
- * 拡張機能内で管理しているドキュメントのコレクション
- */
-class DocumentInfoCollection implements vscode.Disposable {
-  private documents: { [key: string]: DocumentInfo } = {};
-
-  get(document: TextDocument): Readonly<DocumentInfo> {
-    const key = document.uri.toString();
-    if (!this.documents.hasOwnProperty(key)) {
-      this.documents[key] = new DocumentInfo(document);
-    }
-    return this.documents[key];
-  }
-
-  delete(document: TextDocument): void {
-    const key = document.uri.toString();
-    if (this.documents.hasOwnProperty(key)) {
-      this.documents[key].clearDiagnostics();
-      delete this.documents[key];
-    }
+    this.disposables.push(
+      this.diagnostics,
+      this.onDidParsedTextDocument,
+      this.onDidFirstParsedTextDocument,
+      vscode.workspace.onDidChangeTextDocument(async (event) => {
+        if (event.document.languageId === "tja") {
+          this.parse(event.document);
+        }
+      }),
+      vscode.workspace.onDidCloseTextDocument(async (document) => {
+        this.delete(document);
+      }),
+      this.onDidParsedTextDocument.event(async (document) => {
+        if (document.languageId === "tja") {
+          if (document.isDirty) {
+            this.diagnostics.showRealtime(document);
+          } else {
+            this.diagnostics.showUnedited(document);
+          }
+        }
+      }),
+      this.onDidFirstParsedTextDocument.event(async (document) => {
+        if (document.languageId === "tja" && !document.isDirty) {
+          this.diagnostics.showUnedited(document);
+        }
+      })
+    );
   }
 
   dispose() {
-    this.documents = {};
+    this.disposables.forEach((x) => x.dispose());
+    this.rootNodes = {};
+  }
+
+  delete(document: TextDocument): void {
+    const uri = document.uri.toString();
+    if (this.rootNodes.hasOwnProperty(uri)) {
+      delete this.rootNodes[uri];
+    }
+  }
+
+  parse(document: TextDocument): RootNode {
+    let isFirst = false;
+    const uri = document.uri.toString();
+    if (!this.rootNodes.hasOwnProperty(uri)) {
+      this.rootNodes[uri] = new RootNode("");
+      isFirst = true;
+    }
+    const root = this.rootNodes[uri];
+    if (document.getText() === root.text) {
+      return root;
+    }
+    this.diagnostics.delete(document);
+    const parser = new Parser(document);
+    const parseResult = parser.parse();
+    this.diagnostics.add(document, parseResult.diagnostics);
+    this.rootNodes[uri] = parseResult.root;
+    this.onDidParsedTextDocument.fire(document);
+    if (isFirst) {
+      this.onDidFirstParsedTextDocument.fire(document);
+    }
+    return parseResult.root;
   }
 }
-
-export const diagnostics = vscode.languages.createDiagnosticCollection("tja");
-
-export const documents = new DocumentInfoCollection();

@@ -1,7 +1,7 @@
 import { Range } from "vscode";
 import { commands } from "../constants/commands";
-import { Token } from "./lexer";
-import { ChartState, MixBoolean } from "./state";
+import { Token } from "../lexer";
+import { BranchState, ChartState, RollState, TriBoolean } from "./state";
 import { Separator } from "./statement";
 
 interface HeadersProperties {
@@ -21,7 +21,14 @@ interface CouseProperties {
 }
 
 interface StyleProperties extends HeadersProperties {
+  /**
+   * プレイスタイル
+   */
   style: string;
+  /**
+   * 風船打数が譜面分岐ごとに記載されているかどうか
+   */
+  isBranchBalloon: boolean;
 }
 
 interface ChartProperties {
@@ -32,9 +39,16 @@ interface ChartProperties {
 
 export interface ChartStateProperties {
   measure: number;
-  showBarline: MixBoolean;
-  isGogotime: MixBoolean;
-  isDummyNote: MixBoolean;
+  showBarline: TriBoolean;
+  isGogotime: TriBoolean;
+  isDummyNote: TriBoolean;
+  rollState: RollState;
+  branchState: BranchState;
+}
+
+interface MeasureProperties {
+  startChartState: ChartStateProperties;
+  endChartState: ChartStateProperties;
 }
 
 interface ChartStateCommandProperties extends StatementProperties {
@@ -43,12 +57,13 @@ interface ChartStateCommandProperties extends StatementProperties {
 
 interface BranchProperties {
   readonly startChartState: ChartState;
-  readonly endChartState: ChartState;
-  measureCount: number;
+  endChartState: ChartState;
+  normal: boolean;
+  expert: boolean;
+  master: boolean;
 }
 
 interface BranchSectionProperties {
-  measureCount: number;
   endChartState: ChartStateProperties;
 }
 
@@ -56,8 +71,15 @@ interface ParameterProperties {
   index: number;
 }
 
+export type BalloonSection = "BALLOON" | "BALLOONNOR" | "BALLOONEXP" | "BALLOONMAS";
+
+export type BalloonInfo = {
+  id: number;
+  headerName: BalloonSection;
+};
+
 interface NoteProperties extends ChartStateProperties {
-  readonly balloonId: number | undefined;
+  readonly balloonInfo: BalloonInfo | undefined;
 }
 
 /**
@@ -158,14 +180,14 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public findAll(predicate: (node: Node) => boolean, includeSelf: boolean = true): Node[] {
+  public filter(predicate: (node: Node) => boolean, includeSelf: boolean = true): Node[] {
     const results: Node[] = [];
     if (includeSelf && predicate(this)) {
       results.push(this);
     }
     for (const child of this.children) {
       if (child instanceof ParentNode) {
-        const result = child.findAll(predicate);
+        const result = child.filter(predicate);
         results.push(...result);
       } else if (predicate(child)) {
         results.push(child);
@@ -196,6 +218,35 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
         }
       } else if (predicate(child)) {
         result = child;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * 子ノードを再帰的に検索し、範囲末尾が最も後ろにあるNodeを返す
+   * @param predicate
+   * @param includeSelf 自身を検索対象に含む
+   * @returns
+   */
+  public findLastRange(
+    predicate: (node: Node) => boolean,
+    includeSelf: boolean = true
+  ): Node | undefined {
+    const nodes: Node[] = this.filter(predicate, includeSelf);
+    let result: Node | undefined;
+    for (const node of nodes) {
+      if (result === undefined) {
+        result = node;
+      } else if (result.range === undefined) {
+        result = node;
+      } else if (
+        node.range !== undefined &&
+        (result.range.end.line < node.range.end.line ||
+          (result.range.end.line === node.range.end.line &&
+            result.range.end.character <= node.range.end.character))
+      ) {
+        result = node;
       }
     }
     return result;
@@ -283,7 +334,7 @@ export abstract class BranchSectionNode extends ParentNode<
 
   constructor(parent: BranchNode) {
     super(parent);
-    this.properties = { measureCount: 0, endChartState: parent.properties.startChartState };
+    this.properties = { endChartState: { ...parent.properties.startChartState } };
   }
 
   /**
@@ -294,12 +345,15 @@ export abstract class BranchSectionNode extends ParentNode<
     super._push(node);
 
     if (node instanceof MeasureNode) {
-      this.properties.measureCount++;
-      this.properties.endChartState = { ...node.properties };
+      // 分岐状態以外を適用する
+      const chartState = { ...node.properties.endChartState };
+      chartState.branchState = this.properties.endChartState.branchState;
+      this.properties.endChartState = chartState;
     } else if (node instanceof ChartStateCommandNode && node.properties.chartState !== undefined) {
-      // 小節番号以外を適用する
+      // 小節番号と分岐状態以外を適用する
       const chartState = { ...node.properties.chartState };
       chartState.measure = this.properties.endChartState.measure;
+      chartState.branchState = this.properties.endChartState.branchState;
       this.properties.endChartState = chartState;
     }
   }
@@ -324,9 +378,11 @@ export abstract class ChartTokenNode extends LeafNode {
  */
 export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {
   readonly parent: undefined;
+  readonly text: string;
 
-  constructor() {
+  constructor(text: string) {
     super(undefined);
+    this.text = text;
   }
 
   /**
@@ -396,7 +452,7 @@ export class CourseNode extends ParentNode<StyleNode> {
  */
 export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | ChartNode> {
   readonly parent: CourseNode;
-  properties: StyleProperties = { style: "", headers: [] };
+  properties: StyleProperties = { style: "", headers: [], isBranchBalloon: false };
 
   constructor(parent: CourseNode) {
     super(parent);
@@ -416,6 +472,9 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
       if (styleHeader !== undefined) {
         this.properties.style = styleHeader.parameter;
       }
+      this.properties.isBranchBalloon = node.properties.headers.some(
+        (x) => x.name === "BALLOONNOR" || x.name === "BALLOONEXP" || x.name === "BALLOONMAS"
+      );
     }
   }
 }
@@ -539,7 +598,9 @@ export class ChartNode extends ParentNode<
         this.properties.end = node.properties;
       }
     } else if (node instanceof MeasureNode) {
-      this.properties.measure = node.properties.measure;
+      this.properties.measure = node.properties.startChartState.measure;
+    } else if (node instanceof BranchNode) {
+      this.properties.measure = node.properties.endChartState.measure;
     }
   }
 }
@@ -551,12 +612,13 @@ export class MeasureNode extends ParentNode<
   NoteNode | CommandNode | ChartStateCommandNode | MeasureEndNode
 > {
   readonly parent: ChartNode | BranchSectionNode;
-  properties: ChartStateProperties;
+  properties: MeasureProperties;
 
   constructor(parent: ChartNode | BranchSectionNode, chartState: ChartStateProperties) {
     super(parent);
     this.parent = parent;
-    this.properties = { ...chartState };
+    const cloneChartState = { ...chartState };
+    this.properties = { startChartState: cloneChartState, endChartState: cloneChartState };
   }
 
   /**
@@ -565,6 +627,42 @@ export class MeasureNode extends ParentNode<
    */
   public push(node: NoteNode | CommandNode | ChartStateCommandNode | MeasureEndNode) {
     super._push(node);
+
+    let chartState: ChartStateProperties | undefined;
+    if (node instanceof NoteNode) {
+      chartState = node.properties;
+    } else if (node instanceof ChartStateCommandNode) {
+      chartState = node.properties.chartState;
+    } else if (node instanceof MeasureEndNode) {
+      chartState = node.properties;
+    }
+
+    if (chartState !== undefined) {
+      if (!this.children.some((x) => x instanceof ChartTokenNode)) {
+        // 命令のみの場合はstartChartStateを更新する
+        this.properties.startChartState = { ...chartState };
+      }
+
+      if (this.properties.endChartState === this.properties.startChartState) {
+        this.properties.endChartState = { ...chartState };
+      } else {
+        if (this.properties.endChartState.measure < chartState.measure) {
+          this.properties.endChartState.measure = chartState.measure;
+        }
+        if (this.properties.endChartState.showBarline !== chartState.showBarline) {
+          this.properties.endChartState.showBarline = "unknown";
+        }
+        if (this.properties.endChartState.isGogotime !== chartState.isGogotime) {
+          this.properties.endChartState.isGogotime = "unknown";
+        }
+        if (this.properties.endChartState.isDummyNote !== chartState.isDummyNote) {
+          this.properties.endChartState.isDummyNote = "unknown";
+        }
+        if (this.properties.endChartState.rollState !== chartState.rollState) {
+          this.properties.endChartState.rollState = "None";
+        }
+      }
+    }
   }
 }
 
@@ -598,10 +696,13 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
   constructor(parent: ChartNode, startChartState: ChartState) {
     super(parent);
     this.parent = parent;
+    const chartStateClone = { ...startChartState };
     this.properties = {
-      startChartState: { ...startChartState },
-      endChartState: { ...startChartState },
-      measureCount: 0,
+      startChartState: chartStateClone,
+      endChartState: chartStateClone,
+      normal: false,
+      expert: false,
+      master: false,
     };
   }
 
@@ -612,24 +713,36 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
   public push(node: BranchSectionNode | CommandNode) {
     super._push(node);
 
-    if (
-      node instanceof BranchSectionNode &&
-      this.properties.measureCount < node.properties.measureCount
-    ) {
-      this.properties.measureCount = node.properties.measureCount;
-    }
     if (node instanceof BranchSectionNode) {
-      if (this.properties.endChartState.measure < node.properties.endChartState.measure) {
-        this.properties.endChartState.measure = node.properties.endChartState.measure;
+      if (node instanceof NBranchSectionNode) {
+        this.properties.normal = true;
+      } else if (node instanceof EBranchSectionNode) {
+        this.properties.expert = true;
+      } else if (node instanceof MBranchSectionNode) {
+        this.properties.master = true;
       }
-      if (this.properties.endChartState.showBarline !== node.properties.endChartState.showBarline) {
-        this.properties.endChartState.showBarline = "mix";
-      }
-      if (this.properties.endChartState.isGogotime !== node.properties.endChartState.isGogotime) {
-        this.properties.endChartState.isGogotime = "mix";
-      }
-      if (this.properties.endChartState.isDummyNote !== node.properties.endChartState.isDummyNote) {
-        this.properties.endChartState.isDummyNote = "mix";
+      if (this.properties.endChartState === this.properties.startChartState) {
+        this.properties.endChartState = { ...node.properties.endChartState };
+      } else {
+        if (this.properties.endChartState.measure < node.properties.endChartState.measure) {
+          this.properties.endChartState.measure = node.properties.endChartState.measure;
+        }
+        if (
+          this.properties.endChartState.showBarline !== node.properties.endChartState.showBarline
+        ) {
+          this.properties.endChartState.showBarline = "unknown";
+        }
+        if (this.properties.endChartState.isGogotime !== node.properties.endChartState.isGogotime) {
+          this.properties.endChartState.isGogotime = "unknown";
+        }
+        if (
+          this.properties.endChartState.isDummyNote !== node.properties.endChartState.isDummyNote
+        ) {
+          this.properties.endChartState.isDummyNote = "unknown";
+        }
+        if (this.properties.endChartState.rollState !== node.properties.endChartState.rollState) {
+          this.properties.endChartState.rollState = "None";
+        }
       }
     }
   }
@@ -699,11 +812,12 @@ export class NoteNode extends ChartTokenNode {
     parent: MeasureNode,
     token: Token,
     chartState: ChartStateProperties,
-    balloonId: number | undefined
+    balloonInfo: BalloonInfo | undefined
   ) {
     super(parent, token, chartState);
     this.parent = parent;
-    this.properties = { ...chartState, balloonId: balloonId };
+    const _balloonInfo = balloonInfo === undefined ? undefined : { ...balloonInfo };
+    this.properties = { ...chartState, balloonInfo: _balloonInfo };
   }
 }
 

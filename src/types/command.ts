@@ -23,6 +23,9 @@ interface ICommand extends IStatement {
   readonly section: CommandSection;
 }
 
+/**
+ * 命令のマッピング
+ */
 interface ICommandRecord extends Record<string, ICommand> {
   readonly start: ICommand;
   readonly end: ICommand;
