@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -45,6 +45,78 @@
         "path": "./syntaxes/tja.tmLanguage.json"
       }
     ],
+    "semanticTokenTypes": [
+      {
+        "id": "roll",
+        "description": "連打"
+      },
+      {
+        "id": "rollBig",
+        "description": "連打（大）"
+      },
+      {
+        "id": "balloon",
+        "description": "風船"
+      },
+      {
+        "id": "balloonBig",
+        "description": "風船（大）"
+      },
+      {
+        "id": "gogo",
+        "description": "ゴーゴータイム"
+      },
+      {
+        "id": "gogoMeasureEnd",
+        "description": "ゴーゴータイム"
+      },
+      {
+        "id": "normal",
+        "description": "普通譜面"
+      },
+      {
+        "id": "expert",
+        "description": "玄人譜面"
+      },
+      {
+        "id": "master",
+        "description": "達人譜面"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "tja",
+        "scopes": {
+          "roll": [
+            "source.tja note.roll"
+          ],
+          "rollBig": [
+            "source.tja note.roll.big"
+          ],
+          "balloon": [
+            "source.tja note.balloon"
+          ],
+          "balloonBig": [
+            "source.tja note.balloon.big"
+          ],
+          "gogo": [
+            "source.tja gogo note.empty"
+          ],
+          "gogoMeasureEnd": [
+            "source.tja gogo measureEnd"
+          ],
+          "normal": [
+            "source.tja branch.normal note.empty"
+          ],
+          "expert": [
+            "source.tja branch.expert note.empty"
+          ],
+          "master": [
+            "source.tja branch.master note.empty"
+          ]
+        }
+      }
+    ],
     "configurationDefaults": {
       "[tja]": {
         "files.encoding": "shiftjis",
@@ -52,7 +124,8 @@
         "editor.snippetSuggestions": "top",
         "editor.unicodeHighlight.invisibleCharacters": false,
         "editor.suggest.showWords": false,
-        "editor.occurrencesHighlight": false
+        "editor.occurrencesHighlight": false,
+        "editor.semanticHighlighting.enabled": true
       },
       "editor.tokenColorCustomizations": {
         "textMateRules": [
@@ -145,9 +218,39 @@
             }
           },
           {
+            "scope": "source.tja gogo note.empty",
+            "settings": {
+              "foreground": "#59434a"
+            }
+          },
+          {
+            "scope": "source.tja branch.normal note.empty",
+            "settings": {
+              "foreground": "#424b3c"
+            }
+          },
+          {
+            "scope": "source.tja branch.expert note.empty",
+            "settings": {
+              "foreground": "#314a5a"
+            }
+          },
+          {
+            "scope": "source.tja branch.master note.empty",
+            "settings": {
+              "foreground": "#50374a"
+            }
+          },
+          {
             "scope": "source.tja note.empty",
             "settings": {
               "foreground": "#4B4B4B"
+            }
+          },
+          {
+            "scope": "source.tja gogo measureEnd",
+            "settings": {
+              "foreground": "#fcb7d4"
             }
           }
         ]

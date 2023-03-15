@@ -6,7 +6,7 @@ import { Collection, ICollection } from "./collection";
 export type Separator = "Comma" | "Space" | "None" | "Unknown";
 
 /**
- * TJAで使用できる文
+ * 文（ヘッダ･命令）
  */
 export interface IStatement {
   /**
@@ -55,6 +55,10 @@ export class StatementCollection<T extends IStatement>
   extends Collection<T>
   implements IStatementCollection<T>
 {
+  /**
+   * 一致するStatementを取得
+   * @param string
+   */
   get(string: string): T | undefined {
     for (const statement of this) {
       if (statement.regexp.test(string)) {

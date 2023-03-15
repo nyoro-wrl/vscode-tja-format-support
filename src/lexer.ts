@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { Range } from "vscode";
-import { splitString } from "../util/string";
+import { splitString } from "./util/lexerUtil";
 
-const headerLineRegExp = /^\s*([A-Z0-9]+):(.*)?\s*$/;
-const commandLineRegExp = /^\s*#([A-Z0-9]+)( (.*)+)?\s*$/;
+const headerLineRegExp = /^\s*([A-Z0-9]+):(.*?)\s*$/;
+const commandLineRegExp = /^\s*#([A-Z0-9]+)(\s*(.*?))?\s*$/;
 const notesRegExp = /^([0-9])/;
 const measureEndRegExp = /^(,)/;
 const spaceRegExp = /^(\s+)/;
@@ -140,7 +140,7 @@ export class Lexer {
    */
   private deleteCommentRange(): void {
     const text = this.getText();
-    const matches = /^\s*(.*)\s*\/\/\s*.*\s*$/.exec(text);
+    const matches = /^\s*(.*?)\s*(\/\/.*)$/.exec(text);
     if (matches === null) {
       return;
     }

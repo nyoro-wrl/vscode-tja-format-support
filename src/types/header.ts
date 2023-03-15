@@ -24,6 +24,9 @@ interface IHeader extends IStatement {
   readonly recommend: string[];
 }
 
+/**
+ * ヘッダのマッピング
+ */
 interface IHeaderRecord extends Record<string, IHeader> {
   readonly title: IHeader;
   readonly level: IHeader;

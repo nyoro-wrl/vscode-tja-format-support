@@ -1,128 +1,58 @@
 import * as vscode from "vscode";
-import { headerHover, commandHover, balloonHover } from "./hover";
-import { commandSnippet, headerSnippet } from "./snippet";
-import { symbol } from "./symbol";
-import { jumpMeasure } from "./command";
-import { diagnostics, documents } from "./documents";
-import { hideMeasureStatusBar, measureStatusBarItem, updateMeasureStatusBar } from "./statusBar";
-import { TextDocument } from "vscode";
-import { balloonNoteDefinition, balloonParameterDefinition } from "./definition";
+import { jumpMeasure, jumpMeasureCommand } from "./commands/jumpMeasure";
+import { commands, DocumentSelector, languages, TextDocument } from "vscode";
+import {
+  JumpBalloonNotesDefinitionProvider,
+  JumpBalloonParameterDefinitionProvider,
+} from "./providers/definition";
+import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider } from "./providers/hover";
+import {
+  CommandCompletionItemProvider,
+  HeaderCompletionItemProvider,
+} from "./providers/completionItem";
+import { DefaultDocumentSymbolProvider } from "./providers/documentSymbol";
+import { DefaultDocumentSemanticTokensProvider, legend } from "./providers/semanticTokens";
+import { BranchStatusBarItem, MeasureStatusBarItem } from "./statusBarItem";
+import { Documents } from "./documents";
+import { jumpBranch, jumpBranchCommand } from "./commands/jumpBranch";
 
-// イベントハンドラ
-export const onDidFirstParsedTextDocumentEmitter = new vscode.EventEmitter<TextDocument>();
+const selector: DocumentSelector = { language: "tja" };
 
+/**
+ * ドキュメント情報
+ */
+export let documents: Documents;
+
+/**
+ * 拡張機能が有効になったとき
+ * @param context
+ */
 export function activate(context: vscode.ExtensionContext) {
+  documents = new Documents();
+
   context.subscriptions.push(
-    diagnostics,
     documents,
-    openTextDocument,
-    changeTextDocument,
-    saveTextDocument,
-    closeTextDocument,
-    changeTextEditorSelection,
-    changeActiveTextEditor,
-    changeVisibleTextEditors,
-    onDidFirstParsedTextDocumentEmitter,
-    initialParsedTextDocument,
-    symbol,
-    headerHover,
-    commandHover,
-    balloonHover,
-    balloonParameterDefinition,
-    balloonNoteDefinition,
-    headerSnippet,
-    commandSnippet,
-    jumpMeasure,
-    measureStatusBarItem
+    commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
+    commands.registerTextEditorCommand(jumpBranchCommand.command, jumpBranch),
+    languages.registerDocumentSemanticTokensProvider(
+      selector,
+      new DefaultDocumentSemanticTokensProvider(),
+      legend
+    ),
+    languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider()),
+    languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
+    languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
+    languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
+    languages.registerHoverProvider(selector, new HeaderHoverProvider()),
+    languages.registerHoverProvider(selector, new CommandHoverProvider()),
+    languages.registerHoverProvider(selector, new BalloonHoverProvider()),
+    languages.registerDocumentSymbolProvider(selector, new DefaultDocumentSymbolProvider()),
+    new MeasureStatusBarItem(),
+    new BranchStatusBarItem()
   );
 }
 
 /**
- * ファイルが開かれたとき
- * 言語モードが切り替わったとき
+ * 拡張機能が無効になったとき
  */
-const openTextDocument = vscode.workspace.onDidOpenTextDocument(async (document) => {
-  if (document.languageId !== "tja") {
-    hideMeasureStatusBar();
-    documents.delete(document);
-    return;
-  }
-});
-
-/**
- * ファイルが保存されたとき
- */
-const saveTextDocument = vscode.workspace.onDidSaveTextDocument(async (document) => {
-  if (document.languageId !== "tja") {
-    return;
-  }
-  documents.get(document).showUneditedDiagnostic();
-});
-
-/**
- * ファイルが閉じられたとき
- */
-const closeTextDocument = vscode.workspace.onDidCloseTextDocument(async (document) => {
-  documents.delete(document);
-});
-
-/**
- * テキストエディタの表示状態変更
- */
-const changeVisibleTextEditors = vscode.window.onDidChangeVisibleTextEditors(
-  async (textEditors) => {
-    hideMeasureStatusBar();
-    for (const textEditor of textEditors) {
-      const document = textEditor.document;
-    }
-  }
-);
-
-/**
- * テキストエディタの変更
- */
-const changeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(async (textEditor) => {
-  const document = textEditor?.document;
-  if (document === undefined) {
-    return;
-  }
-  if (document.languageId !== "tja") {
-    return;
-  }
-});
-
-/**
- * カーソル位置の更新
- */
-const changeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(async (event) => {
-  const document = event.textEditor.document;
-  if (document.languageId !== "tja") {
-    return;
-  }
-  updateMeasureStatusBar(document, event.textEditor.selection.active);
-});
-
-/**
- * ドキュメントの更新
- */
-const changeTextDocument = vscode.workspace.onDidChangeTextDocument(async (event) => {
-  const document = event.document;
-});
-
-/**
- * ドキュメントの初回の構文解析が完了したとき
- */
-const initialParsedTextDocument = onDidFirstParsedTextDocumentEmitter.event(async (document) => {
-  if (document.languageId !== "tja") {
-    return;
-  }
-  const activeTextEditor = vscode.window.activeTextEditor;
-  if (document === activeTextEditor?.document) {
-    updateMeasureStatusBar(document, activeTextEditor.selection.active);
-    documents.get(document).showUneditedDiagnostic();
-  }
-});
-
-export function deactivate() {
-  //
-}
+export function deactivate() {}

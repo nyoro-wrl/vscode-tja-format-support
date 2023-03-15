@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { DocumentSymbol, SymbolKind } from "vscode";
-import { documents } from "./documents";
+import { DocumentSymbol, DocumentSymbolProvider, SymbolKind } from "vscode";
+import { documents } from "../extension";
 import {
   ChartNode,
   CommandNode,
@@ -14,17 +14,21 @@ import {
   RootHeadersNode,
   RootNode,
   StyleNode,
-} from "./types/node";
+} from "../types/node";
 
-export const symbol = vscode.languages.registerDocumentSymbolProvider("tja", {
-  provideDocumentSymbols(document: vscode.TextDocument, token) {
+export class DefaultDocumentSymbolProvider implements DocumentSymbolProvider {
+  provideDocumentSymbols(
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
     const result: DocumentSymbol[] = [];
-    const root = documents.get(document).parse();
+    const root = documents.parse(document);
     const symbols = nodeToSymbols(root);
+    // const symbols = allNodeToSymbols(root);
     result.push(...symbols);
     return result;
-  },
-});
+  }
+}
 
 function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
   const symbols: DocumentSymbol[] = [];
@@ -44,18 +48,15 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
       );
     } else if (node instanceof StyleNode) {
       // CourseにStyleが複数ある場合はStyleをシンボル化する
-      const courseNode = node.findParent((x) => x instanceof CourseNode) as CourseNode | undefined;
-      if (courseNode !== undefined) {
-        const styleNodes = courseNode.findAll((x) => x instanceof StyleNode) as StyleNode[];
-        if (styleNodes.length > 1) {
-          symbol = new DocumentSymbol(
-            "STYLE: " + node.properties.style,
-            "",
-            SymbolKind.Class,
-            node.range,
-            node.range
-          );
-        }
+      const styleNodes = node.parent.filter((x) => x instanceof StyleNode) as StyleNode[];
+      if (styleNodes.length > 1) {
+        symbol = new DocumentSymbol(
+          "STYLE: " + node.properties.style,
+          "",
+          SymbolKind.Class,
+          node.range,
+          node.range
+        );
       }
     } else if (node instanceof HeaderNode) {
       symbol = new DocumentSymbol(
@@ -67,7 +68,7 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
           node.find((x) => x instanceof ParameterNode)?.range ??
           node.range
       );
-    } else if (node instanceof CommandNode && node.parent instanceof CourseNode) {
+    } else if (node instanceof CommandNode && node.parent instanceof StyleNode) {
       symbol = new DocumentSymbol(
         "#" + node.properties.name,
         node.properties.parameter,
@@ -77,7 +78,7 @@ function nodeToSymbols<T extends Node>(node: Readonly<T>): DocumentSymbol[] {
       );
     } else if (node instanceof ChartNode) {
       const player = node.properties.start?.parameter ?? "";
-      symbol = new DocumentSymbol("#START", player, SymbolKind.Variable, node.range, node.range);
+      symbol = new DocumentSymbol("#START", player, SymbolKind.Method, node.range, node.range);
     }
 
     if (symbol !== undefined) {
