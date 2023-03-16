@@ -1,5 +1,6 @@
 import { Range } from "vscode";
 import { commands } from "../constants/commands";
+import { headers } from "../constants/headers";
 import { Token } from "../lexer";
 import { BranchState, ChartState, RollState, TriBoolean } from "./state";
 import { Separator } from "./statement";
@@ -47,6 +48,8 @@ export interface ChartStateProperties {
 }
 
 interface MeasureProperties {
+  measure: number;
+  notesLength: number;
   startChartState: ChartStateProperties;
   endChartState: ChartStateProperties;
 }
@@ -87,14 +90,15 @@ interface NoteProperties extends ChartStateProperties {
  */
 export abstract class Node {
   readonly parent: ParentNode | undefined;
-  protected _range: Range | undefined;
+  protected _range: Range;
 
-  get range(): Readonly<Range> | undefined {
+  get range(): Readonly<Range> {
     return this._range;
   }
 
-  constructor(parent: ParentNode | undefined) {
+  constructor(parent: ParentNode | undefined, range: Range) {
     this.parent = parent;
+    this._range = range;
   }
 
   /**
@@ -103,15 +107,15 @@ export abstract class Node {
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public findParent(
+  public findParent<T extends Node = Node>(
     predicate: (node: Node) => boolean,
     includeSelf: boolean = true
-  ): Node | undefined {
+  ): T | undefined {
     if (includeSelf && predicate(this)) {
-      return this;
+      return this as unknown as T;
     }
     if (this.parent !== undefined) {
-      const result = this.parent.findParent(predicate);
+      const result = this.parent.findParent<T>(predicate);
       if (result !== undefined) {
         return result;
       }
@@ -131,7 +135,7 @@ export abstract class LeafNode extends Node {
   }
 
   constructor(parent: ParentNode | undefined, token: Token) {
-    super(parent);
+    super(parent, token.range);
     this.value = token.value;
     this._range = token.range;
   }
@@ -142,14 +146,13 @@ export abstract class LeafNode extends Node {
  */
 export abstract class ParentNode<T extends Node = Node> extends Node {
   protected _children: T[] = [];
-  protected _range: Range | undefined;
 
   get children(): readonly T[] {
     return this._children;
   }
 
-  constructor(parent: ParentNode | undefined) {
-    super(parent);
+  constructor(parent: ParentNode | undefined, range: Range) {
+    super(parent, range);
   }
 
   /**
@@ -158,18 +161,21 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public find(predicate: (node: Node) => boolean, includeSelf: boolean = true): Node | undefined {
+  public find<T extends Node = Node>(
+    predicate: (node: Node) => boolean,
+    includeSelf: boolean = true
+  ): T | undefined {
     if (includeSelf && predicate(this)) {
-      return this;
+      return this as unknown as T;
     }
     for (const child of this.children) {
       if (child instanceof ParentNode) {
-        const result = child.find(predicate);
+        const result = child.find<T>(predicate);
         if (result !== undefined) {
           return result;
         }
       } else if (predicate(child)) {
-        return child;
+        return child as unknown as T;
       }
     }
   }
@@ -180,47 +186,23 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public filter(predicate: (node: Node) => boolean, includeSelf: boolean = true): Node[] {
-    const results: Node[] = [];
+  public filter<T extends Node = Node>(
+    predicate: (node: Node) => boolean,
+    includeSelf: boolean = true
+  ): T[] {
+    const results: T[] = [];
     if (includeSelf && predicate(this)) {
-      results.push(this);
+      results.push(this as unknown as T);
     }
     for (const child of this.children) {
       if (child instanceof ParentNode) {
-        const result = child.filter(predicate);
+        const result = child.filter<T>(predicate);
         results.push(...result);
       } else if (predicate(child)) {
-        results.push(child);
+        results.push(child as unknown as T);
       }
     }
     return results;
-  }
-
-  /**
-   * 子ノードを再帰的に検索し、最後に一致したNodeを返す
-   * @param predicate
-   * @param includeSelf 自身を検索対象に含む
-   * @returns
-   */
-  public findLast(
-    predicate: (node: Node) => boolean,
-    includeSelf: boolean = true
-  ): Node | undefined {
-    let result: Node | undefined;
-    if (includeSelf && predicate(this)) {
-      result = this;
-    }
-    for (const child of this.children) {
-      if (child instanceof ParentNode) {
-        const node = child.findLast(predicate);
-        if (node !== undefined) {
-          result = node;
-        }
-      } else if (predicate(child)) {
-        result = child;
-      }
-    }
-    return result;
   }
 
   /**
@@ -229,22 +211,19 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
-  public findLastRange(
+  public findLastRange<T extends Node = Node>(
     predicate: (node: Node) => boolean,
     includeSelf: boolean = true
-  ): Node | undefined {
-    const nodes: Node[] = this.filter(predicate, includeSelf);
-    let result: Node | undefined;
+  ): T | undefined {
+    const nodes: T[] = this.filter<T>(predicate, includeSelf);
+    let result: T | undefined;
     for (const node of nodes) {
       if (result === undefined) {
         result = node;
-      } else if (result.range === undefined) {
-        result = node;
       } else if (
-        node.range !== undefined &&
-        (result.range.end.line < node.range.end.line ||
-          (result.range.end.line === node.range.end.line &&
-            result.range.end.character <= node.range.end.character))
+        result.range.end.line < node.range.end.line ||
+        (result.range.end.line === node.range.end.line &&
+          result.range.end.character <= node.range.end.character)
       ) {
         result = node;
       }
@@ -253,14 +232,42 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   }
 
   /**
+   * 子ノードを再帰的に検索し、最も範囲の狭いNodeを返す
+   * @param predicate
+   * @param includeSelf 自身を検索対象に含む
+   * @returns
+   */
+  public findDepth<T extends Node = Node>(
+    predicate: (node: Node) => boolean,
+    includeSelf: boolean = true
+  ): T | undefined {
+    const nodes: T[] = this.filter<T>(predicate, includeSelf);
+    let result: { node: T; line: number; length: number | undefined } | undefined;
+    for (const node of nodes) {
+      const line = node.range.end.line - node.range.start.line + 1;
+      const length = line === 1 ? node.range.end.character - node.range.start.character : undefined;
+      const nodeInfo = { node: node, line: line, length: length };
+      if (result === undefined) {
+        result = nodeInfo;
+      } else if (
+        result.line >= nodeInfo.line ||
+        (result.length !== undefined &&
+          nodeInfo.length !== undefined &&
+          result.length >= nodeInfo.length)
+      ) {
+        result = nodeInfo;
+      }
+    }
+    return result?.node;
+  }
+
+  /**
    * childrenにNodeを追加
    * @param node
    */
   protected _push(node: T): void {
     this._children.push(node);
-    if (node.range !== undefined) {
-      this.pushRange(node.range);
-    }
+    this.pushRange(node.range);
   }
 
   /**
@@ -268,11 +275,7 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
    * @param range
    */
   public pushRange(range: Range): void {
-    if (this._range === undefined) {
-      this._range = range;
-    } else {
-      this._range = this._range.union(range);
-    }
+    this._range = this._range.union(range);
     if (this.parent !== undefined && this.parent instanceof ParentNode) {
       this.parent.pushRange(range);
     }
@@ -302,8 +305,8 @@ export abstract class HeadersNode extends ParentNode<HeaderNode> {
 export abstract class StatementNode extends ParentNode<StatementNameNode | ParametersNode> {
   properties: StatementProperties;
 
-  constructor(parent: ParentNode | undefined, separator: Separator) {
-    super(parent);
+  constructor(parent: ParentNode | undefined, range: Range, separator: Separator) {
+    super(parent, range);
     this.properties = { name: "", parameter: "", parameters: [], separator: separator };
   }
 
@@ -332,8 +335,8 @@ export abstract class BranchSectionNode extends ParentNode<
 > {
   properties: BranchSectionProperties;
 
-  constructor(parent: BranchNode) {
-    super(parent);
+  constructor(parent: BranchNode, range: Range) {
+    super(parent, range);
     this.properties = { endChartState: { ...parent.properties.startChartState } };
   }
 
@@ -381,7 +384,7 @@ export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {
   readonly text: string;
 
   constructor(text: string) {
-    super(undefined);
+    super(undefined, new Range(0, 0, 0, 0));
     this.text = text;
   }
 
@@ -400,8 +403,8 @@ export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {
 export class RootHeadersNode extends HeadersNode {
   readonly parent: RootNode;
 
-  constructor(parent: RootNode) {
-    super(parent);
+  constructor(parent: RootNode, range: Range) {
+    super(parent, range);
     this.parent = parent;
   }
 
@@ -421,8 +424,8 @@ export class CourseNode extends ParentNode<StyleNode> {
   readonly parent: RootNode;
   properties: CouseProperties = { course: "", styles: [] };
 
-  constructor(parent: RootNode) {
-    super(parent);
+  constructor(parent: RootNode, range: Range) {
+    super(parent, range);
     this.parent = parent;
   }
 
@@ -435,11 +438,11 @@ export class CourseNode extends ParentNode<StyleNode> {
 
     this.properties.styles.push(node.properties);
 
-    const courseHeaders = node.find((x) => x instanceof StyleHeadersNode) as
-      | StyleHeadersNode
-      | undefined;
+    const courseHeaders = node.find<StyleHeadersNode>((x) => x instanceof StyleHeadersNode);
     if (courseHeaders !== undefined) {
-      const courseHeader = courseHeaders.properties.headers.find((x) => x.name === "COURSE");
+      const courseHeader = courseHeaders.properties.headers.find((x) =>
+        headers.items.course.regexp.test(x.name)
+      );
       if (courseHeader !== undefined) {
         this.properties.course = courseHeader.parameter;
       }
@@ -454,8 +457,8 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
   readonly parent: CourseNode;
   properties: StyleProperties = { style: "", headers: [], isBranchBalloon: false };
 
-  constructor(parent: CourseNode) {
-    super(parent);
+  constructor(parent: CourseNode, range: Range) {
+    super(parent, range);
     this.parent = parent;
   }
 
@@ -468,12 +471,17 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
 
     if (node instanceof StyleHeadersNode) {
       this.properties.headers.push(...node.properties.headers);
-      const styleHeader = node.properties.headers.find((x) => x.name === "STYLE");
+      const styleHeader = node.properties.headers.find((x) =>
+        headers.items.style.regexp.test(x.name)
+      );
       if (styleHeader !== undefined) {
         this.properties.style = styleHeader.parameter;
       }
       this.properties.isBranchBalloon = node.properties.headers.some(
-        (x) => x.name === "BALLOONNOR" || x.name === "BALLOONEXP" || x.name === "BALLOONMAS"
+        (x) =>
+          headers.items.balloonnor.regexp.test(x.name) ||
+          headers.items.balloonexp.regexp.test(x.name) ||
+          headers.items.balloonmas.regexp.test(x.name)
       );
     }
   }
@@ -485,8 +493,8 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
 export class StyleHeadersNode extends HeadersNode {
   readonly parent: StyleNode;
 
-  constructor(parent: StyleNode) {
-    super(parent);
+  constructor(parent: StyleNode, range: Range) {
+    super(parent, range);
     this.parent = parent;
   }
 
@@ -505,8 +513,8 @@ export class StyleHeadersNode extends HeadersNode {
 export class HeaderNode extends StatementNode {
   readonly parent: HeadersNode;
 
-  constructor(parent: HeadersNode, separator: Separator) {
-    super(parent, separator);
+  constructor(parent: HeadersNode, range: Range, separator: Separator) {
+    super(parent, range, separator);
     this.parent = parent;
   }
 
@@ -527,9 +535,10 @@ export class CommandNode extends StatementNode {
 
   constructor(
     parent: BranchSectionNode | StyleNode | ChartNode | MeasureNode | BranchNode,
+    range: Range,
     separator: Separator
   ) {
-    super(parent, separator);
+    super(parent, range, separator);
     this.parent = parent;
   }
 
@@ -548,10 +557,11 @@ export class ChartStateCommandNode extends CommandNode {
 
   constructor(
     parent: BranchSectionNode | ChartNode | MeasureNode,
+    range: Range,
     separator: Separator,
     chartState: ChartStateProperties
   ) {
-    super(parent, separator);
+    super(parent, range, separator);
     this.parent = parent;
     this.properties = {
       name: "",
@@ -580,8 +590,8 @@ export class ChartNode extends ParentNode<
   readonly parent: StyleNode;
   properties: ChartProperties = { start: undefined, end: undefined, measure: 0 };
 
-  constructor(parent: StyleNode) {
-    super(parent);
+  constructor(parent: StyleNode, range: Range) {
+    super(parent, range);
     this.parent = parent;
   }
 
@@ -614,11 +624,20 @@ export class MeasureNode extends ParentNode<
   readonly parent: ChartNode | BranchSectionNode;
   properties: MeasureProperties;
 
-  constructor(parent: ChartNode | BranchSectionNode, chartState: ChartStateProperties) {
-    super(parent);
+  constructor(
+    parent: ChartNode | BranchSectionNode,
+    range: Range,
+    chartState: ChartStateProperties
+  ) {
+    super(parent, range);
     this.parent = parent;
     const cloneChartState = { ...chartState };
-    this.properties = { startChartState: cloneChartState, endChartState: cloneChartState };
+    this.properties = {
+      measure: cloneChartState.measure,
+      notesLength: 0,
+      startChartState: cloneChartState,
+      endChartState: cloneChartState,
+    };
   }
 
   /**
@@ -631,6 +650,7 @@ export class MeasureNode extends ParentNode<
     let chartState: ChartStateProperties | undefined;
     if (node instanceof NoteNode) {
       chartState = node.properties;
+      this.properties.notesLength++;
     } else if (node instanceof ChartStateCommandNode) {
       chartState = node.properties.chartState;
     } else if (node instanceof MeasureEndNode) {
@@ -672,8 +692,8 @@ export class MeasureNode extends ParentNode<
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {
   readonly parent: StatementNode;
 
-  constructor(parent: StatementNode) {
-    super(parent);
+  constructor(parent: StatementNode, range: Range) {
+    super(parent, range);
     this.parent = parent;
   }
 
@@ -693,8 +713,8 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
   readonly parent: ChartNode;
   properties: BranchProperties;
 
-  constructor(parent: ChartNode, startChartState: ChartState) {
-    super(parent);
+  constructor(parent: ChartNode, range: Range, startChartState: ChartState) {
+    super(parent, range);
     this.parent = parent;
     const chartStateClone = { ...startChartState };
     this.properties = {

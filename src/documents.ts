@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { TextDocument } from "vscode";
+import { tja } from "./constants/language";
 import { Diagnostics } from "./diagnostics";
 import { Parser } from "./parser";
 import { RootNode } from "./types/node";
@@ -26,7 +27,7 @@ export class Documents implements vscode.Disposable {
       this.onDidParsedTextDocument,
       this.onDidFirstParsedTextDocument,
       vscode.workspace.onDidChangeTextDocument(async (event) => {
-        if (event.document.languageId === "tja") {
+        if (event.document.languageId === tja) {
           this.parse(event.document);
         }
       }),
@@ -34,7 +35,7 @@ export class Documents implements vscode.Disposable {
         this.delete(document);
       }),
       this.onDidParsedTextDocument.event(async (document) => {
-        if (document.languageId === "tja") {
+        if (document.languageId === tja) {
           if (document.isDirty) {
             this.diagnostics.showRealtime(document);
           } else {
@@ -43,7 +44,7 @@ export class Documents implements vscode.Disposable {
         }
       }),
       this.onDidFirstParsedTextDocument.event(async (document) => {
-        if (document.languageId === "tja" && !document.isDirty) {
+        if (document.languageId === tja && !document.isDirty) {
           this.diagnostics.showUnedited(document);
         }
       })

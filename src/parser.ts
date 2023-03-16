@@ -34,6 +34,7 @@ import { ChartState } from "./types/state";
 import { DiagnosticResult } from "./diagnostics";
 
 // TODO #BRANCHENDを跨いた風船音符ってどうなる？切れる？
+// TODO 二人用譜面のとき、風船音符は1Pと2Pで分けて書ける？
 
 type ParseResult = {
   root: RootNode;
@@ -99,16 +100,15 @@ export class Parser {
   }
 
   /**
-   * 子から最後のCourseNodeを検索（ない場合は作成）し、パースする
+   * 子から最後のRootHeadersNodeを検索（ない場合は作成）し、パースする
    * @param parent
+   * @param token
    * @returns
    */
-  private parseFindLastOrPushCourse(parent: RootNode): CourseNode {
-    let findNode = findLast(parent.children, (x) => x instanceof CourseNode) as
-      | CourseNode
-      | undefined;
+  private parseFindLastOrPushRootHeaders(parent: RootNode, token: Token): RootHeadersNode {
+    let findNode = parent.findLastRange<RootHeadersNode>((x) => x instanceof RootHeadersNode);
     if (findNode === undefined) {
-      let node = new CourseNode(parent);
+      let node = new RootHeadersNode(parent, token.range);
       node = this.parseNode(node);
       parent.push(node);
       return node;
@@ -119,16 +119,15 @@ export class Parser {
   }
 
   /**
-   * 子から最後のRootHeadersNodeを検索（ない場合は作成）し、パースする
+   * 子から最後のCourseNodeを検索（ない場合は作成）し、パースする
    * @param parent
+   * @param token
    * @returns
    */
-  private parseFindLastOrPushRootHeaders(parent: RootNode): RootHeadersNode {
-    let findNode = findLast(parent.children, (x) => x instanceof RootHeadersNode) as
-      | RootHeadersNode
-      | undefined;
+  private parseFindLastOrPushCourse(parent: RootNode, token: Token): CourseNode {
+    let findNode = parent.findLastRange<CourseNode>((x) => x instanceof CourseNode);
     if (findNode === undefined) {
-      let node = new RootHeadersNode(parent);
+      let node = new CourseNode(parent, token.range);
       node = this.parseNode(node);
       parent.push(node);
       return node;
@@ -141,14 +140,13 @@ export class Parser {
   /**
    * 子から最後のStyleHeadersNodeを検索（ない場合は作成）し、パースする
    * @param parent
+   * @param token
    * @returns
    */
-  private parseFindLastOrPushStyleHeaders(parent: StyleNode): StyleHeadersNode {
-    let findNode = findLast(parent.children, (x) => x instanceof StyleHeadersNode) as
-      | StyleHeadersNode
-      | undefined;
+  private parseFindLastOrPushStyleHeaders(parent: StyleNode, token: Token): StyleHeadersNode {
+    let findNode = parent.findLastRange<StyleHeadersNode>((x) => x instanceof StyleHeadersNode);
     if (findNode === undefined) {
-      let node = new StyleHeadersNode(parent);
+      let node = new StyleHeadersNode(parent, token.range);
       node = this.parseNode(node);
       parent.push(node);
       return node;
@@ -163,6 +161,7 @@ export class Parser {
       const token = this.tokens[this.position];
       if (token.kind === "Unknown") {
         this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+        parent.pushRange(token.range);
       } else {
         if (parent instanceof RootNode) {
           if (token.kind === "Header") {
@@ -170,34 +169,35 @@ export class Parser {
             if (section === "Course" || section === "Style" || this.chartAfterOnce) {
               if (this.chartAfter) {
                 this.chartAfter = false;
-                let node = new CourseNode(parent);
+                let node = new CourseNode(parent, token.range);
                 node = this.parseNode(node);
                 parent.push(node);
               } else {
-                this.parseFindLastOrPushCourse(parent);
+                this.parseFindLastOrPushCourse(parent, token);
               }
             } else if (section === "Root" || section === "Unknown") {
-              this.parseFindLastOrPushRootHeaders(parent);
+              this.parseFindLastOrPushRootHeaders(parent, token);
             } else {
               this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+              parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
             if (this.chartAfter) {
               this.chartAfter = false;
-              let node = new CourseNode(parent);
+              let node = new CourseNode(parent, token.range);
               node = this.parseNode(node);
               parent.push(node);
             } else {
-              this.parseFindLastOrPushCourse(parent);
+              this.parseFindLastOrPushCourse(parent, token);
             }
           } else if (token.kind === "Notes") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "#START がありません。"));
-          } else if (token.kind === "MeasureEnd") {
-            this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof RootHeadersNode || parent instanceof StyleHeadersNode) {
           if (token.kind === "Header") {
@@ -211,7 +211,7 @@ export class Parser {
               return parent;
             }
             const separator = info?.separator ?? "Unknown";
-            let node = new HeaderNode(parent, separator);
+            let node = new HeaderNode(parent, token.range, separator);
             node = this.parseNode(node);
             parent.push(node);
           } else if (token.kind === "Command") {
@@ -219,12 +219,12 @@ export class Parser {
             return parent;
           } else if (token.kind === "Notes") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "#START がありません。"));
-          } else if (token.kind === "MeasureEnd") {
-            this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof CourseNode) {
           if (token.kind === "Header") {
@@ -239,28 +239,41 @@ export class Parser {
                 this.position--;
                 return parent;
               } else {
-                let node = new StyleNode(parent);
+                let node = new StyleNode(parent, token.range);
                 node = this.parseNode(node);
                 parent.push(node);
+                this.chartState = new ChartState();
+                this.isBalloon = false;
+                this.balloonId = -1;
+                this.norBalloonId = -1;
+                this.expBalloonId = -1;
+                this.masBalloonId = -1;
               }
             } else if (section === "Root") {
               this.position--;
               return parent;
             } else {
               this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+              parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
-            let node = new StyleNode(parent);
+            let node = new StyleNode(parent, token.range);
             node = this.parseNode(node);
             parent.push(node);
+            this.chartState = new ChartState();
+            this.isBalloon = false;
+            this.balloonId = -1;
+            this.norBalloonId = -1;
+            this.expBalloonId = -1;
+            this.masBalloonId = -1;
           } else if (token.kind === "Notes") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "#START がありません。"));
-          } else if (token.kind === "MeasureEnd") {
-            this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof StyleNode) {
           if (token.kind === "Header") {
@@ -278,25 +291,26 @@ export class Parser {
                 this.position--;
                 return parent;
               } else {
-                this.parseFindLastOrPushStyleHeaders(parent);
+                this.parseFindLastOrPushStyleHeaders(parent, token);
               }
             } else if (section === "Root") {
               this.position--;
               return parent;
             } else {
               this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+              parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Unknown") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, token.range, separator);
               node = this.parseNode(node);
               parent.push(node);
             } else if (section === "Start") {
-              let chart = new ChartNode(parent);
-              let start = new CommandNode(chart, separator);
+              let chart = new ChartNode(parent, token.range);
+              let start = new CommandNode(chart, token.range, separator);
               start = this.parseNode(start);
               chart.push(start);
               this.position++;
@@ -308,23 +322,23 @@ export class Parser {
               section === "Branch" ||
               section === "End"
             ) {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, token.range, separator);
               node = this.parseNode(node);
               parent.push(node);
-              if (node.range !== undefined) {
-                this.diagnostics.realtime.push(new Diagnostic(node.range, "#START がありません。"));
-              }
+              this.diagnostics.realtime.push(new Diagnostic(node.range, "#START がありません。"));
+              parent.pushRange(token.range);
             } else {
               this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+              parent.pushRange(token.range);
             }
           } else if (token.kind === "Notes") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "#START がありません。"));
-          } else if (token.kind === "MeasureEnd") {
-            this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof HeaderNode || parent instanceof CommandNode) {
           if (
@@ -334,7 +348,7 @@ export class Parser {
             const node = new StatementNameNode(parent, token);
             parent.push(node);
           } else if (token.kind === "RawParameter") {
-            const rawParameter = new ParametersNode(parent);
+            const rawParameter = new ParametersNode(parent, token.range);
             const parameters = tokenizedRawParameter(token, parent.properties.separator);
             let parameterIndex = 0;
             for (const parameter of parameters) {
@@ -365,26 +379,24 @@ export class Parser {
             return parent;
           } else {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof ChartNode || parent instanceof BranchSectionNode) {
           if (token.kind === "Header") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "ヘッダの位置が不正です。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, token.range, separator);
               node = this.parseNode(node);
               parent.push(node);
-              if (node.range !== undefined) {
-                this.diagnostics.realtime.push(
-                  new Diagnostic(token.range, "命令の位置が不正です。")
-                );
-              }
+              this.diagnostics.realtime.push(new Diagnostic(token.range, "命令の位置が不正です。"));
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               this.chartState.measure++;
-              let node = new MeasureNode(parent, this.chartState);
+              let node = new MeasureNode(parent, token.range, this.chartState);
               node = this.parseNode(node);
               if (
                 node.children.length > 0 &&
@@ -409,23 +421,21 @@ export class Parser {
                   return parent;
                 } else {
                   // 譜面分岐の開始
-                  let branch = new BranchNode(parent, this.chartState);
-                  let command = new CommandNode(branch, separator);
+                  let branch = new BranchNode(parent, token.range, this.chartState);
+                  let command = new CommandNode(branch, token.range, separator);
                   command = this.parseNode(command);
                   branch.push(command);
                   this.position++;
                   branch = this.parseNode(branch);
                   parent.push(branch);
                   // 分岐ごとの差分を調べる
-                  const sections = branch.filter(
+                  const sections = branch.filter<BranchSectionNode>(
                     (x) => x instanceof BranchSectionNode
-                  ) as BranchSectionNode[];
+                  );
                   const branchChartState = branch.properties.endChartState;
                   for (const section of sections) {
-                    const nem = section.find((x) => x instanceof CommandNode) as
-                      | CommandNode
-                      | undefined;
-                    if (nem === undefined || nem.range === undefined) {
+                    const nem = section.find((x) => x instanceof CommandNode);
+                    if (nem === undefined) {
                       continue;
                     }
                     const sectionChartState = section.properties.endChartState;
@@ -433,38 +443,10 @@ export class Parser {
                       this.diagnostics.unedited.push(
                         new Diagnostic(
                           nem.range,
-                          "譜面分岐の小節数が統一されていません。",
+                          `譜面分岐の小節数が統一されていません。\n${
+                            branchChartState.measure - sectionChartState.measure
+                          }小節足りていません。`,
                           DiagnosticSeverity.Warning
-                        )
-                      );
-                    }
-                  }
-                  if (command.range !== undefined) {
-                    if (branchChartState.showBarline === "unknown") {
-                      this.diagnostics.unedited.push(
-                        new Diagnostic(
-                          command.range,
-                          "譜面分岐後の小節線表示状態（#BARLINEOFF,#BARLINEON）が統一されていません。",
-                          DiagnosticSeverity.Information
-                        )
-                      );
-                    }
-
-                    if (branchChartState.isGogotime === "unknown") {
-                      this.diagnostics.unedited.push(
-                        new Diagnostic(
-                          command.range,
-                          "譜面分岐後のゴーゴータイム状態（#GOGOSTART,#GOGOEND）が統一されていません。",
-                          DiagnosticSeverity.Information
-                        )
-                      );
-                    }
-                    if (branchChartState.isDummyNote === "unknown") {
-                      this.diagnostics.unedited.push(
-                        new Diagnostic(
-                          command.range,
-                          "譜面分岐後のダミーノーツ状態（#DUMMYSTART,#DUMMYEND）が統一されていません。",
-                          DiagnosticSeverity.Information
                         )
                       );
                     }
@@ -485,7 +467,7 @@ export class Parser {
                 } else {
                   // 普通の命令と同じ対応をした上で構文エラーとする
                   this.chartState.measure++;
-                  let node = new MeasureNode(parent, this.chartState);
+                  let node = new MeasureNode(parent, token.range, this.chartState);
                   node = this.parseNode(node);
                   if (
                     node.children.length > 0 &&
@@ -511,7 +493,7 @@ export class Parser {
                 } else {
                   // 普通の命令と同じ対応をする
                   this.chartState.measure++;
-                  let node = new MeasureNode(parent, this.chartState);
+                  let node = new MeasureNode(parent, token.range, this.chartState);
                   node = this.parseNode(node);
                   if (
                     node.children.length > 0 &&
@@ -536,35 +518,49 @@ export class Parser {
                 this.position--;
                 return parent;
               } else {
-                let node = new CommandNode(parent, separator);
+                if (this.chartState.rollState !== "None") {
+                  const lastMeasure = parent.findLastRange((x) => x instanceof MeasureNode);
+                  if (lastMeasure !== undefined) {
+                    const text =
+                      this.chartState.rollState === "Roll" ||
+                      this.chartState.rollState === "RollBig"
+                        ? "連打"
+                        : "風船";
+                    this.diagnostics.unedited.push(
+                      new Diagnostic(
+                        new Range(lastMeasure.range.end, lastMeasure.range.end),
+                        `${text}音符が途切れています。`,
+                        DiagnosticSeverity.Error
+                      )
+                    );
+                  }
+                }
+                let node = new CommandNode(parent, token.range, separator);
                 node = this.parseNode(node);
                 parent.push(node);
                 this.chartAfter = true;
                 this.chartAfterOnce = true;
-                this.chartState = new ChartState();
-                this.isBalloon = false;
-                this.balloonId = -1;
-                this.norBalloonId = -1;
-                this.expBalloonId = -1;
-                this.masBalloonId = -1;
                 return parent;
               }
             } else {
               this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+              parent.pushRange(token.range);
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
             this.chartState.measure++;
-            let node = new MeasureNode(parent, this.chartState);
+            let node = new MeasureNode(parent, token.range, this.chartState);
             node = this.parseNode(node);
             parent.push(node);
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof BranchNode) {
           if (token.kind === "Header") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "ヘッダの位置が不正です。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const separator = info?.separator ?? "Unknown";
@@ -577,25 +573,24 @@ export class Parser {
               this.chartState = { ...parent.properties.startChartState };
               if (info === commands.items.n) {
                 this.chartState.branchState = "Normal";
-                branchSection = new NBranchSectionNode(parent);
+                branchSection = new NBranchSectionNode(parent, token.range);
               } else if (info === commands.items.e) {
                 this.chartState.branchState = "Expert";
-                branchSection = new EBranchSectionNode(parent);
+                branchSection = new EBranchSectionNode(parent, token.range);
               } else {
                 this.chartState.branchState = "Master";
-                branchSection = new MBranchSectionNode(parent);
+                branchSection = new MBranchSectionNode(parent, token.range);
               }
-              let command = new CommandNode(branchSection, separator);
+              let command = new CommandNode(branchSection, token.range, separator);
               command = this.parseNode(command);
               branchSection.push(command);
               this.position++;
               branchSection = this.parseNode(branchSection);
               this.chartState.branchState = "None";
               if (
-                branchSection.range !== undefined &&
-                ((parent.properties.normal && branchSection instanceof NBranchSectionNode) ||
-                  (parent.properties.expert && branchSection instanceof EBranchSectionNode) ||
-                  (parent.properties.master && branchSection instanceof MBranchSectionNode))
+                (parent.properties.normal && branchSection instanceof NBranchSectionNode) ||
+                (parent.properties.expert && branchSection instanceof EBranchSectionNode) ||
+                (parent.properties.master && branchSection instanceof MBranchSectionNode)
               ) {
                 this.diagnostics.realtime.push(
                   new Diagnostic(branchSection.range, "譜面分岐が重複しています。")
@@ -603,18 +598,11 @@ export class Parser {
               }
               parent.push(branchSection);
             } else if (info === commands.items.branchend) {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, token.range, separator);
               node = this.parseNode(node);
               parent.push(node);
               return parent;
             } else {
-              this.diagnostics.realtime.push(
-                new Diagnostic(
-                  token.range,
-                  "暗黙的に #BRANCHEND が挿入されています。",
-                  DiagnosticSeverity.Hint
-                )
-              );
               this.position--;
               return parent;
             }
@@ -625,23 +613,21 @@ export class Parser {
             this.position--;
             return parent;
           } else if (token.kind === "EndOfLine") {
+            parent.pushRange(token.range);
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
             this.diagnostics.realtime.push(new Diagnostic(token.range, "ヘッダの位置が不正です。"));
+            parent.pushRange(token.range);
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
             const separator = info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
-              let node = new CommandNode(parent, separator);
+              let node = new CommandNode(parent, token.range, separator);
               node = this.parseNode(node);
               parent.push(node);
-              if (node.range !== undefined) {
-                this.diagnostics.realtime.push(
-                  new Diagnostic(node.range, "命令の位置が不正です。")
-                );
-              }
+              this.diagnostics.realtime.push(new Diagnostic(node.range, "命令の位置が不正です。"));
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               if (info === commands.items.barlineoff) {
                 this.chartState.showBarline = false;
@@ -663,11 +649,11 @@ export class Parser {
               ) {
                 this.isBalloon = false;
               }
-              let node = new ChartStateCommandNode(parent, separator, this.chartState);
+              let node = new ChartStateCommandNode(parent, token.range, separator, this.chartState);
               node = this.parseNode(node);
               parent.push(node);
               if (parent.find((x) => x instanceof ChartTokenNode) !== undefined) {
-                if (section === "MeasureHead" && node.range !== undefined) {
+                if (section === "MeasureHead") {
                   this.diagnostics.realtime.push(
                     new Diagnostic(
                       node.range,
@@ -683,14 +669,12 @@ export class Parser {
                 parent.findParent((x) => x instanceof BranchNode) === undefined
               ) {
                 // 普通の命令と同じ対応をする
-                let node = new CommandNode(parent, separator);
+                let node = new CommandNode(parent, token.range, separator);
                 node = this.parseNode(node);
                 parent.push(node);
-                if (node.range !== undefined) {
-                  this.diagnostics.realtime.push(
-                    new Diagnostic(node.range, "#BRANCHSTART がありません。")
-                  );
-                }
+                this.diagnostics.realtime.push(
+                  new Diagnostic(node.range, "#BRANCHSTART がありません。")
+                );
               } else if (
                 parent.children.length > 0 &&
                 parent.children.every((x) => x instanceof CommandNode)
@@ -699,7 +683,7 @@ export class Parser {
                 this.position--;
                 return parent;
               } else {
-                const node = parent.findLast((x) => x instanceof NoteNode) as NoteNode | undefined;
+                const node = parent.findDepth((x) => x instanceof NoteNode);
                 if (node !== undefined) {
                   this.diagnostics.unedited.push(
                     new Diagnostic(
@@ -716,7 +700,7 @@ export class Parser {
                 parent.children.length > 0 &&
                 !parent.children.every((x) => x instanceof CommandNode)
               ) {
-                const node = parent.findLast((x) => x instanceof NoteNode) as NoteNode | undefined;
+                const node = parent.findDepth((x) => x instanceof NoteNode);
                 if (node !== undefined) {
                   this.diagnostics.unedited.push(
                     new Diagnostic(
@@ -730,128 +714,147 @@ export class Parser {
               return parent;
             } else {
               this.diagnostics.realtime.push(new Diagnostic(token.range, "不正なテキストです。"));
+              parent.pushRange(token.range);
             }
-          } else if (token.kind === "Notes") {
-            if (token.value === "5") {
-              this.chartState.rollState = "Roll";
-            } else if (token.value === "6") {
-              this.chartState.rollState = "RollBig";
-            } else if (token.value === "7") {
-              this.chartState.rollState = "Balloon";
-            } else if (token.value === "9") {
-              this.chartState.rollState = "BalloonBig";
-            } else if (!/[80]/.test(token.value)) {
-              if (token.value !== "8") {
-                if (
-                  this.chartState.rollState === "Roll" ||
-                  this.chartState.rollState === "RollBig"
-                ) {
+          } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
+            // 曖昧な譜面状態を警告
+            if (this.chartState.showBarline === "unknown") {
+              this.chartState.showBarline = false;
+              this.diagnostics.realtime.push(
+                new Diagnostic(
+                  token.range,
+                  "譜面分岐後の小節線表示状態（#BARLINEOFF,#BARLINEON）が統一されていません。",
+                  DiagnosticSeverity.Hint
+                )
+              );
+            }
+            if (this.chartState.isGogotime === "unknown") {
+              this.chartState.isGogotime = false;
+              this.diagnostics.realtime.push(
+                new Diagnostic(
+                  token.range,
+                  "譜面分岐後のゴーゴータイム状態（#GOGOSTART,#GOGOEND）が統一されていません。",
+                  DiagnosticSeverity.Hint
+                )
+              );
+            }
+            if (this.chartState.isDummyNote === "unknown") {
+              this.chartState.isDummyNote = false;
+              this.diagnostics.realtime.push(
+                new Diagnostic(
+                  token.range,
+                  "譜面分岐後のダミーノーツ状態（#DUMMYSTART,#DUMMYEND）が統一されていません。",
+                  DiagnosticSeverity.Hint
+                )
+              );
+            }
+            if (token.kind === "Notes") {
+              if (token.value === "5") {
+                this.chartState.rollState = "Roll";
+              } else if (token.value === "6") {
+                this.chartState.rollState = "RollBig";
+              } else if (token.value === "7") {
+                this.chartState.rollState = "Balloon";
+              } else if (token.value === "9") {
+                this.chartState.rollState = "BalloonBig";
+              } else if (!/[80]/.test(token.value)) {
+                if (token.value !== "8" && this.chartState.rollState !== "None") {
+                  const text =
+                    this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
+                      ? "連打"
+                      : "風船";
                   this.diagnostics.realtime.push(
                     new Diagnostic(
                       token.range,
-                      "連打音符が途切れています。",
-                      DiagnosticSeverity.Warning
-                    )
-                  );
-                } else if (
-                  this.chartState.rollState === "Balloon" ||
-                  this.chartState.rollState === "BalloonBig"
-                ) {
-                  this.diagnostics.realtime.push(
-                    new Diagnostic(
-                      token.range,
-                      "風船音符が途切れています。",
+                      `${text}音符が途切れています。`,
                       DiagnosticSeverity.Warning
                     )
                   );
                 }
+                this.chartState.rollState = "None";
               }
-              this.chartState.rollState = "None";
-            }
-            if (/[79]/.test(token.value)) {
-              this.isBalloon = true;
-              // 風船打数が分岐で書かれているかどうかの確認
-              const branchSection = parent.findParent((x) => x instanceof BranchSectionNode) as
-                | BranchSectionNode
-                | undefined;
-              const style = parent.findParent((x) => x instanceof StyleNode) as
-                | StyleNode
-                | undefined;
-              if (
-                branchSection === undefined ||
-                style === undefined ||
-                !style.properties.isBranchBalloon
-              ) {
-                this.balloonInfo.headerName = "BALLOON";
-                this.balloonId++;
-                this.balloonInfo.id = this.balloonId;
-              } else if (branchSection instanceof NBranchSectionNode) {
-                this.balloonInfo.headerName = "BALLOONNOR";
-                this.norBalloonId++;
-                this.balloonInfo.id = this.norBalloonId;
-              } else if (branchSection instanceof EBranchSectionNode) {
-                this.balloonInfo.headerName = "BALLOONEXP";
-                this.expBalloonId++;
-                this.balloonInfo.id = this.expBalloonId;
-              } else if (branchSection instanceof MBranchSectionNode) {
-                this.balloonInfo.headerName = "BALLOONMAS";
-                this.masBalloonId++;
-                this.balloonInfo.id = this.masBalloonId;
-              }
-            } else if (/[123456]/.test(token.value)) {
-              this.isBalloon = false;
-            }
-            const balloonInfo = this.isBalloon ? this.balloonInfo : undefined;
-            const node = new NoteNode(parent, token, this.chartState, balloonInfo);
-            parent.push(node);
-            if (balloonInfo !== undefined && this.isBalloon && /[79]/.test(token.value)) {
-              const styleNode = parent.findParent((x) => x instanceof StyleNode) as
-                | StyleNode
-                | undefined;
-              if (styleNode !== undefined) {
-                const balloonHeader = styleNode.properties.headers.find(
-                  (x) => x.name === balloonInfo.headerName
-                );
-                const wordRange = this.document.getWordRangeAtPosition(
-                  token.range.end,
-                  /([79]0*8?|0*8|0+)/
-                );
+              if (/[79]/.test(token.value)) {
+                this.isBalloon = true;
+                // 風船打数が分岐で書かれているかどうかの確認
+                const branchSection = parent.findParent((x) => x instanceof BranchSectionNode);
+                const style = parent.findParent<StyleNode>((x) => x instanceof StyleNode);
                 if (
-                  wordRange !== undefined &&
-                  (balloonHeader === undefined || balloonHeader.parameters.length <= balloonInfo.id)
+                  branchSection === undefined ||
+                  style === undefined ||
+                  !style.properties.isBranchBalloon
                 ) {
-                  this.diagnostics.unedited.push(
-                    new Diagnostic(
-                      wordRange,
-                      "風船音符の打数が定義されていません。",
-                      DiagnosticSeverity.Warning
-                    )
+                  this.balloonInfo.headerName = "BALLOON";
+                  this.balloonId++;
+                  this.balloonInfo.id = this.balloonId;
+                } else if (branchSection instanceof NBranchSectionNode) {
+                  this.balloonInfo.headerName = "BALLOONNOR";
+                  this.norBalloonId++;
+                  this.balloonInfo.id = this.norBalloonId;
+                } else if (branchSection instanceof EBranchSectionNode) {
+                  this.balloonInfo.headerName = "BALLOONEXP";
+                  this.expBalloonId++;
+                  this.balloonInfo.id = this.expBalloonId;
+                } else if (branchSection instanceof MBranchSectionNode) {
+                  this.balloonInfo.headerName = "BALLOONMAS";
+                  this.masBalloonId++;
+                  this.balloonInfo.id = this.masBalloonId;
+                }
+              } else if (/[123456]/.test(token.value)) {
+                this.isBalloon = false;
+              }
+              const balloonInfo = this.isBalloon ? this.balloonInfo : undefined;
+              const node = new NoteNode(parent, token, this.chartState, balloonInfo);
+              parent.push(node);
+              if (balloonInfo !== undefined && this.isBalloon && /[79]/.test(token.value)) {
+                const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode);
+                if (styleNode !== undefined) {
+                  const balloonHeader = styleNode.properties.headers.find(
+                    (x) => x.name === balloonInfo.headerName
                   );
+                  const wordRange = this.document.getWordRangeAtPosition(
+                    token.range.end,
+                    /([79]0*8?|0*8|0+)/
+                  );
+                  if (
+                    wordRange !== undefined &&
+                    (balloonHeader === undefined ||
+                      balloonHeader.parameters.length <= balloonInfo.id)
+                  ) {
+                    this.diagnostics.unedited.push(
+                      new Diagnostic(
+                        wordRange,
+                        "風船音符の打数が定義されていません。",
+                        DiagnosticSeverity.Warning
+                      )
+                    );
+                  }
                 }
               }
+              if (/8/.test(token.value)) {
+                this.chartState.rollState = "None";
+                this.isBalloon = false;
+              }
+            } else {
+              const node = new MeasureEndNode(parent, token, this.chartState);
+              parent.push(node);
+              return parent;
             }
-            if (/8/.test(token.value)) {
-              this.chartState.rollState = "None";
-              this.isBalloon = false;
-            }
-          } else if (token.kind === "MeasureEnd") {
-            const node = new MeasureEndNode(parent, token, this.chartState);
-            parent.push(node);
-            return parent;
           } else if (token.kind === "EndOfLine") {
             parent.pushRange(token.range);
           } else {
             this.diagnostics.unedited.push(new Diagnostic(token.range, "不正なテキストです。"));
+            parent.pushRange(token.range);
           }
         } else {
           this.diagnostics.realtime.push(new Diagnostic(token.range, "No processing defined"));
+          parent.pushRange(token.range);
         }
       }
     }
     if (this.position >= this.tokens.length) {
       if (parent instanceof ChartNode) {
         const lastEol = findLast(this.tokens, (x) => x.kind === "EndOfLine");
-        if (lastEol?.range !== undefined) {
+        if (lastEol !== undefined) {
           this.diagnostics.realtime.push(new Diagnostic(lastEol.range, "#END がありません。"));
         }
       }

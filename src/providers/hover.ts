@@ -60,28 +60,28 @@ export class BalloonHoverProvider implements HoverProvider {
     }
 
     const root = documents.parse(document);
-    const balloonNote = root.find(
+    const balloonNote = root.find<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.balloonInfo !== undefined
-    ) as NoteNode | undefined;
+    );
     const balloonInfo = balloonNote?.properties.balloonInfo;
-    const style = balloonNote?.findParent((x) => x instanceof StyleNode) as StyleNode | undefined;
+    const style = balloonNote?.findParent((x) => x instanceof StyleNode);
     if (balloonNote === undefined || balloonInfo === undefined || style === undefined) {
       return;
     }
-    const balloonHeader = (
-      balloonNote.findParent((x) => x instanceof StyleNode) as StyleNode | undefined
-    )?.find((x) => x instanceof HeaderNode && x.properties.name === balloonInfo.headerName) as
-      | HeaderNode
-      | undefined;
+    const balloonHeader = balloonNote
+      .findParent<StyleNode>((x) => x instanceof StyleNode)
+      ?.find<HeaderNode>(
+        (x) => x instanceof HeaderNode && x.properties.name === balloonInfo.headerName
+      );
     if (balloonHeader === undefined) {
       return;
     }
-    const balloonParameters = balloonHeader.filter(
+    const balloonParameters = balloonHeader.filter<ParameterNode>(
       (x) => x instanceof ParameterNode
-    ) as ParameterNode[];
+    );
     if (balloonParameters.length <= balloonInfo.id) {
       return;
     }

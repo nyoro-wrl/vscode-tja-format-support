@@ -22,13 +22,13 @@ export class DefaultDocumentSemanticTokensProvider implements DocumentSemanticTo
   ): vscode.ProviderResult<vscode.SemanticTokens> {
     const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
     const root = documents.parse(document);
-    const notes = root.filter(
+    const notes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         (((x.properties.isGogotime === true || x.properties.branchState !== "None") &&
           x.value === "0") ||
           x.properties.rollState !== "None")
-    ) as NoteNode[];
+    );
     for (const note of notes) {
       if (note.properties.rollState === "None" && note.value === "0") {
         if (note.properties.isGogotime) {
@@ -52,7 +52,7 @@ export class DefaultDocumentSemanticTokensProvider implements DocumentSemanticTo
     }
     const measureEnds = root.filter(
       (x) => x instanceof MeasureEndNode && x.properties.isGogotime === true
-    ) as MeasureEndNode[];
+    );
     for (const measureEnd of measureEnds) {
       tokensBuilder.push(measureEnd.range, "gogoMeasureEnd");
     }

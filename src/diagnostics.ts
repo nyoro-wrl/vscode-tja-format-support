@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Diagnostic, TextDocument } from "vscode";
+import { tja } from "./constants/language";
 
 export type DiagnosticResult = {
   realtime: Diagnostic[];
@@ -14,7 +15,7 @@ export class Diagnostics implements vscode.Disposable {
   constructor() {
     this.disposables.push(
       vscode.workspace.onDidOpenTextDocument(async (document) => {
-        if (document.languageId === "tja") {
+        if (document.languageId === tja) {
           if (document.isDirty) {
             this.showRealtime(document);
           } else {
@@ -26,7 +27,7 @@ export class Diagnostics implements vscode.Disposable {
       }),
       vscode.workspace.onDidChangeTextDocument(async (event) => {
         const document = event.document;
-        if (document.languageId === "tja") {
+        if (document.languageId === tja) {
           if (document.isDirty) {
             this.showRealtime(document);
           } else {
@@ -37,7 +38,7 @@ export class Diagnostics implements vscode.Disposable {
         }
       }),
       vscode.workspace.onDidSaveTextDocument(async (document) => {
-        if (document.languageId === "tja") {
+        if (document.languageId === tja) {
           if (document.isDirty) {
             this.showRealtime(document);
           } else {

@@ -17,6 +17,23 @@ export const headers = new HeaderCollection({
     recommend: ["SUBTITLE"],
     order: 0,
   },
+  course: {
+    name: "COURSE",
+    regexp: /^COURSE$/,
+    syntax: new MarkdownString().appendCodeblock("COURSE:<course>").value,
+    snippet: new SnippetString().appendText("COURSE:").value,
+    documentation: new MarkdownString()
+      .appendMarkdown("譜面の難易度。  \n")
+      .appendMarkdown(
+        "`<course>`: `Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n"
+      )
+      .appendMarkdown("`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。")
+      .appendMarkdown("`Dan`または`6`を入れると段位道場譜面として認識されます。").value,
+    section: "Course",
+    separator: "None",
+    recommend: ["LEVEL"],
+    order: 0,
+  },
   level: {
     name: "LEVEL",
     regexp: /^LEVEL$/,
@@ -131,23 +148,6 @@ export const headers = new HeaderCollection({
     separator: "None",
     recommend: [],
     order: 1,
-  },
-  course: {
-    name: "COURSE",
-    regexp: /^COURSE$/,
-    syntax: new MarkdownString().appendCodeblock("COURSE:<course>").value,
-    snippet: new SnippetString().appendText("COURSE:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面の難易度。  \n")
-      .appendMarkdown(
-        "`<course>`: `Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n"
-      )
-      .appendMarkdown("`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。")
-      .appendMarkdown("`Dan`または`6`を入れると段位道場譜面として認識されます。").value,
-    section: "Course",
-    separator: "None",
-    recommend: ["LEVEL"],
-    order: 0,
   },
   style: {
     name: "STYLE",

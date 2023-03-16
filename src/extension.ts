@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { jumpMeasure, jumpMeasureCommand } from "./commands/jumpMeasure";
-import { commands, DocumentSelector, languages, TextDocument } from "vscode";
+import { commands, DocumentSelector, languages } from "vscode";
 import {
   JumpBalloonNotesDefinitionProvider,
   JumpBalloonParameterDefinitionProvider,
@@ -9,14 +9,17 @@ import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider } from 
 import {
   CommandCompletionItemProvider,
   HeaderCompletionItemProvider,
+  NotesCompletionItemProvider,
 } from "./providers/completionItem";
 import { DefaultDocumentSymbolProvider } from "./providers/documentSymbol";
 import { DefaultDocumentSemanticTokensProvider, legend } from "./providers/semanticTokens";
-import { BranchStatusBarItem, MeasureStatusBarItem } from "./statusBarItem";
+import { MeasureStatusBarItem } from "./statusBarItem";
 import { Documents } from "./documents";
-import { jumpBranch, jumpBranchCommand } from "./commands/jumpBranch";
+import { tja } from "./constants/language";
+import { DefaultFoldingRangeProvider } from "./providers/foldingRange";
+import { BalloonRenameProvider } from "./providers/rename";
 
-const selector: DocumentSelector = { language: "tja" };
+const selector: DocumentSelector = { language: tja };
 
 /**
  * ドキュメント情報
@@ -33,22 +36,23 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     documents,
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
-    commands.registerTextEditorCommand(jumpBranchCommand.command, jumpBranch),
     languages.registerDocumentSemanticTokensProvider(
       selector,
       new DefaultDocumentSemanticTokensProvider(),
       legend
     ),
+    languages.registerFoldingRangeProvider(selector, new DefaultFoldingRangeProvider()),
     languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
+    languages.registerCompletionItemProvider(selector, new NotesCompletionItemProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
     languages.registerHoverProvider(selector, new HeaderHoverProvider()),
     languages.registerHoverProvider(selector, new CommandHoverProvider()),
     languages.registerHoverProvider(selector, new BalloonHoverProvider()),
+    languages.registerRenameProvider(selector, new BalloonRenameProvider()),
     languages.registerDocumentSymbolProvider(selector, new DefaultDocumentSymbolProvider()),
-    new MeasureStatusBarItem(),
-    new BranchStatusBarItem()
+    new MeasureStatusBarItem()
   );
 }
 

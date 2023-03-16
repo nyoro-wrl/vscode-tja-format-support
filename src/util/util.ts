@@ -22,24 +22,25 @@ export function getChartState(
 ): ChartStateProperties | undefined {
   const root = documents.parse(document);
   let chartState: ChartStateProperties = new ChartState();
-  const nowNode = root.findLast((x) => x.range !== undefined && x.range.contains(position));
+  const nowNode = root.findDepth((x) => x.range.contains(position));
   if (nowNode === undefined) {
     return undefined;
   }
   const isBranchNode = nowNode.findParent((x) => x instanceof BranchNode) !== undefined;
-  const chartNode = root.find(
-    (x) => x instanceof ChartNode && x.range !== undefined && x.range.contains(position)
-  ) as ChartNode | undefined;
+  const chartNode = root.find<ChartNode>(
+    (x) => x instanceof ChartNode && x.range.contains(position)
+  );
   if (chartNode !== undefined) {
-    const beforeChartStateNode = chartNode.findLastRange(
+    const beforeChartStateNode = chartNode.findLastRange<
+      ChartTokenNode | ChartStateCommandNode | BranchNode
+    >(
       (x) =>
         (x instanceof ChartTokenNode ||
           x instanceof ChartStateCommandNode ||
           (!isBranchNode && x instanceof BranchNode)) &&
-        x.range !== undefined &&
         (x.range.start.line < position.line ||
           (x.range.start.line === position.line && x.range.start.character < position.character))
-    ) as ChartTokenNode | ChartStateCommandNode | BranchNode | undefined;
+    );
     if (beforeChartStateNode === undefined) {
       return;
     } else if (beforeChartStateNode instanceof ChartTokenNode) {
