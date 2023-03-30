@@ -23,8 +23,8 @@ import {
 } from "./providers/color";
 import { Documents } from "./providers/documents";
 import { InfoTreeDataProvider } from "./providers/treeData";
-import { ActiveFileContext } from "./contexts/activeTjaFile";
-import { ActiveTjaFile } from "./events/activeFile";
+import { ActiveFileContext } from "./contexts/activeFileContext";
+import { ActiveTjaFile } from "./events/activeTjaFile";
 
 export let activeTjaFile: ActiveTjaFile;
 /**
