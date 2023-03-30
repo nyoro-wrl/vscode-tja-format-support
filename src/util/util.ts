@@ -1,12 +1,12 @@
 import { Position, TextDocument } from "vscode";
 import { documents } from "../extension";
-// import { documents } from "../documents";
 import {
   ChartStateProperties,
   ChartNode,
   ChartTokenNode,
   ChartStateCommandNode,
   BranchNode,
+  CommandNode,
 } from "../types/node";
 import { ChartState } from "../types/state";
 
@@ -22,7 +22,7 @@ export function getChartState(
 ): ChartStateProperties | undefined {
   const root = documents.parse(document);
   let chartState: ChartStateProperties = new ChartState();
-  const nowNode = root.findDepth((x) => x.range.contains(position));
+  const nowNode = root.findDepth((x) => x.range.contains(position), true);
   if (nowNode === undefined) {
     return undefined;
   }
@@ -39,7 +39,8 @@ export function getChartState(
           x instanceof ChartStateCommandNode ||
           (!isBranchNode && x instanceof BranchNode)) &&
         (x.range.start.line < position.line ||
-          (x.range.start.line === position.line && x.range.start.character < position.character))
+          (x.range.start.line === position.line && x.range.start.character < position.character)),
+      true
     );
     if (beforeChartStateNode === undefined) {
       return;
@@ -54,4 +55,11 @@ export function getChartState(
     }
   }
   return chartState;
+}
+
+export function toPercent(value: number): string {
+  return new Intl.NumberFormat(undefined, {
+    style: "percent",
+    maximumFractionDigits: 2,
+  }).format(value);
 }

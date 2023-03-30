@@ -2,196 +2,294 @@
   "scopeName": "source.tja",
   "patterns": [
     {
-      "include": "#comments"
+      "include": "#comment"
     },
     {
       "include": "#header"
     },
     {
-      "include": "#command"
+      "include": "#chart"
     },
     {
-      "include": "#notes"
+      "include": "#commandBranch"
+    },
+    {
+      "include": "#command"
     }
   ],
   "repository": {
-    "comments": {
-      "comment": "コメント",
-      "begin": "(?=//)",
+    "comment": {
+      "name": "comment",
+      "match": "//.*$"
+    },
+    "header": {
+      "begin": "^\\s*([A-Z0-9]+):\\s*",
       "end": "$",
+      "beginCaptures": {
+        "1": {
+          "name": "header.name"
+        }
+      },
       "patterns": [
         {
-          "name": "comment",
-          "match": "//.*"
+          "include": "#comment"
+        },
+        {
+          "name": "header.parameter.prefix",
+          "match": "(?<=^\\s*SUBTITLE:\\s*)(\\+\\+|--)"
+        },
+        {
+          "name": "header.parameter",
+          "begin": "\\G",
+          "end": "(?=(\\s*//|\\s*$))"
         }
       ]
     },
-    "header": {
-      "comment": "ヘッダ",
-      "begin": "^(?=\\s*[A-Z0-9]*:)",
-      "end": "$",
+    "chart": {
+      "begin": "(?=^\\s*#START\\s)",
+      "end": "(?=^\\s*#END\\s)",
       "patterns": [
         {
-          "comment": "コメント",
-          "include": "#comments"
+          "include": "#comment"
         },
         {
-          "name": "header",
-          "match": "(?<=^\\s*)[A-Z0-9]+(?=:)"
+          "include": "#commandBranch"
         },
         {
-          "name": "header.prefix",
-          "match": "(?<=^\\s*SUBTITLE:)([+][+]|--)"
+          "include": "#command"
+        },
+        {
+          "include": "#measure"
         }
       ]
     },
     "command": {
-      "comment": "命令",
-      "begin": "^(?=\\s*#[A-Z]+\\s)",
+      "begin": "^\\s*(#[A-Z0-9]+)\\s+",
       "end": "$",
+      "beginCaptures": {
+        "1": {
+          "name": "command.name"
+        }
+      },
       "patterns": [
         {
-          "comment": "コメント",
-          "include": "#comments"
+          "include": "#comment"
         },
         {
-          "name": "command.branch",
-          "match": "(?<=^\\s*)#(N|E|M|BRANCHSTART|BRANCHEND|LEVELHOLD|SECTION)(?=\\s)"
+          "name": "command.parameter",
+          "begin": "\\G",
+          "end": "(?=(\\s*//|\\s*$))",
+          "patterns": [
+            {
+              "name": "command.delimiter",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "commandBranch": {
+      "begin": "^\\s*(#(BRANCHSTART|N|E|M|BRANCHEND))\\s+",
+      "end": "$",
+      "beginCaptures": {
+        "1": {
+          "name": "command.name.branch"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
         },
         {
-          "name": "command",
-          "match": "(?<=^\\s*)#[A-Z0-9]*(?=\\s)"
+          "name": "command.parameter.branch",
+          "begin": "\\G",
+          "end": "(?=(\\s*//|\\s*$))",
+          "patterns": [
+            {
+              "name": "command.delimiter.branch",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "measure": {
+      "name": "measure",
+      "begin": "(?=^\\s*[0-9,])",
+      "end": "((,)|$|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
+      "endCaptures": {
+        "2": {
+          "name": "measureEnd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
         },
         {
-          "name": "command.variable",
-          "match": "[^,]"
+          "include": "#notes"
         }
       ]
     },
     "notes": {
-      "comment": "譜面",
-      "begin": "^(?=\\s*[0-9])",
-      "end": ",",
       "patterns": [
         {
-          "comment": "連打",
-          "begin": "(?=5)",
-          "end": "(8|(?=[1-4|6-9])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
-          "endCaptures": {
-            "1": {
-              "name": "note.roll"
-            }
-          },
-          "patterns": [
-            {
-              "comment": "コメント",
-              "include": "#comments"
-            },
-            {
-              "comment": "命令",
-              "include": "#command"
-            },
-            {
-              "name": "note.roll",
-              "match": "(5|0|8)"
-            }
-          ]
-        },
-        {
-          "comment": "連打（大）",
-          "begin": "(?=6)",
-          "end": "(8|(?=[1-5|7-9])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
-          "endCaptures": {
-            "1": {
-              "name": "note.roll.big"
-            }
-          },
-          "patterns": [
-            {
-              "comment": "コメント",
-              "include": "#comments"
-            },
-            {
-              "comment": "命令",
-              "include": "#command"
-            },
-            {
-              "name": "note.roll.big",
-              "match": "(6|0|8)"
-            }
-          ]
-        },
-        {
-          "comment": "風船連打",
-          "begin": "(?=7)",
-          "end": "(8|(?=[1-6|9])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
-          "endCaptures": {
-            "1": {
-              "name": "note.balloon"
-            }
-          },
-          "patterns": [
-            {
-              "comment": "コメント",
-              "include": "#comments"
-            },
-            {
-              "comment": "命令",
-              "include": "#command"
-            },
-            {
-              "name": "note.balloon",
-              "match": "(7|0|8)"
-            }
-          ]
-        },
-        {
-          "comment": "風船連打（大）",
-          "begin": "(?=9)",
-          "end": "(8|(?=[1-7])|(?=^\\s*#(END|N|E|M|BRANCHSTART|BRANCHEND)\\s))",
-          "endCaptures": {
-            "1": {
-              "name": "note.balloon.big"
-            }
-          },
-          "patterns": [
-            {
-              "comment": "コメント",
-              "include": "#comments"
-            },
-            {
-              "comment": "命令",
-              "include": "#command"
-            },
-            {
-              "name": "note.balloon.big",
-              "match": "(9|0|8)"
-            }
-          ]
-        },
-        {
-          "comment": "コメント",
-          "include": "#comments"
-        },
-        {
-          "comment": "命令",
-          "include": "#command"
+          "name": "note.empty",
+          "match": "0"
         },
         {
           "name": "note.don",
           "match": "1"
         },
         {
-          "name": "note.don.big",
-          "match": "3"
-        },
-        {
           "name": "note.ka",
           "match": "2"
         },
         {
+          "name": "note.don.big",
+          "match": "3"
+        },
+        {
           "name": "note.ka.big",
           "match": "4"
+        },
+        {
+          "include": "#roll"
+        },
+        {
+          "include": "#rollBig"
+        },
+        {
+          "include": "#balloon"
+        },
+        {
+          "include": "#balloonBig"
+        },
+        {
+          "name": "note.end",
+          "match": "8"
+        }
+      ]
+    },
+    "roll": {
+      "name": "noteRange.roll",
+      "begin": "(5)(0*)(,?)",
+      "end": "(8|(?=[1-79])|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
+      "beginCaptures": {
+        "1": {"name": "note.start"},
+        "2": {"name": "note.empty"},
+        "3": {"name": "measureEnd"}
+      },
+      "endCaptures": {
+        "0": {"name": "note.end"}
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#commandBranch"
+        },
+        {
+          "include": "#command"
+        },
+        {
+          "include": "#rollMeasure"
+        }
+      ]
+    },
+    "rollBig": {
+      "name": "noteRange.roll.big",
+      "begin": "(6)(0*)(,?)",
+      "end": "(8|(?=[1-79])|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
+      "beginCaptures": {
+        "1": {"name": "note.start"},
+        "2": {"name": "note.empty"},
+        "3": {"name": "measureEnd"}
+      },
+      "endCaptures": {
+        "0": {"name": "note.end"}
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#commandBranch"
+        },
+        {
+          "include": "#command"
+        },
+        {
+          "include": "#rollMeasure"
+        }
+      ]
+    },
+    "balloon": {
+      "name": "noteRange.balloon",
+      "begin": "(7)(0*)(,?)",
+      "end": "(8|(?=[1-79])|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
+      "beginCaptures": {
+        "1": {"name": "note.start"},
+        "2": {"name": "note.empty"},
+        "3": {"name": "measureEnd"}
+      },
+      "endCaptures": {
+        "0": {"name": "note.end"}
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#commandBranch"
+        },
+        {
+          "include": "#command"
+        },
+        {
+          "include": "#rollMeasure"
+        }
+      ]
+    },
+    "balloonBig": {
+      "name": "noteRange.balloon.big",
+      "begin": "(9)(0*)(,?)",
+      "end": "(8|(?=[1-79])|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
+      "beginCaptures": {
+        "1": {"name": "note.start"},
+        "2": {"name": "note.empty"},
+        "3": {"name": "measureEnd"}
+      },
+      "endCaptures": {
+        "0": {"name": "note.end"}
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#commandBranch"
+        },
+        {
+          "include": "#command"
+        },
+        {
+          "include": "#rollMeasure"
+        }
+      ]
+    },
+    "rollMeasure": {
+      "begin": "(?=^\\s*[0,])",
+      "end": "((,)|$|(?=[1-9]))",
+      "endCaptures": {
+        "2": {
+          "name": "measureEnd"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
         },
         {
           "name": "note.empty",

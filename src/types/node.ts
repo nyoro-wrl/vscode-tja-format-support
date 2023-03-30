@@ -2,6 +2,7 @@ import { Range } from "vscode";
 import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
 import { Token } from "../lexer";
+import { Note } from "./note";
 import { BranchState, ChartState, RollState, TriBoolean } from "./state";
 import { Separator } from "./statement";
 
@@ -32,10 +33,28 @@ interface StyleProperties extends HeadersProperties {
   isBranchBalloon: boolean;
 }
 
+interface ChartInfoProperties {
+  measure: number;
+  isBranch: boolean;
+  hasNormal: boolean;
+  hasExpert: boolean;
+  hasMaster: boolean;
+  notes: Note[];
+  normalNotes: Note[];
+  expertNotes: Note[];
+  masterNotes: Note[];
+}
+
 interface ChartProperties {
   start: StatementProperties | undefined;
   end: StatementProperties | undefined;
-  measure: number;
+  info: ChartInfoProperties;
+}
+
+interface SongProperties {
+  nextsong: StatementProperties | undefined;
+  measureCount: number;
+  info: ChartInfoProperties;
 }
 
 export interface ChartStateProperties {
@@ -50,6 +69,7 @@ export interface ChartStateProperties {
 interface MeasureProperties {
   measure: number;
   notesLength: number;
+  notes: Note[];
   startChartState: ChartStateProperties;
   endChartState: ChartStateProperties;
 }
@@ -61,12 +81,21 @@ interface ChartStateCommandProperties extends StatementProperties {
 interface BranchProperties {
   readonly startChartState: ChartState;
   endChartState: ChartState;
-  normal: boolean;
-  expert: boolean;
-  master: boolean;
+  measureCount: number;
+  hasNormal: boolean;
+  hasExpert: boolean;
+  hasMaster: boolean;
+  normalNotes: Note[];
+  expertNotes: Note[];
+  masterNotes: Note[];
 }
 
+export type BranchKind = "N" | "E" | "M";
+
 interface BranchSectionProperties {
+  kind: BranchKind;
+  notes: Note[];
+  measureCount: number;
   endChartState: ChartStateProperties;
 }
 
@@ -74,15 +103,8 @@ interface ParameterProperties {
   index: number;
 }
 
-export type BalloonSection = "BALLOON" | "BALLOONNOR" | "BALLOONEXP" | "BALLOONMAS";
-
-export type BalloonInfo = {
-  id: number;
-  headerName: BalloonSection;
-};
-
 interface NoteProperties extends ChartStateProperties {
-  readonly balloonInfo: BalloonInfo | undefined;
+  note: Note;
 }
 
 /**
@@ -103,7 +125,7 @@ export abstract class Node {
 
   /**
    * 親ノードを再帰的に検索し、最初に一致したNodeを返す
-   * @param predicate
+   * @param predicate 一致する条件
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
@@ -157,16 +179,21 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
 
   /**
    * 子ノードを再帰的に検索し、最初に一致したNodeを返す
-   * @param predicate
+   * @param predicate 一致する条件
+   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
   public find<T extends Node = Node>(
     predicate: (node: Node) => boolean,
+    ignorePredicate?: (node: Node) => boolean,
     includeSelf: boolean = true
   ): T | undefined {
     if (includeSelf && predicate(this)) {
       return this as unknown as T;
+    }
+    if (includeSelf && ignorePredicate !== undefined && ignorePredicate(this)) {
+      return;
     }
     for (const child of this.children) {
       if (child instanceof ParentNode) {
@@ -182,21 +209,31 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
 
   /**
    * 子ノードを再帰的に検索し、一致した全てのNodeを返す
-   * @param predicate
+   * @param predicate 一致する条件
+   * @param _continue 条件が一致しても再帰を続ける
+   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
   public filter<T extends Node = Node>(
     predicate: (node: Node) => boolean,
+    _continue: boolean = false,
+    ignorePredicate?: (node: Node) => boolean,
     includeSelf: boolean = true
   ): T[] {
     const results: T[] = [];
     if (includeSelf && predicate(this)) {
       results.push(this as unknown as T);
+      if (_continue === false) {
+        return results;
+      }
+    }
+    if (includeSelf && ignorePredicate !== undefined && ignorePredicate(this)) {
+      return results;
     }
     for (const child of this.children) {
       if (child instanceof ParentNode) {
-        const result = child.filter<T>(predicate);
+        const result = child.filter<T>(predicate, _continue, ignorePredicate);
         results.push(...result);
       } else if (predicate(child)) {
         results.push(child as unknown as T);
@@ -207,15 +244,19 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
 
   /**
    * 子ノードを再帰的に検索し、範囲末尾が最も後ろにあるNodeを返す
-   * @param predicate
+   * @param predicate 一致する条件
+   * @param _continue 条件が一致しても再帰を続ける
+   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
   public findLastRange<T extends Node = Node>(
     predicate: (node: Node) => boolean,
+    _continue: boolean = false,
+    ignorePredicate?: (node: Node) => boolean,
     includeSelf: boolean = true
   ): T | undefined {
-    const nodes: T[] = this.filter<T>(predicate, includeSelf);
+    const nodes: T[] = this.filter<T>(predicate, _continue, ignorePredicate, includeSelf);
     let result: T | undefined;
     for (const node of nodes) {
       if (result === undefined) {
@@ -233,15 +274,19 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
 
   /**
    * 子ノードを再帰的に検索し、最も範囲の狭いNodeを返す
-   * @param predicate
+   * @param predicate 一致する条件
+   * @param _continue 条件が一致しても再帰を続ける
+   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
    * @param includeSelf 自身を検索対象に含む
    * @returns
    */
   public findDepth<T extends Node = Node>(
     predicate: (node: Node) => boolean,
+    _continue: boolean = false,
+    ignorePredicate?: (node: Node) => boolean,
     includeSelf: boolean = true
   ): T | undefined {
-    const nodes: T[] = this.filter<T>(predicate, includeSelf);
+    const nodes: T[] = this.filter<T>(predicate, _continue, ignorePredicate, includeSelf);
     let result: { node: T; line: number; length: number | undefined } | undefined;
     for (const node of nodes) {
       const line = node.range.end.line - node.range.start.line + 1;
@@ -330,14 +375,19 @@ export abstract class StatementNode extends ParentNode<StatementNameNode | Param
 /**
  * 譜面分岐の区分（普通譜面･玄人譜面･達人譜面）ノード
  */
-export abstract class BranchSectionNode extends ParentNode<
+export class BranchSectionNode extends ParentNode<
   CommandNode | ChartStateCommandNode | MeasureNode
 > {
   properties: BranchSectionProperties;
 
-  constructor(parent: BranchNode, range: Range) {
+  constructor(parent: BranchNode, range: Range, branchKind: BranchKind) {
     super(parent, range);
-    this.properties = { endChartState: { ...parent.properties.startChartState } };
+    this.properties = {
+      kind: branchKind,
+      notes: [],
+      measureCount: 0,
+      endChartState: { ...parent.properties.startChartState },
+    };
   }
 
   /**
@@ -348,6 +398,8 @@ export abstract class BranchSectionNode extends ParentNode<
     super._push(node);
 
     if (node instanceof MeasureNode) {
+      this.properties.measureCount++;
+      this.properties.notes.push(...node.properties.notes);
       // 分岐状態以外を適用する
       const chartState = { ...node.properties.endChartState };
       chartState.branchState = this.properties.endChartState.branchState;
@@ -438,7 +490,9 @@ export class CourseNode extends ParentNode<StyleNode> {
 
     this.properties.styles.push(node.properties);
 
-    const courseHeaders = node.find<StyleHeadersNode>((x) => x instanceof StyleHeadersNode);
+    const courseHeaders = <StyleHeadersNode>(
+      node.children.find((x) => x instanceof StyleHeadersNode)
+    );
     if (courseHeaders !== undefined) {
       const courseHeader = courseHeaders.properties.headers.find((x) =>
         headers.items.course.regexp.test(x.name)
@@ -531,10 +585,10 @@ export class HeaderNode extends StatementNode {
  * 命令ノード
  */
 export class CommandNode extends StatementNode {
-  readonly parent: BranchSectionNode | StyleNode | ChartNode | MeasureNode | BranchNode;
+  readonly parent: BranchSectionNode | StyleNode | ChartNode | SongNode | MeasureNode | BranchNode;
 
   constructor(
-    parent: BranchSectionNode | StyleNode | ChartNode | MeasureNode | BranchNode,
+    parent: BranchSectionNode | StyleNode | ChartNode | SongNode | MeasureNode | BranchNode,
     range: Range,
     separator: Separator
   ) {
@@ -552,11 +606,11 @@ export class CommandNode extends StatementNode {
 }
 
 export class ChartStateCommandNode extends CommandNode {
-  readonly parent: BranchSectionNode | ChartNode | MeasureNode;
+  readonly parent: BranchSectionNode | ChartNode | SongNode | MeasureNode;
   properties: ChartStateCommandProperties;
 
   constructor(
-    parent: BranchSectionNode | ChartNode | MeasureNode,
+    parent: BranchSectionNode | ChartNode | SongNode | MeasureNode,
     range: Range,
     separator: Separator,
     chartState: ChartStateProperties
@@ -585,12 +639,102 @@ export class ChartStateCommandNode extends CommandNode {
  * 譜面ノード
  */
 export class ChartNode extends ParentNode<
-  CommandNode | ChartStateCommandNode | MeasureNode | BranchNode
+  CommandNode | ChartStateCommandNode | MeasureNode | BranchNode | SongNode
 > {
   readonly parent: StyleNode;
-  properties: ChartProperties = { start: undefined, end: undefined, measure: 0 };
+  properties: ChartProperties = {
+    start: undefined,
+    end: undefined,
+    info: {
+      measure: 0,
+      isBranch: false,
+      hasNormal: false,
+      hasExpert: false,
+      hasMaster: false,
+      notes: [],
+      normalNotes: [],
+      expertNotes: [],
+      masterNotes: [],
+    },
+  };
 
   constructor(parent: StyleNode, range: Range) {
+    super(parent, range);
+    this.parent = parent;
+  }
+
+  /**
+   * childrenにNodeを追加
+   * @param node
+   */
+  public push(node: CommandNode | ChartStateCommandNode | MeasureNode | BranchNode | SongNode) {
+    super._push(node);
+    if (node instanceof CommandNode) {
+      if (
+        this.properties.start === undefined &&
+        commands.items.start.regexp.test(node.properties.name)
+      ) {
+        this.properties.start = node.properties;
+      } else if (
+        this.properties.end === undefined &&
+        commands.items.end.regexp.test(node.properties.name)
+      ) {
+        this.properties.end = node.properties;
+      }
+    } else if (node instanceof MeasureNode) {
+      this.properties.info.measure = node.properties.startChartState.measure;
+      this.properties.info.notes.push(...node.properties.notes);
+    } else if (node instanceof BranchNode) {
+      this.properties.info.measure = node.properties.endChartState.measure;
+      this.properties.info.isBranch = true;
+      this.properties.info.hasNormal = this.properties.info.hasNormal || node.properties.hasNormal;
+      this.properties.info.hasExpert = this.properties.info.hasExpert || node.properties.hasExpert;
+      this.properties.info.hasMaster = this.properties.info.hasMaster || node.properties.hasMaster;
+      this.properties.info.normalNotes.push(...node.properties.normalNotes);
+      this.properties.info.expertNotes.push(...node.properties.expertNotes);
+      this.properties.info.masterNotes.push(...node.properties.masterNotes);
+    } else if (node instanceof SongNode) {
+      this.properties.info.measure = node.properties.info.measure;
+      this.properties.info.isBranch =
+        this.properties.info.isBranch || node.properties.info.isBranch;
+      this.properties.info.hasNormal =
+        this.properties.info.hasNormal || node.properties.info.hasNormal;
+      this.properties.info.hasExpert =
+        this.properties.info.hasExpert || node.properties.info.hasExpert;
+      this.properties.info.hasMaster =
+        this.properties.info.hasMaster || node.properties.info.hasMaster;
+      this.properties.info.notes.push(...node.properties.info.notes);
+      this.properties.info.normalNotes.push(...node.properties.info.normalNotes);
+      this.properties.info.expertNotes.push(...node.properties.info.expertNotes);
+      this.properties.info.masterNotes.push(...node.properties.info.masterNotes);
+    }
+  }
+}
+
+/**
+ * 曲ノード（#NEXTSONG）
+ */
+export class SongNode extends ParentNode<
+  CommandNode | ChartStateCommandNode | MeasureNode | BranchNode
+> {
+  readonly parent: ChartNode;
+  properties: SongProperties = {
+    nextsong: undefined,
+    measureCount: 0,
+    info: {
+      measure: 0,
+      isBranch: false,
+      hasNormal: false,
+      hasExpert: false,
+      hasMaster: false,
+      notes: [],
+      normalNotes: [],
+      expertNotes: [],
+      masterNotes: [],
+    },
+  };
+
+  constructor(parent: ChartNode, range: Range) {
     super(parent, range);
     this.parent = parent;
   }
@@ -602,15 +746,26 @@ export class ChartNode extends ParentNode<
   public push(node: CommandNode | ChartStateCommandNode | MeasureNode | BranchNode) {
     super._push(node);
     if (node instanceof CommandNode) {
-      if (commands.items.start.regexp.test(node.properties.name)) {
-        this.properties.start = node.properties;
-      } else if (commands.items.end.regexp.test(node.properties.name)) {
-        this.properties.end = node.properties;
+      if (
+        this.properties.nextsong === undefined &&
+        commands.items.nextsong.regexp.test(node.properties.name)
+      ) {
+        this.properties.nextsong = node.properties;
       }
     } else if (node instanceof MeasureNode) {
-      this.properties.measure = node.properties.startChartState.measure;
+      this.properties.measureCount++;
+      this.properties.info.measure = node.properties.startChartState.measure;
+      this.properties.info.notes.push(...node.properties.notes);
     } else if (node instanceof BranchNode) {
-      this.properties.measure = node.properties.endChartState.measure;
+      this.properties.measureCount += node.properties.measureCount;
+      this.properties.info.measure = node.properties.endChartState.measure;
+      this.properties.info.isBranch = true;
+      this.properties.info.hasNormal = this.properties.info.hasNormal || node.properties.hasNormal;
+      this.properties.info.hasExpert = this.properties.info.hasExpert || node.properties.hasExpert;
+      this.properties.info.hasMaster = this.properties.info.hasMaster || node.properties.hasMaster;
+      this.properties.info.normalNotes.push(...node.properties.normalNotes);
+      this.properties.info.expertNotes.push(...node.properties.expertNotes);
+      this.properties.info.masterNotes.push(...node.properties.masterNotes);
     }
   }
 }
@@ -621,11 +776,11 @@ export class ChartNode extends ParentNode<
 export class MeasureNode extends ParentNode<
   NoteNode | CommandNode | ChartStateCommandNode | MeasureEndNode
 > {
-  readonly parent: ChartNode | BranchSectionNode;
+  readonly parent: ChartNode | SongNode | BranchSectionNode;
   properties: MeasureProperties;
 
   constructor(
-    parent: ChartNode | BranchSectionNode,
+    parent: ChartNode | SongNode | BranchSectionNode,
     range: Range,
     chartState: ChartStateProperties
   ) {
@@ -634,6 +789,7 @@ export class MeasureNode extends ParentNode<
     const cloneChartState = { ...chartState };
     this.properties = {
       measure: cloneChartState.measure,
+      notes: [],
       notesLength: 0,
       startChartState: cloneChartState,
       endChartState: cloneChartState,
@@ -651,6 +807,7 @@ export class MeasureNode extends ParentNode<
     if (node instanceof NoteNode) {
       chartState = node.properties;
       this.properties.notesLength++;
+      this.properties.notes.push(node.properties.note);
     } else if (node instanceof ChartStateCommandNode) {
       chartState = node.properties.chartState;
     } else if (node instanceof MeasureEndNode) {
@@ -710,19 +867,23 @@ export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {
  * 譜面分岐ノード
  */
 export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
-  readonly parent: ChartNode;
+  readonly parent: ChartNode | SongNode;
   properties: BranchProperties;
 
-  constructor(parent: ChartNode, range: Range, startChartState: ChartState) {
+  constructor(parent: ChartNode | SongNode, range: Range, startChartState: ChartState) {
     super(parent, range);
     this.parent = parent;
     const chartStateClone = { ...startChartState };
     this.properties = {
       startChartState: chartStateClone,
       endChartState: chartStateClone,
-      normal: false,
-      expert: false,
-      master: false,
+      measureCount: 0,
+      hasNormal: false,
+      hasExpert: false,
+      hasMaster: false,
+      normalNotes: [],
+      expertNotes: [],
+      masterNotes: [],
     };
   }
 
@@ -734,12 +895,18 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
     super._push(node);
 
     if (node instanceof BranchSectionNode) {
-      if (node instanceof NBranchSectionNode) {
-        this.properties.normal = true;
-      } else if (node instanceof EBranchSectionNode) {
-        this.properties.expert = true;
-      } else if (node instanceof MBranchSectionNode) {
-        this.properties.master = true;
+      if (node.properties.kind === "N") {
+        this.properties.hasNormal = true;
+        this.properties.normalNotes.push(...node.properties.notes);
+      } else if (node.properties.kind === "E") {
+        this.properties.hasExpert = true;
+        this.properties.expertNotes.push(...node.properties.notes);
+      } else if (node.properties.kind === "M") {
+        this.properties.hasMaster = true;
+        this.properties.masterNotes.push(...node.properties.notes);
+      }
+      if (this.properties.measureCount > node.properties.measureCount) {
+        this.properties.measureCount = node.properties.measureCount;
       }
       if (this.properties.endChartState === this.properties.startChartState) {
         this.properties.endChartState = { ...node.properties.endChartState };
@@ -767,21 +934,6 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
     }
   }
 }
-
-/**
- * 普通譜面ノード
- */
-export class NBranchSectionNode extends BranchSectionNode {}
-
-/**
- * 玄人譜面ノード
- */
-export class EBranchSectionNode extends BranchSectionNode {}
-
-/**
- * 達人譜面ノード
- */
-export class MBranchSectionNode extends BranchSectionNode {}
 
 /**
  * 式（ヘッダ･命令）の名前ノード
@@ -832,12 +984,12 @@ export class NoteNode extends ChartTokenNode {
     parent: MeasureNode,
     token: Token,
     chartState: ChartStateProperties,
-    balloonInfo: BalloonInfo | undefined
+    balloonId?: number
   ) {
     super(parent, token, chartState);
     this.parent = parent;
-    const _balloonInfo = balloonInfo === undefined ? undefined : { ...balloonInfo };
-    this.properties = { ...chartState, balloonInfo: _balloonInfo };
+    const note = new Note(token, chartState.isGogotime, chartState.isDummyNote, balloonId);
+    this.properties = { ...chartState, note: note };
   }
 }
 

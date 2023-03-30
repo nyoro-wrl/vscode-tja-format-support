@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import {
   CompletionItem,
   CompletionItemKind,
-  CompletionItemProvider,
   MarkdownString,
   Position,
   Range,
@@ -31,26 +30,26 @@ import { getChartState } from "../util/util";
 /**
  * ヘッダの補完
  */
-export class HeaderCompletionItemProvider implements CompletionItemProvider {
-  provideCompletionItems(
+export class HeaderCompletionItemProvider implements vscode.CompletionItemProvider {
+  async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
     context: vscode.CompletionContext
-  ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
-    const snippets: CompletionItem[] = [];
+  ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
+    const snippets: vscode.CompletionItem[] = [];
 
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9]+/);
     const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
     const previewText = document.getText(previewRange);
     if (/[^\s]/.test(previewText)) {
-      return;
+      return Promise.reject();
     }
 
-    const root = documents.parse(document);
-    const node = root.findDepth((x) => x.range.contains(position));
-    if (node === undefined || node.findParent((x) => x instanceof ChartNode)) {
-      return;
+    const root = documents.parse(document, token);
+    const node = root.findDepth((x) => x.range.contains(position), true) ?? root;
+    if (node.findParent((x) => x instanceof ChartNode)) {
+      return Promise.reject();
     }
     const chartAfter =
       root.find((x) => x instanceof ChartNode && x.range.start.line < position.line) !== undefined;
@@ -72,6 +71,9 @@ export class HeaderCompletionItemProvider implements CompletionItemProvider {
 
     let order = 0;
     for (const header of headers) {
+      if (token.isCancellationRequested) {
+        return snippets;
+      }
       // 優先度の計算
       const sortText = new SortTextFactory();
       sortText.order4 += header.order;
@@ -105,11 +107,12 @@ export class HeaderCompletionItemProvider implements CompletionItemProvider {
         sortText.order1--;
       }
 
-      const snippet = new CompletionItem(header.name + ":", vscode.CompletionItemKind.Constant);
+      const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
       snippet.insertText = new SnippetString(header.snippet);
       snippet.documentation = new MarkdownString().appendMarkdown(
         header.syntax + header.documentation
       );
+      snippet.detail = header.detail;
       snippet.sortText = sortText.toString();
       snippets.push(snippet);
       order++;
@@ -121,14 +124,14 @@ export class HeaderCompletionItemProvider implements CompletionItemProvider {
 /**
  * 命令の補完
  */
-export class CommandCompletionItemProvider implements CompletionItemProvider {
-  provideCompletionItems(
+export class CommandCompletionItemProvider implements vscode.CompletionItemProvider {
+  async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
     context: vscode.CompletionContext
-  ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
-    const snippets: CompletionItem[] = [];
+  ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
+    const snippets: vscode.CompletionItem[] = [];
 
     const wordRange = document.getWordRangeAtPosition(position, /([a-zA-Z]+|#[a-zA-Z]*)/);
     const word = wordRange === undefined ? "" : document.getText(wordRange);
@@ -136,13 +139,13 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
     const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
     const previewText = document.getText(previewRange);
     if (/[^\s]/.test(previewText)) {
-      return;
+      return Promise.reject();
     }
 
-    const root = documents.parse(document);
-    const node = root.findDepth((x) => x.range.contains(position));
+    const root = documents.parse(document, token);
+    const node = root.findDepth((x) => x.range.contains(position), true);
     if (node === undefined) {
-      return;
+      return Promise.reject();
     }
 
     const chartNode = node.findParent<ChartNode>((x) => x instanceof ChartNode);
@@ -160,6 +163,9 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
 
     let order = 0;
     for (const command of commands) {
+      if (token.isCancellationRequested) {
+        return snippets;
+      }
       // 補完の非表示判定
       if ((command.section === "Outer" || command.section === "Start") && chartNode !== undefined) {
         // 譜面外でしか書けない命令のため非表示
@@ -167,6 +173,7 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
       } else if (
         (command.section === "Inner" ||
           command.section === "MeasureHead" ||
+          command.section === "Song" ||
           command.section === "Branch" ||
           command.section === "End") &&
         chartNode === undefined
@@ -184,9 +191,9 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
         continue;
       } else if (
         branchNode !== undefined &&
-        ((command === commands.items.n && branchNode.properties.normal) ||
-          (command === commands.items.e && branchNode.properties.expert) ||
-          (command === commands.items.m && branchNode.properties.master))
+        ((command === commands.items.n && branchNode.properties.hasNormal) ||
+          (command === commands.items.e && branchNode.properties.hasExpert) ||
+          (command === commands.items.m && branchNode.properties.hasMaster))
       ) {
         // 既に存在する分岐のため非表示
         continue;
@@ -226,6 +233,7 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
       }
       if (
         (command.section === "MeasureHead" ||
+          command.section === "Song" ||
           command.section === "Branch" ||
           command.section === "End") &&
         !measureHead
@@ -244,11 +252,12 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
         sortText.order1++;
       }
 
-      const snippet = new CompletionItem("#" + command.name, vscode.CompletionItemKind.Function);
+      const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
       snippet.insertText = new SnippetString((containSharp ? "" : "#") + command.snippet);
       snippet.documentation = new MarkdownString().appendMarkdown(
         command.syntax + command.documentation
       );
+      snippet.detail = command.detail;
       snippet.sortText = sortText.toString();
       snippets.push(snippet);
       order++;
@@ -264,6 +273,9 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
           x.range.contains(position) === false
       ) ?? [];
     for (const unknownCommand of unknownCommands) {
+      if (token.isCancellationRequested) {
+        return snippets;
+      }
       // 優先度の計算
       const sortText = new SortTextFactory();
       sortText.order3++;
@@ -273,7 +285,7 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
       }
 
       const name = unknownCommand.properties.name;
-      const snippet = new CompletionItem("#" + name, vscode.CompletionItemKind.Function);
+      const snippet = new CompletionItem("#" + name, CompletionItemKind.Function);
       snippet.insertText = new SnippetString((containSharp ? "" : "#") + name);
       snippet.documentation = "譜面内で定義された命令";
       snippet.sortText = sortText.toString();
@@ -284,22 +296,25 @@ export class CommandCompletionItemProvider implements CompletionItemProvider {
   }
 }
 
-export class NotesCompletionItemProvider implements CompletionItemProvider {
-  provideCompletionItems(
+/**
+ * 譜面の補完
+ */
+export class NotesCompletionItemProvider implements vscode.CompletionItemProvider {
+  async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
     context: vscode.CompletionContext
-  ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
-    const snippets: CompletionItem[] = [];
+  ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
+    const snippets: vscode.CompletionItem[] = [];
 
     const wordRange = document.getWordRangeAtPosition(position, /[0-9]+/);
     const word = wordRange === undefined ? "" : document.getText(wordRange);
     if (wordRange !== undefined && wordRange.end.isAfter(position)) {
-      return;
+      return Promise.reject();
     }
 
-    const root = documents.parse(document);
+    const root = documents.parse(document, token);
     const chartNode = root.findDepth<ChartNode>(
       (x) => x instanceof ChartNode && x.range.contains(position)
     );
@@ -311,7 +326,7 @@ export class NotesCompletionItemProvider implements CompletionItemProvider {
       (x) => x instanceof BranchSectionNode && x.range.contains(position)
     );
     if (chartNode === undefined || (branchNode !== undefined && branchSectionNode === undefined)) {
-      return;
+      return Promise.reject();
     }
     const measureNode = root.findDepth<MeasureNode>(
       (x) => x instanceof MeasureNode && x.range.contains(position)
@@ -321,7 +336,7 @@ export class NotesCompletionItemProvider implements CompletionItemProvider {
     if (measureNode !== undefined) {
       const nowMeasure = measureNode.properties.measure;
       if (nowMeasure <= 1) {
-        return;
+        return Promise.reject();
       }
       const previewMeasure = nowMeasure - 1;
       const previewMeasureNodes = chartNode.filter<MeasureNode>(
@@ -340,15 +355,15 @@ export class NotesCompletionItemProvider implements CompletionItemProvider {
       );
     }
     if (previewMeasureNode === undefined) {
-      return;
+      return Promise.reject();
     }
     const snippetLength = previewMeasureNode.properties.notesLength - word.length;
     if (snippetLength < 1) {
-      return;
+      return Promise.reject();
     }
     const text1 = word + "0".repeat(snippetLength) + ",";
     const text2 = word + "0".repeat(snippetLength) + (containsMeasureEnd ? "" : ",");
-    const snippet = new CompletionItem(text1, vscode.CompletionItemKind.Snippet);
+    const snippet = new CompletionItem(text1, CompletionItemKind.Snippet);
     snippet.insertText = text2;
     snippets.push(snippet);
     return snippets;

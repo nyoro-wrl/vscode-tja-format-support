@@ -14,6 +14,10 @@ export interface IStatement {
    */
   readonly name: string;
   /**
+   * 簡潔な説明
+   */
+  readonly detail: string;
+  /**
    * 一致する正規表現
    */
   readonly regexp: RegExp;

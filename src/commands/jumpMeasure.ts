@@ -1,34 +1,26 @@
 import * as vscode from "vscode";
 import { Selection, TextEditor, TextEditorEdit } from "vscode";
-import { documents } from "../extension";
-import {
-  ChartNode,
-  EBranchSectionNode,
-  MBranchSectionNode,
-  MeasureNode,
-  NBranchSectionNode,
-} from "../types/node";
+import { BranchSectionNode, ChartNode, HeadersNode, MeasureNode } from "../types/node";
 
 export const jumpMeasureCommand: vscode.Command = {
   command: "tja.jumpMeasure",
-  title: "jump measure",
+  title: "小節に移動",
   tooltip: "小節に移動",
 };
-export async function jumpMeasure(textEditor: TextEditor, edit: TextEditorEdit, ...args: any[]) {
-  // 現在のカーソル位置が譜面内か検証する
-  const position = textEditor.selection.active;
-  const root = documents.parse(textEditor.document);
-  const chartNode = root.findDepth<ChartNode>(
-    (x) => x instanceof ChartNode && x.range.contains(position)
-  );
 
-  if (chartNode === undefined) {
-    vscode.window.showErrorMessage("譜面外です");
-    return;
-  }
-
-  const maxMeasure = chartNode.properties.measure;
-
+/**
+ * 小節のジャンプ機能
+ * @param textEditor
+ * @param edit
+ * @param chartNode
+ * @returns
+ */
+export async function jumpMeasure(
+  textEditor: TextEditor,
+  edit: TextEditorEdit,
+  chartNode: ChartNode
+): Promise<void> {
+  const maxMeasure = chartNode.properties.info.measure;
   const input = await vscode.window.showInputBox({
     prompt: "移動先の小節番号を入力してください",
     placeHolder: `1 ~ ${maxMeasure}`,
@@ -59,15 +51,22 @@ export async function jumpMeasure(textEditor: TextEditor, edit: TextEditorEdit, 
   const measureNodes = chartNode.filter<MeasureNode>(
     (x) => x instanceof MeasureNode && x.properties.startChartState.measure === measure
   );
+
   if (measureNodes.length === 1) {
     const measureNode = measureNodes[0];
     textEditor.selection = new Selection(measureNode.range.start, measureNode.range.end);
     textEditor.revealRange(measureNode.range, vscode.TextEditorRevealType.InCenter);
   } else if (measureNodes.length > 1) {
     // 小節が複数あるときの対応
-    const nBranch = measureNodes.find((x) => x.parent instanceof NBranchSectionNode);
-    const eBranch = measureNodes.find((x) => x.parent instanceof EBranchSectionNode);
-    const mBranch = measureNodes.find((x) => x.parent instanceof MBranchSectionNode);
+    const nBranch = measureNodes.find(
+      (x) => x.parent instanceof BranchSectionNode && x.parent.properties.kind === "N"
+    );
+    const eBranch = measureNodes.find(
+      (x) => x.parent instanceof BranchSectionNode && x.parent.properties.kind === "E"
+    );
+    const mBranch = measureNodes.find(
+      (x) => x.parent instanceof BranchSectionNode && x.parent.properties.kind === "M"
+    );
 
     const texts: string[] = [];
     if (nBranch !== undefined) {
