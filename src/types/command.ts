@@ -3,20 +3,29 @@ import { IStatement, StatementCollection } from "./statement";
 /**
  * 命令の記載位置
  *
- *     "Outer" // 譜面の外側
  *     "Start" // 譜面の開始
+ *     "End" // 譜面の終了
+ *     "Outer" // 譜面の外側
  *     "Inner" // 譜面の内側
  *     "MeasureHead" // 小節頭
+ *     "Song" // 段位道場課題曲
  *     "Branch" // 譜面分岐
- *     "End" // 譜面の終了
- *     "Unknows" // 不明
+ *     "Unknown" // 不明
  */
-type CommandSection = "Outer" | "Start" | "Inner" | "MeasureHead" | "Branch" | "End" | "Unknown";
+export type CommandSection =
+  | "Start"
+  | "End"
+  | "Outer"
+  | "Inner"
+  | "MeasureHead"
+  | "Song"
+  | "Branch"
+  | "Unknown";
 
 /**
  * 命令
  */
-interface ICommand extends IStatement {
+export interface ICommand extends IStatement {
   /**
    * 命令の記載位置
    */

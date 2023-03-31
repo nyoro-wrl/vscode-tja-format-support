@@ -8,6 +8,7 @@ export const commands = new CommandCollection({
   // 太鼓さん次郎
   start: {
     name: "START",
+    detail: "開始",
     regexp: /^START$/,
     syntax: new MarkdownString().appendCodeblock("#START" + " [<player>]").value,
     snippet: new SnippetString().appendText("START").value,
@@ -23,6 +24,7 @@ export const commands = new CommandCollection({
   },
   end: {
     name: "END",
+    detail: "終了",
     regexp: /^END$/,
     syntax: new MarkdownString().appendCodeblock("#END").value,
     snippet: new SnippetString().appendText("END").value,
@@ -35,6 +37,7 @@ export const commands = new CommandCollection({
   },
   bpmchange: {
     name: "BPMCHANGE",
+    detail: "BPM変更",
     regexp: /^BPMCHANGE$/,
     syntax: new MarkdownString().appendCodeblock("#BPMCHANGE" + " <bpm>").value,
     snippet: new SnippetString().appendText("BPMCHANGE ").value,
@@ -45,6 +48,7 @@ export const commands = new CommandCollection({
   },
   gogostart: {
     name: "GOGOSTART",
+    detail: "ゴーゴー開始",
     regexp: /^GOGOSTART$/,
     syntax: new MarkdownString().appendCodeblock("#GOGOSTART").value,
     snippet: new SnippetString().appendText("GOGOSTART").value,
@@ -55,6 +59,7 @@ export const commands = new CommandCollection({
   },
   gogoend: {
     name: "GOGOEND",
+    detail: "ゴーゴー終了",
     regexp: /^GOGOEND$/,
     syntax: new MarkdownString().appendCodeblock("#GOGOEND").value,
     snippet: new SnippetString().appendText("GOGOEND").value,
@@ -65,6 +70,7 @@ export const commands = new CommandCollection({
   },
   measure: {
     name: "MEASURE",
+    detail: "拍子変更",
     regexp: /^MEASURE$/,
     syntax: new MarkdownString().appendCodeblock("#MEASURE" + " <numer>/<denom>").value,
     snippet: new SnippetString().appendText("MEASURE ").value,
@@ -77,6 +83,7 @@ export const commands = new CommandCollection({
   },
   scroll: {
     name: "SCROLL",
+    detail: "スクロール速度変更",
     regexp: /^SCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#SCROLL" + " <rate>").value,
     snippet: new SnippetString().appendText("SCROLL ").value,
@@ -89,6 +96,7 @@ export const commands = new CommandCollection({
   },
   delay: {
     name: "DELAY",
+    detail: "譜面遅延（停止）",
     regexp: /^DELAY$/,
     syntax: new MarkdownString().appendCodeblock("#DELAY" + " <second>").value,
     snippet: new SnippetString().appendText("DELAY ").value,
@@ -101,6 +109,7 @@ export const commands = new CommandCollection({
   },
   section: {
     name: "SECTION",
+    detail: "分岐判定リセット",
     regexp: /^SECTION$/,
     syntax: new MarkdownString().appendCodeblock("#SECTION").value,
     snippet: new SnippetString().appendText("SECTION").value,
@@ -113,6 +122,7 @@ export const commands = new CommandCollection({
   },
   branchstart: {
     name: "BRANCHSTART",
+    detail: "分岐開始",
     regexp: /^BRANCHSTART$/,
     syntax: new MarkdownString().appendCodeblock("#BRANCHSTART" + " <type>, <expart>, <master>")
       .value,
@@ -133,6 +143,7 @@ export const commands = new CommandCollection({
   },
   branchend: {
     name: "BRANCHEND",
+    detail: "分岐終了",
     regexp: /^BRANCHEND$/,
     syntax: new MarkdownString().appendCodeblock("#BRANCHEND").value,
     snippet: new SnippetString().appendText("BRANCHEND").value,
@@ -145,6 +156,7 @@ export const commands = new CommandCollection({
   },
   n: {
     name: "N",
+    detail: "普通譜面",
     regexp: /^N$/,
     syntax: new MarkdownString().appendCodeblock("#N").value,
     snippet: new SnippetString().appendText("N").value,
@@ -155,6 +167,7 @@ export const commands = new CommandCollection({
   },
   e: {
     name: "E",
+    detail: "玄人譜面",
     regexp: /^E$/,
     syntax: new MarkdownString().appendCodeblock("#E").value,
     snippet: new SnippetString().appendText("E").value,
@@ -165,6 +178,7 @@ export const commands = new CommandCollection({
   },
   m: {
     name: "M",
+    detail: "達人譜面",
     regexp: /^M$/,
     syntax: new MarkdownString().appendCodeblock("#M").value,
     snippet: new SnippetString().appendText("M").value,
@@ -175,6 +189,7 @@ export const commands = new CommandCollection({
   },
   levelhold: {
     name: "LEVELHOLD",
+    detail: "分岐固定",
     regexp: /^LEVELHOLD$/,
     syntax: new MarkdownString().appendCodeblock("#LEVELHOLD").value,
     snippet: new SnippetString().appendText("LEVELHOLD").value,
@@ -188,6 +203,7 @@ export const commands = new CommandCollection({
   },
   bmscroll: {
     name: "BMSCROLL",
+    detail: "スクロール方式変更",
     regexp: /^BMSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#BMSCROLL").value,
     snippet: new SnippetString().appendText("BMSCROLL").value,
@@ -200,6 +216,7 @@ export const commands = new CommandCollection({
   },
   hbscroll: {
     name: "HBSCROLL",
+    detail: "スクロール方式変更",
     regexp: /^HBSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#HBSCROLL").value,
     snippet: new SnippetString().appendText("HBSCROLL").value,
@@ -212,6 +229,7 @@ export const commands = new CommandCollection({
   },
   barlineoff: {
     name: "BARLINEOFF",
+    detail: "小節線非表示",
     regexp: /^BARLINEOFF$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINEOFF").value,
     snippet: new SnippetString().appendText("BARLINEOFF").value,
@@ -222,6 +240,7 @@ export const commands = new CommandCollection({
   },
   barlineon: {
     name: "BARLINEON",
+    detail: "小節線表示",
     regexp: /^BARLINEON$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINEON").value,
     snippet: new SnippetString().appendText("BARLINEON").value,
@@ -233,6 +252,7 @@ export const commands = new CommandCollection({
   // TJAPlayer2forPC
   lyric: {
     name: "LYRIC",
+    detail: "歌詞表示",
     regexp: /^LYRIC$/,
     syntax: new MarkdownString().appendCodeblock("#LYRIC" + " <string>").value,
     snippet: new SnippetString().appendText("LYRIC ").value,
@@ -243,6 +263,7 @@ export const commands = new CommandCollection({
   },
   sudden: {
     name: "SUDDEN",
+    detail: "音符の出現",
     regexp: /^SUDDEN$/,
     syntax: new MarkdownString().appendCodeblock("#SUDDEN" + " <sudden> <move>").value,
     snippet: new SnippetString().appendText("SUDDEN ").value,
@@ -258,6 +279,7 @@ export const commands = new CommandCollection({
   },
   direction: {
     name: "DIRECTION",
+    detail: "スクロールの向き変更",
     regexp: /^DIRECTION$/,
     syntax: new MarkdownString().appendCodeblock("#DIRECTION" + " <direction>").value,
     snippet: new SnippetString().appendText("DIRECTION ").value,
@@ -278,6 +300,7 @@ export const commands = new CommandCollection({
   // TJAPlayer3
   jposscroll: {
     name: "JPOSSCROLL",
+    detail: "判定枠移動",
     regexp: /^JPOSSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#JPOSSCROLL" + " <second> <distance> <direction>")
       .value,
@@ -293,6 +316,7 @@ export const commands = new CommandCollection({
   },
   nextsong: {
     name: "NEXTSONG",
+    detail: "段位道場の課題曲",
     regexp: /^NEXTSONG$/,
     syntax: new MarkdownString().appendCodeblock(
       "#NEXTSONG" + " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
@@ -309,12 +333,13 @@ export const commands = new CommandCollection({
       .appendMarkdown("`<level>`: レベル  \n")
       .appendMarkdown("`<course>`: 難易度  \n").value,
     separator: "Comma",
-    section: "MeasureHead",
+    section: "Song",
     order: 2,
   },
   // TaikoManyGimmicks
   judgedelay: {
     name: "JUDGEDELAY",
+    detail: "判定位置の移動",
     regexp: /^JUDGEDELAY$/,
     syntax: new MarkdownString().appendCodeblock("#JUDGEDELAY" + " <type> [...]").value,
     snippet: new SnippetString().appendText("JUDGEDELAY ").value,
@@ -338,6 +363,7 @@ export const commands = new CommandCollection({
   },
   dummystart: {
     name: "DUMMYSTART",
+    detail: "ダミー開始",
     regexp: /^DUMMYSTART$/,
     syntax: new MarkdownString().appendCodeblock("#DUMMYSTART").value,
     snippet: new SnippetString().appendText("DUMMYSTART").value,
@@ -348,6 +374,7 @@ export const commands = new CommandCollection({
   },
   dummyend: {
     name: "DUMMYEND",
+    detail: "ダミー終了",
     regexp: /^DUMMYEND$/,
     syntax: new MarkdownString().appendCodeblock("#DUMMYEND").value,
     snippet: new SnippetString().appendText("DUMMYEND").value,
@@ -358,6 +385,7 @@ export const commands = new CommandCollection({
   },
   notespawn: {
     name: "NOTESPAWN",
+    detail: "譜面の出現",
     regexp: /^NOTESPAWN$/,
     syntax: new MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]").value,
     snippet: new SnippetString().appendText("NOTESPAWN ").value,
@@ -378,6 +406,7 @@ export const commands = new CommandCollection({
   },
   size: {
     name: "SIZE",
+    detail: "音符サイズ変更",
     regexp: /^SIZE$/,
     syntax: new MarkdownString().appendCodeblock("#SIZE" + " <rate>").value,
     snippet: new SnippetString().appendText("SIZE ").value,
@@ -388,9 +417,10 @@ export const commands = new CommandCollection({
   },
   color: {
     name: "COLOR",
+    detail: "音符の色彩変更",
     regexp: /^COLOR$/,
     syntax: new MarkdownString().appendCodeblock("#COLOR" + " <red> <green> <blue> <alpha>").value,
-    snippet: new SnippetString().appendText("COLOR ").value,
+    snippet: new SnippetString().appendText("COLOR 255 255 255 255").value,
     documentation: new MarkdownString()
       .appendMarkdown("音符の色彩を変更します。  \n")
       .appendMarkdown("255を基準値とします。  \n\n")
@@ -404,6 +434,7 @@ export const commands = new CommandCollection({
   },
   angle: {
     name: "ANGLE",
+    detail: "音符の向き変更",
     regexp: /^ANGLE$/,
     syntax: new MarkdownString().appendCodeblock("#ANGLE" + " <angle>").value,
     snippet: new SnippetString().appendText("ANGLE ").value,
@@ -415,6 +446,7 @@ export const commands = new CommandCollection({
   },
   gradation: {
     name: "GRADATION",
+    detail: "命令の時間的変化",
     regexp: /^GRADATION$/,
     syntax: new MarkdownString().appendCodeblock(
       "#GRADATION" + " <type> [<second> <type1> <type2>]"
@@ -468,6 +500,7 @@ export const commands = new CommandCollection({
   },
   barlinesize: {
     name: "BARLINESIZE",
+    detail: "小節線サイズ変更",
     regexp: /^BARLINESIZE$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINESIZE" + " <width> <height>").value,
     snippet: new SnippetString().appendText("BARLINESIZE ").value,
@@ -481,6 +514,7 @@ export const commands = new CommandCollection({
   },
   resetcommand: {
     name: "RESETCOMMAND",
+    detail: "命令のリセット",
     regexp: /^RESETCOMMAND$/,
     syntax: new MarkdownString().appendCodeblock("#RESETCOMMAND").value,
     snippet: new SnippetString().appendText("RESETCOMMAND").value,
