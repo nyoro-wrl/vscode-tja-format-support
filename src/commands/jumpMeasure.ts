@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Selection, TextEditor, TextEditorEdit } from "vscode";
-import { BranchSectionNode, ChartNode, HeadersNode, MeasureNode } from "../types/node";
+import { BranchSectionNode, ChartNode, MeasureNode } from "../types/node";
 
 export const jumpMeasureCommand: vscode.Command = {
   command: "tja.jumpMeasure",

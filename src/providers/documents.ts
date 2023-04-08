@@ -4,6 +4,7 @@ import { tja } from "../constants/language";
 import { Parser } from "../parser";
 import { RootNode } from "../types/node";
 import { Diagnostics } from "./diagnostics";
+import { Configs } from "../configs";
 
 /**
  * vscode.Disposableを実装したMapオブジェクト
@@ -45,6 +46,9 @@ export class DocumentStateCollection<T> implements vscode.Disposable {
     }
     return this.map.delete(document.uri.toString());
   }
+  clear() {
+    this.map.clear();
+  }
   dispose() {
     this.isDisposed = true;
     this.disposables.forEach((x) => x.dispose());
@@ -75,6 +79,14 @@ export class Documents implements vscode.Disposable {
         this.diagnostics.showUnedited(document);
       }
     }),
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      if (event.affectsConfiguration(new Configs().liteMode.getName())) {
+        const liteMode = new Configs().liteMode.get();
+        if (liteMode) {
+          this.parses.clear();
+        }
+      }
+    }),
   ];
 
   /**
@@ -82,7 +94,12 @@ export class Documents implements vscode.Disposable {
    * @param document
    * @returns
    */
-  parse(document: TextDocument, token?: vscode.CancellationToken): RootNode {
+  parse(document: TextDocument, token?: vscode.CancellationToken): RootNode | undefined {
+    const config = new Configs();
+    const liteMode = config.liteMode.get();
+    if (liteMode) {
+      return;
+    }
     const result = this.parses.get(document);
     if (result !== undefined && result.text === document.getText()) {
       return result;
@@ -91,7 +108,7 @@ export class Documents implements vscode.Disposable {
     const parser = new Parser(document);
     const parseResult = parser.parse(token);
     this.parses.set(document, parseResult.root);
-    this.diagnostics.clear(document);
+    this.diagnostics.delete(document);
     this.diagnostics.set(document, parseResult.diagnostics);
     this.diagnostics.showRealtime(document);
     if (isFirst) {

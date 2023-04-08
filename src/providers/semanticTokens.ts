@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { documents } from "../extension";
-import { CommandNode, HeadersNode, MeasureEndNode, NoteNode } from "../types/node";
+import { HeadersNode, MeasureEndNode, NoteNode } from "../types/node";
+import { Configs } from "../configs";
 
 export const legend = new vscode.SemanticTokensLegend([
   "roll",
@@ -21,15 +22,22 @@ export const legend = new vscode.SemanticTokensLegend([
  */
 export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
   async provideDocumentSemanticTokens(
-    document: vscode.TextDocument,
-    token: vscode.CancellationToken
+    document?: vscode.TextDocument,
+    token?: vscode.CancellationToken
   ): Promise<vscode.SemanticTokens> {
     const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
-    const config = vscode.workspace.getConfiguration("tjaFormatSupport");
-    const gogotimeHighlight = config.get<boolean>("gogotimeHighlight");
-    const branchHighlight = config.get<boolean>("branchHighlight");
+    const config = new Configs();
+    const gogotimeHighlight = config.gogotimeHighlight.get();
+    const branchHighlight = config.branchHighlight.get();
+
+    if (document === undefined) {
+      return tokensBuilder.build();
+    }
 
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return tokensBuilder.build();
+    }
     const notes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
@@ -40,8 +48,8 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
       (x) => x instanceof HeadersNode
     );
     for (const note of notes) {
-      if (token.isCancellationRequested) {
-        return Promise.reject();
+      if (token?.isCancellationRequested) {
+        return tokensBuilder.build();
       }
       if (note.properties.rollState === "None" && note.value === "0") {
         if (note.properties.isGogotime && gogotimeHighlight) {

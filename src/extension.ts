@@ -13,7 +13,11 @@ import {
 } from "./providers/snippet";
 import { DocumentSymbolProvider } from "./providers/symbol";
 import { DocumentSemanticTokensProvider, legend } from "./providers/semanticTokens";
-import { ComboStatusBarItem, MeasureStatusBarItem } from "./providers/statusBar";
+import {
+  ComboStatusBarItem,
+  MeasureStatusBarItem,
+  LiteModeStatusBarItem,
+} from "./providers/statusBar";
 import { FoldingRangeProvider } from "./providers/folding";
 import { CommandSignatureHelpProvider } from "./providers/signatureHelp";
 import { selector } from "./constants/language";
@@ -25,6 +29,7 @@ import { Documents } from "./providers/documents";
 import { InfoTreeDataProvider } from "./providers/treeData";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
+import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
 
 export let activeTjaFile: ActiveTjaFile;
 /**
@@ -48,6 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
       treeDataProvider: new InfoTreeDataProvider(),
     }),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
+    commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
     languages.registerDocumentSemanticTokensProvider(
       selector,
       new DocumentSemanticTokensProvider(),
@@ -67,7 +73,8 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerColorProvider(selector, new DantickColorDocumentColorProvider()),
     languages.registerColorProvider(selector, new ColorCommandDocumentColorProvider()),
     new MeasureStatusBarItem(),
-    new ComboStatusBarItem()
+    new ComboStatusBarItem(),
+    new LiteModeStatusBarItem()
   );
 }
 

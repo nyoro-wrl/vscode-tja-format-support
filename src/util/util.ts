@@ -21,10 +21,13 @@ export function getChartState(
   position: Position
 ): ChartStateProperties | undefined {
   const root = documents.parse(document);
+  if (root === undefined) {
+    return;
+  }
   let chartState: ChartStateProperties = new ChartState();
   const nowNode = root.findDepth((x) => x.range.contains(position), true);
   if (nowNode === undefined) {
-    return undefined;
+    return;
   }
   const isBranchNode = nowNode.findParent((x) => x instanceof BranchNode) !== undefined;
   const chartNode = root.find<ChartNode>(

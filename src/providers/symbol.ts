@@ -8,7 +8,6 @@ import {
   CourseNode,
   HeaderNode,
   Node,
-  ParameterNode,
   ParametersNode,
   ParentNode,
   RootHeadersNode,
@@ -28,6 +27,9 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
   ): Promise<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
     const result: DocumentSymbol[] = [];
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return result;
+    }
     const symbols = toSymbols(root, token);
     // const symbols = toSymbolsAll(root, token);
     result.push(...symbols);

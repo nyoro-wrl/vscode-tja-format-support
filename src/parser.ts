@@ -235,6 +235,9 @@ export class Parser {
       command === commands.items.branchend
     ) {
       this.nowBalloonId = undefined;
+    } else if (command === commands.items.resetcommand) {
+      this.chartState.showBarline = true;
+      this.chartState.isDummyNote = false;
     }
     let node = new ChartStateCommandNode(parent, token.range, separator, this.chartState);
     node = this.parseNode(node);
@@ -421,7 +424,7 @@ export class Parser {
   }
 
   /**
-   * ノートの作成
+   * 音符の作成
    * @param parent
    * @param token
    */
@@ -448,17 +451,19 @@ export class Parser {
           this.chartState.rollState = "RollBig";
         }
       } else if (/[79]/.test(token.value)) {
-        const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode)
-          ?.properties.isBranchBalloon;
-        if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
-          this.nowBalloonId = ++this.balloonId;
-        } else {
-          if (this.chartState.branchState === "Normal") {
-            this.nowBalloonId = ++this.norBalloonId;
-          } else if (this.chartState.branchState === "Expert") {
-            this.nowBalloonId = ++this.expBalloonId;
+        if (this.chartState.isDummyNote === false) {
+          const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode)
+            ?.properties.isBranchBalloon;
+          if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
+            this.nowBalloonId = ++this.balloonId;
           } else {
-            this.nowBalloonId = ++this.masBalloonId;
+            if (this.chartState.branchState === "Normal") {
+              this.nowBalloonId = ++this.norBalloonId;
+            } else if (this.chartState.branchState === "Expert") {
+              this.nowBalloonId = ++this.expBalloonId;
+            } else {
+              this.nowBalloonId = ++this.masBalloonId;
+            }
           }
         }
         if (token.value === "7") {

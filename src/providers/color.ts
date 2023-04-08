@@ -16,6 +16,9 @@ export class DantickColorDocumentColorProvider implements vscode.DocumentColorPr
   ): Promise<ColorInformation[]> {
     const results: ColorInformation[] = [];
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return results;
+    }
 
     const dantickcolorHeaders = root.filter<HeaderNode>(
       (x) => x instanceof HeaderNode && headers.items.dantickcolor.regexp.test(x.properties.name),
@@ -73,6 +76,9 @@ export class ColorCommandDocumentColorProvider implements vscode.DocumentColorPr
   ): Promise<ColorInformation[]> {
     const results: ColorInformation[] = [];
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return results;
+    }
 
     const colorHeaders = root.filter<CommandNode>(
       (x) => x instanceof CommandNode && commands.items.color.regexp.test(x.properties.name),

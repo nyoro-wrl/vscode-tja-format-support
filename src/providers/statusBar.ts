@@ -11,6 +11,8 @@ import {
   MeasureNode,
 } from "../types/node";
 import { Note } from "../types/note";
+import { Configs } from "../configs";
+import { changeLiteModeCommand } from "../commands/changeLiteMode";
 
 /**
  * カーソル位置の小節番号表示
@@ -51,6 +53,14 @@ export class MeasureStatusBarItem implements vscode.Disposable {
         if (document === activeTextEditor?.document) {
           this.update(document, activeTextEditor.selection.active);
         }
+      }),
+      vscode.workspace.onDidChangeConfiguration(async (event) => {
+        if (event.affectsConfiguration(new Configs().liteMode.getName())) {
+          const textEditor = vscode.window.activeTextEditor;
+          if (textEditor !== undefined && textEditor.document.languageId === tja) {
+            this.update(textEditor.document, textEditor.selection.active);
+          }
+        }
       })
     );
   }
@@ -64,8 +74,12 @@ export class MeasureStatusBarItem implements vscode.Disposable {
    * @param document
    * @param position
    */
-  update(document: TextDocument, position: Position): void {
+  private update(document: TextDocument, position: Position): void {
     const root = documents.parse(document);
+    if (root === undefined) {
+      this.statusBarItem.hide();
+      return;
+    }
 
     // カーソル位置の小節を検索
     const measureNode = root.findDepth<MeasureNode>(
@@ -91,7 +105,7 @@ export class MeasureStatusBarItem implements vscode.Disposable {
   /**
    * 非表示
    */
-  hide() {
+  private hide() {
     this.statusBarItem.hide();
   }
 }
@@ -131,6 +145,14 @@ export class ComboStatusBarItem implements vscode.Disposable {
         if (document === activeTextEditor?.document) {
           this.update(document, activeTextEditor.selection.active);
         }
+      }),
+      vscode.workspace.onDidChangeConfiguration(async (event) => {
+        if (event.affectsConfiguration(new Configs().liteMode.getName())) {
+          const textEditor = vscode.window.activeTextEditor;
+          if (textEditor !== undefined && textEditor.document.languageId === tja) {
+            this.update(textEditor.document, textEditor.selection.active);
+          }
+        }
       })
     );
   }
@@ -144,8 +166,12 @@ export class ComboStatusBarItem implements vscode.Disposable {
    * @param document
    * @param position
    */
-  update(document: TextDocument, position: Position): void {
+  private update(document: TextDocument, position: Position): void {
     const root = documents.parse(document);
+    if (root === undefined) {
+      this.statusBarItem.hide();
+      return;
+    }
 
     // カーソル位置のコンボ数を検索
     const chart = root.find<ChartNode>((x) => x instanceof ChartNode && x.range.contains(position));
@@ -223,7 +249,71 @@ export class ComboStatusBarItem implements vscode.Disposable {
   /**
    * 非表示
    */
-  hide() {
+  private hide() {
+    this.statusBarItem.hide();
+  }
+}
+
+export class LiteModeStatusBarItem implements vscode.Disposable {
+  private statusBarItem: vscode.StatusBarItem;
+  private readonly disposables: vscode.Disposable[] = [];
+
+  constructor() {
+    this.statusBarItem = vscode.window.createStatusBarItem(
+      "tja.mode",
+      StatusBarAlignment.Right,
+      199
+    );
+    this.disposables.push(this.statusBarItem);
+
+    this.disposables.push(
+      activeTjaFile.onDidOpen.event(async () => {
+        this.show();
+      }),
+      activeTjaFile.onDidClose.event(async () => {
+        this.hide();
+      }),
+      vscode.workspace.onDidChangeConfiguration(async (event) => {
+        if (event.affectsConfiguration(new Configs().liteMode.getName())) {
+          const document = vscode.window.activeTextEditor?.document;
+          if (document !== undefined && document.languageId === tja) {
+            this.show();
+          }
+        }
+      })
+    );
+
+    // 初期化時に有効にする
+    const document = vscode.window.activeTextEditor?.document;
+    if (document !== undefined && document.languageId === tja) {
+      this.show();
+    }
+  }
+
+  dispose() {
+    this.disposables.forEach((x) => x.dispose());
+  }
+
+  private show() {
+    const isLiteMode = new Configs().liteMode.get();
+    const modeText = isLiteMode ? "軽量モード" : "通常モード";
+    const reverseModeText = !isLiteMode ? "軽量モード" : "通常モード";
+    this.statusBarItem.text = "TJA:" + modeText;
+    this.statusBarItem.tooltip = reverseModeText + "に切り替え";
+    this.statusBarItem.command = {
+      ...changeLiteModeCommand,
+      arguments: [!isLiteMode],
+    };
+    this.statusBarItem.backgroundColor = isLiteMode
+      ? new vscode.ThemeColor("statusBarItem.warningBackground")
+      : undefined;
+    this.statusBarItem.show();
+  }
+
+  /**
+   * 非表示
+   */
+  private hide() {
     this.statusBarItem.hide();
   }
 }
