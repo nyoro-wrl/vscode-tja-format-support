@@ -25,6 +25,9 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
       return Promise.reject();
     }
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return Promise.reject();
+    }
     const balloonHeader = root.find<HeaderNode>(
       (x) =>
         x instanceof HeaderNode &&
@@ -91,6 +94,9 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
     }
 
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return Promise.reject();
+    }
     const balloonNote = root.find<NoteNode>(
       (x) =>
         x instanceof NoteNode &&

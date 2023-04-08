@@ -18,16 +18,11 @@ export class ActiveTjaFile implements vscode.Disposable {
       }
     }),
     vscode.window.onDidChangeActiveTextEditor(async (editor) => {
-      if (editor !== undefined) {
-        if (editor.document.languageId === tja) {
-          this.onDidOpen.fire(editor.document);
-        } else {
-          this.onDidClose.fire();
-        }
+      if (editor !== undefined && editor.document.languageId === tja) {
+        this.onDidOpen.fire(editor.document);
+      } else {
+        this.onDidClose.fire();
       }
-    }),
-    vscode.workspace.onDidCloseTextDocument(async () => {
-      this.onDidClose.fire();
     }),
   ];
   dispose() {

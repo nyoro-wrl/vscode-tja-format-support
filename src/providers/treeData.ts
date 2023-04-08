@@ -13,6 +13,7 @@ import {
 } from "../types/node";
 import { Note } from "../types/note";
 import { toPercent } from "../util/util";
+import { Configs } from "../configs";
 
 export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, vscode.Disposable {
   private _onDidChangeTreeData = new vscode.EventEmitter<void>();
@@ -24,6 +25,11 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     }),
     documents.onDidParsedTextDocument.event(async () => {
       this.refresh();
+    }),
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      if (event.affectsConfiguration(new Configs().liteMode.getName())) {
+        this.refresh();
+      }
     }),
   ];
 
@@ -39,6 +45,9 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
         return Promise.resolve([]);
       }
       const root = documents.parse(editor.document);
+      if (root === undefined) {
+        return Promise.resolve([]);
+      }
       const results = this.toTreeItem(root);
       return Promise.resolve(results);
     } else {

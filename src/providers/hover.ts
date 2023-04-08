@@ -3,14 +3,7 @@ import { Hover, MarkdownString } from "vscode";
 import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
 import { documents } from "../extension";
-import {
-  ChartNode,
-  HeaderNode,
-  HeadersNode,
-  NoteNode,
-  ParameterNode,
-  StyleNode,
-} from "../types/node";
+import { HeaderNode, HeadersNode, NoteNode, ParameterNode, StyleNode } from "../types/node";
 
 /**
  * ヘッダのマウスホバーヒント
@@ -75,6 +68,9 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
     }
 
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return Promise.reject();
+    }
     const balloonNote = root.find<NoteNode>(
       (x) =>
         x instanceof NoteNode &&

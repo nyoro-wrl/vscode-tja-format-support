@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { tja } from "../constants/language";
 import { DisposableMap } from "./documents";
+import { Configs } from "../configs";
 
 export type DiagnosticResult = {
   realtime: vscode.Diagnostic[];
@@ -41,6 +42,14 @@ export class Diagnostics implements vscode.Disposable {
         this.showUnedited(document);
       }
     }),
+    vscode.workspace.onDidCloseTextDocument(async (document) => {
+      this.delete(document);
+    }),
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      if (event.affectsConfiguration(new Configs().liteMode.getName())) {
+        this.clear();
+      }
+    }),
   ];
 
   dispose() {
@@ -52,8 +61,12 @@ export class Diagnostics implements vscode.Disposable {
     this.drafts.set(uri, { realtime: value.realtime, unedited: value.unedited });
   }
 
-  clear(document: vscode.TextDocument): void {
+  delete(document: vscode.TextDocument): void {
     this.diagnostics.set(document.uri, undefined);
+  }
+
+  clear(): void {
+    this.diagnostics.clear();
   }
 
   showRealtime(document: vscode.TextDocument): void {

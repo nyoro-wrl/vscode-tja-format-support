@@ -4,7 +4,6 @@ import {
   BranchNode,
   BranchSectionNode,
   ChartNode,
-  CommandNode,
   MeasureNode,
   Node,
   SongNode,
@@ -21,6 +20,9 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
   ): Promise<vscode.FoldingRange[]> {
     const folds: vscode.FoldingRange[] = [];
     const root = documents.parse(document, token);
+    if (root === undefined) {
+      return folds;
+    }
     const nodes: Node[] = [];
     nodes.push(
       ...root.filter(
