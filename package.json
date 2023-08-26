@@ -13,6 +13,7 @@
     "tja",
     "tjc",
     "tjf",
+    "tmg",
     "highlight",
     "snippets"
   ],
@@ -54,7 +55,8 @@
         "extensions": [
           ".tja",
           ".tjc",
-          ".tjf"
+          ".tjf",
+          ".tmg"
         ],
         "configuration": "./language-configuration.json"
       }

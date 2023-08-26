@@ -6,9 +6,9 @@ import {
   ChartTokenNode,
   ChartStateCommandNode,
   BranchNode,
-  CommandNode,
 } from "../types/node";
 import { ChartState } from "../types/state";
+import path = require("path");
 
 /**
  * 特定位置の譜面状態を取得
@@ -58,6 +58,14 @@ export function getChartState(
     }
   }
   return chartState;
+}
+
+export function isTmg(document: TextDocument | undefined): boolean {
+  if (document) {
+    return path.extname(document.fileName) === ".tmg";
+  } else {
+    return false;
+  }
 }
 
 export function toPercent(value: number): string {

@@ -5,6 +5,7 @@ import { headers } from "../constants/headers";
 import { documents } from "../extension";
 import { ChartNode, CommandNode, HeaderNode, HeadersNode, ParametersNode } from "../types/node";
 import { rgb, hex } from "color-convert";
+import { isTmg } from "../util/util";
 
 /**
  * DANTICKCOLOR:ヘッダのカラーピッカー機能
@@ -118,7 +119,9 @@ export class ColorCommandDocumentColorProvider implements vscode.DocumentColorPr
     const green = Math.round(color.green * 255).toString();
     const blue = Math.round(color.blue * 255).toString();
     const alpha = Math.round(color.alpha * 255).toString();
-    const text = `${red} ${green} ${blue} ${alpha}`;
+    const text = isTmg(context.document)
+      ? `${red}, ${green}, ${blue}, ${alpha}`
+      : `${red} ${green} ${blue} ${alpha}`;
     const result = new vscode.ColorPresentation(text);
     result.textEdit = new vscode.TextEdit(context.range, text);
     results.push(result);

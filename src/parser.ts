@@ -33,6 +33,7 @@ import { ChartState } from "./types/state";
 import { DiagnosticResult } from "./providers/diagnostics";
 import { Separator } from "./types/statement";
 import { CommandSection, ICommand } from "./types/command";
+import { isTmg } from "./util/util";
 
 // TODO #BRANCHSTART #BRANCHENDを跨いた風船音符の対応（不明とする）
 // TODO 二人用譜面のとき、風船音符は1Pと2Pで分けて書ける？
@@ -753,7 +754,7 @@ export class Parser {
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
-            const separator = info?.separator ?? "Unknown";
+            const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Unknown") {
               this.parseCommand(parent, token, separator);
             } else if (section === "Start") {
@@ -802,7 +803,7 @@ export class Parser {
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
-            const separator = info?.separator ?? "Unknown";
+            const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
               this.parseCommand(parent, token, separator);
               this.addDiagnostic("Realtime", token.range, "命令の位置が不正です。");
@@ -855,7 +856,7 @@ export class Parser {
             parent.pushRange(token.range);
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
-            const separator = info?.separator ?? "Unknown";
+            const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
             if (
               info === commands.items.n ||
               info === commands.items.e ||
@@ -893,7 +894,7 @@ export class Parser {
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
-            const separator = info?.separator ?? "Unknown";
+            const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
               const node = this.parseCommand(parent, token, separator);
               this.addDiagnostic("Realtime", node.range, "命令の位置が不正です。");
