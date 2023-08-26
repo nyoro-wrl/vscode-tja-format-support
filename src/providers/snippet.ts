@@ -25,7 +25,7 @@ import {
 } from "../types/node";
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
-import { getChartState } from "../util/util";
+import { getChartState, isTmg } from "../util/util";
 
 /**
  * ヘッダの補完
@@ -264,6 +264,9 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
       snippet.insertText = new SnippetString((containSharp ? "" : "#") + command.snippet);
+      if (isTmg(document)) {
+        snippet.insertText = convertTmgCommandInsertText(snippet.insertText);
+      }
       snippet.documentation = new MarkdownString().appendMarkdown(
         command.syntax + command.documentation
       );
@@ -385,4 +388,45 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
     snippets.push(snippet);
     return snippets;
   }
+}
+
+/**
+ * 命令のスニペットをTMG用に変換する
+ * @param insertText
+ * @returns
+ */
+function convertTmgCommandInsertText(insertText: SnippetString): SnippetString {
+  const regex = /(#)?([A-Z0-9]+)(\s+)?(.+)?/;
+  const match = insertText.value.match(regex);
+
+  if (!match) {
+    return insertText;
+  }
+
+  let [, sharp, name, spaces, parameter] = match;
+
+  if (sharp === undefined) {
+    sharp = "";
+  }
+
+  if (!spaces && !parameter) {
+    return new SnippetString().appendText(sharp).appendText(name).appendText("()");
+  }
+
+  if (spaces && parameter) {
+    return new SnippetString()
+      .appendText(sharp)
+      .appendText(name)
+      .appendText("(")
+      .appendText(parameter.replace(/\s+/g, ","))
+      .appendText(")");
+  }
+
+  return new SnippetString()
+    .appendText(sharp)
+    .appendText(name)
+    .appendText("(")
+    .appendTabstop(1)
+    .appendText(")")
+    .appendTabstop(0);
 }

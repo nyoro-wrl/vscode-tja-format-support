@@ -8,10 +8,19 @@
       "include": "#header"
     },
     {
+      "include": "#chartTmg"
+    },
+    {
       "include": "#chart"
     },
     {
+      "include": "#commandBranchTmg"
+    },
+    {
       "include": "#commandBranch"
+    },
+    {
+      "include": "#commandTmg"
     },
     {
       "include": "#command"
@@ -53,7 +62,37 @@
           "include": "#comment"
         },
         {
+          "include": "#commandBranchTmg"
+        },
+        {
           "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
+        },
+        {
+          "include": "#command"
+        },
+        {
+          "include": "#measure"
+        }
+      ]
+    },
+    "chartTmg": {
+      "begin": "(?=^\\s*#START\\(.*\\))",
+      "end": "(?=^\\s*#END\\(.*\\))",
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#commandBranchTmg"
+        },
+        {
+          "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
         },
         {
           "include": "#command"
@@ -88,6 +127,31 @@
         }
       ]
     },
+    "commandTmg": {
+      "begin": "^\\s*(#[A-Z0-9]+)\\(",
+      "end": "\\)",
+      "beginCaptures": {
+        "1": {
+          "name": "command.name"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "name": "command.parameter",
+          "begin": "\\G",
+          "end": "(?=(\\)\\s*//|\\)\\s*$))",
+          "patterns": [
+            {
+              "name": "command.delimiter",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
     "commandBranch": {
       "begin": "^\\s*(#(BRANCHSTART|N|E|M|BRANCHEND))\\s+",
       "end": "$",
@@ -104,6 +168,31 @@
           "name": "command.parameter.branch",
           "begin": "\\G",
           "end": "(?=(\\s*//|\\s*$))",
+          "patterns": [
+            {
+              "name": "command.delimiter.branch",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "commandBranchTmg": {
+      "begin": "^\\s*(#(BRANCHSTART|N|E|M|BRANCHEND))\\(",
+      "end": "\\)",
+      "beginCaptures": {
+        "1": {
+          "name": "command.name.branch"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "name": "command.parameter.branch",
+          "begin": "\\G",
+          "end": "(?=(\\)\\s*//|\\)\\s*$))",
           "patterns": [
             {
               "name": "command.delimiter.branch",
@@ -208,7 +297,13 @@
           "include": "#comment"
         },
         {
+          "include": "#commandBranchTmg"
+        },
+        {
           "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
         },
         {
           "include": "#command"
@@ -235,7 +330,13 @@
           "include": "#comment"
         },
         {
+          "include": "#commandBranchTmg"
+        },
+        {
           "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
         },
         {
           "include": "#command"
@@ -262,7 +363,13 @@
           "include": "#comment"
         },
         {
+          "include": "#commandBranchTmg"
+        },
+        {
           "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
         },
         {
           "include": "#command"
@@ -289,7 +396,13 @@
           "include": "#comment"
         },
         {
+          "include": "#commandBranchTmg"
+        },
+        {
           "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
         },
         {
           "include": "#command"

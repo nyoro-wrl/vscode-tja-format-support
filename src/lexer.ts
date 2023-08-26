@@ -1,9 +1,11 @@
 import * as vscode from "vscode";
 import { Range } from "vscode";
 import { splitString } from "./util/lexerUtil";
+import { isTmg } from "./util/util";
 
 const headerLineRegExp = /^\s*([A-Z0-9]+):(.*?)\s*$/;
 const commandLineRegExp = /^\s*#([A-Z0-9]+)(\s*(.*?))?\s*$/;
+const commandLineTmgRegExp = /^\s*#([A-Z0-9]+)(\((.*?)\))\s*$/;
 const notesRegExp = /^([0-9A-Z])/;
 const measureEndRegExp = /^(,)/;
 const spaceRegExp = /^(\s+)/;
@@ -182,7 +184,11 @@ export class Lexer {
    */
   private isCommand(): boolean {
     const text = this.getText();
-    return commandLineRegExp.test(text);
+    if (isTmg(vscode.window.activeTextEditor?.document)) {
+      return commandLineTmgRegExp.test(text);
+    } else {
+      return commandLineRegExp.test(text);
+    }
   }
 
   /**
@@ -192,7 +198,12 @@ export class Lexer {
   private getCommand(): Token[] {
     const tokens: Token[] = [];
     const text = this.getText();
-    const matches = commandLineRegExp.exec(text);
+    let matches: RegExpExecArray | null;
+    if (isTmg(vscode.window.activeTextEditor?.document)) {
+      matches = commandLineTmgRegExp.exec(text);
+    } else {
+      matches = commandLineRegExp.exec(text);
+    }
     if (matches === null) {
       return tokens;
     }
