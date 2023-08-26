@@ -70,6 +70,7 @@ interface ICommandRecord extends Record<string, ICommand> {
   readonly gradation: ICommand;
   readonly barlinesize: ICommand;
   readonly resetcommand: ICommand;
+  readonly alpha: ICommand;
 }
 
 export class CommandCollection extends StatementCollection<ICommand> {

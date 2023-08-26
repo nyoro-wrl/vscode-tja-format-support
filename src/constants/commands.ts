@@ -419,15 +419,14 @@ export const commands = new CommandCollection({
     name: "COLOR",
     detail: "音符の色彩変更",
     regexp: /^COLOR$/,
-    syntax: new MarkdownString().appendCodeblock("#COLOR" + " <red> <green> <blue> <alpha>").value,
-    snippet: new SnippetString().appendText("COLOR 255 255 255 255").value,
+    syntax: new MarkdownString().appendCodeblock("#COLOR" + " <red> <green> <blue>").value,
+    snippet: new SnippetString().appendText("COLOR 255 255 255").value,
     documentation: new MarkdownString()
       .appendMarkdown("音符の色彩を変更します。  \n")
       .appendMarkdown("255を基準値とします。  \n\n")
       .appendMarkdown("`<red>`: 赤色  \n")
       .appendMarkdown("`<green>`: 緑色  \n")
-      .appendMarkdown("`<blue>`: 青色  \n")
-      .appendMarkdown("`<alpha>`: 不透明度").value,
+      .appendMarkdown("`<blue>`: 青色  \n").value,
     separator: "Space",
     section: "Inner",
     order: 1,
@@ -521,6 +520,20 @@ export const commands = new CommandCollection({
     documentation: new MarkdownString().appendMarkdown("全ての命令の効果を初期値に戻します。")
       .value,
     separator: "None",
+    section: "Inner",
+    order: 1,
+  },
+  alpha: {
+    name: "ALPHA",
+    detail: "音符の透明度変更",
+    regexp: /^ALPHA$/,
+    syntax: new MarkdownString().appendCodeblock("#ALPHA" + " <alpha>").value,
+    snippet: new SnippetString().appendText("ALPHA ").value,
+    documentation: new MarkdownString()
+      .appendMarkdown("音符の透明度を変更します。  \n")
+      .appendMarkdown("255を基準値とします。  \n\n")
+      .appendMarkdown("`<alpha>`: 透明度").value,
+    separator: "Space",
     section: "Inner",
     order: 1,
   },

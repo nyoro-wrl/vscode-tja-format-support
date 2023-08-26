@@ -120,7 +120,7 @@ export class ColorCommandDocumentColorProvider implements vscode.DocumentColorPr
     const blue = Math.round(color.blue * 255).toString();
     const alpha = Math.round(color.alpha * 255).toString();
     const text = isTmg(context.document)
-      ? `${red}, ${green}, ${blue}, ${alpha}`
+      ? `${red}, ${green}, ${blue}`
       : `${red} ${green} ${blue} ${alpha}`;
     const result = new vscode.ColorPresentation(text);
     result.textEdit = new vscode.TextEdit(context.range, text);
