@@ -320,7 +320,7 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
     const snippets: vscode.CompletionItem[] = [];
 
-    const wordRange = document.getWordRangeAtPosition(position, /[0-9]+/);
+    const wordRange = document.getWordRangeAtPosition(position, /[0-9A-Z]+/);
     const word = wordRange === undefined ? "" : document.getText(wordRange);
     if (wordRange !== undefined && wordRange.end.isAfter(position)) {
       return snippets;
