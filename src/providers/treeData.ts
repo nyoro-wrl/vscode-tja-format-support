@@ -143,7 +143,7 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
 
   private toNotesTree(label: string, ...notes: Note[]): TreeItem {
     // TODO 連打の長さと風船の打数を表示できるようにする
-    const comboNotes = notes.filter((x) => x.isLong === false);
+    const comboNotes = notes.filter((x) => x.isCombo);
     const combo = comboNotes.length;
     const notesIcon = "activate-breakpoints";
     const smallDonIcon = "circle-filled";
@@ -154,9 +154,13 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     const bigRollIcon = "record";
     const balloonIcon = "record-small";
     const bigBalloonIcon = "record";
+    const kadonIcon = "color-mode";
+    const bombIcon = "flame";
+    const adlibIcon = "issue-draft";
 
     const notesTree = this.newTree(label, combo.toString(), "note");
 
+    // 数の集計
     const don = comboNotes.filter((x) => x.type === "Don").length;
     const ka = comboNotes.filter((x) => x.type === "Ka").length;
     const small = comboNotes.filter((x) => x.size === "Small").length;
@@ -165,6 +169,7 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     const donBig = comboNotes.filter((x) => x.type === "Don" && x.size === "Big").length;
     const kaSmall = comboNotes.filter((x) => x.type === "Ka" && x.size === "Small").length;
     const kaBig = comboNotes.filter((x) => x.type === "Ka" && x.size === "Big").length;
+
     const roll = notes.filter((x) => x.type === "Roll").length;
     const smallRoll = notes.filter((x) => x.type === "Roll" && x.size === "Small").length;
     const bigRoll = notes.filter((x) => x.type === "Roll" && x.size === "Big").length;
@@ -172,6 +177,11 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     const smallBalloon = notes.filter((x) => x.type === "Balloon" && x.size === "Small").length;
     const bigBalloon = notes.filter((x) => x.type === "Balloon" && x.size === "Big").length;
 
+    const kadon = comboNotes.filter((x) => x.type === "Kadon").length;
+    const bomb = notes.filter((x) => x.type === "Bomb").length;
+    const adlib = notes.filter((x) => x.type === "Adlib").length;
+
+    // ツリーの作成
     const donTree = this.newTree("Don", `${don} (${toPercent(don / combo)})`, smallDonIcon);
     const kaTree = this.newTree("Ka", `${ka} (${toPercent(ka / combo)})`, smallKaIcon);
     const smallTree = this.newTree("Small", `${small} (${toPercent(small / combo)})`, notesIcon);
@@ -200,12 +210,17 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     );
     const donBigTree = this.newTree("Don", `${donBig} (${toPercent(donBig / combo)})`, bigDonIcon);
     const kaBigTree = this.newTree("Ka", `${kaBig} (${toPercent(kaBig / combo)})`, bigKaIcon);
+
     const rollTree = this.newTree("Roll", `${roll}`, rollIcon);
     const smallRollTree = this.newTree("Small", `${smallRoll}`, rollIcon);
     const bigRollTree = this.newTree("Big", `${bigRoll}`, bigRollIcon);
     const balloonTree = this.newTree("Balloon", `${balloon}`, balloonIcon);
     const smallBalloonTree = this.newTree("Small", `${smallBalloon}`, balloonIcon);
     const bigBalloonTree = this.newTree("Big", `${bigBalloon}`, bigBalloonIcon);
+
+    const kadonTree = this.newTree("Kadon", `${kadon} (${toPercent(kadon / combo)})`, kadonIcon);
+    const bombTree = this.newTree("Bomb", `${bomb}`, bombIcon);
+    const adlibTree = this.newTree("Adlib", `${adlib}`, adlibIcon);
 
     donTree.addChild(smallDonTree, bigDonTree);
     kaTree.addChild(smallKaTree, bigKaTree);
@@ -214,6 +229,16 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     rollTree.addChild(smallRollTree, bigRollTree);
     balloonTree.addChild(smallBalloonTree, bigBalloonTree);
     notesTree.addChild(donTree, kaTree, smallTree, bigTree);
+    if (kadon > 0) {
+      bigTree.addChild(kadonTree);
+      notesTree.addChild(kadonTree);
+    }
+    if (bomb > 0) {
+      notesTree.addChild(bombTree);
+    }
+    if (adlib > 0) {
+      notesTree.addChild(adlibTree);
+    }
 
     return notesTree;
   }

@@ -4,7 +4,7 @@ import { splitString } from "./util/lexerUtil";
 
 const headerLineRegExp = /^\s*([A-Z0-9]+):(.*?)\s*$/;
 const commandLineRegExp = /^\s*#([A-Z0-9]+)(\s*(.*?))?\s*$/;
-const notesRegExp = /^([0-9])/;
+const notesRegExp = /^([0-9A-Z])/;
 const measureEndRegExp = /^(,)/;
 const spaceRegExp = /^(\s+)/;
 
@@ -290,7 +290,7 @@ export class Lexer {
           this.range.end.character
         );
       } else {
-        const matches = /^([^0-9,\s]+)/.exec(text);
+        const matches = /^([^0-9A-Z,\s]+)/.exec(text);
         if (matches === null) {
           vscode.window.showErrorMessage("字句解析に失敗しました。");
           throw new Error("字句解析に失敗しました。");

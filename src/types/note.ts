@@ -2,7 +2,7 @@ import { Range } from "vscode";
 import { Token } from "../lexer";
 import { TriBoolean } from "./state";
 
-type NoteType = "Don" | "Ka" | "Roll" | "Balloon" | undefined;
+type NoteType = "Don" | "Ka" | "Roll" | "Balloon" | "Bomb" | "Adlib" | "Kadon" | undefined;
 type NoteSize = "Small" | "Big" | undefined;
 
 export class Note {
@@ -52,11 +52,11 @@ export class Note {
       this.type = "Ka";
       this.size = "Small";
       this.isLong = false;
-    } else if (token.value === "3") {
+    } else if (token.value === "3" || token.value === "A") {
       this.type = "Don";
       this.size = "Big";
       this.isLong = false;
-    } else if (token.value === "4") {
+    } else if (token.value === "4" || token.value === "B") {
       this.type = "Ka";
       this.size = "Big";
       this.isLong = false;
@@ -76,7 +76,21 @@ export class Note {
       this.type = "Balloon";
       this.size = "Big";
       this.isLong = true;
+    } else if (token.value === "C") {
+      this.type = "Bomb";
+      this.size = "Small";
+      this.isLong = false;
+    } else if (token.value === "F") {
+      this.type = "Adlib";
+      this.size = "Small";
+      this.isLong = false;
+    } else if (token.value === "G") {
+      this.type = "Kadon";
+      this.size = "Big";
+      this.isLong = false;
     }
-    this.isCombo = (this.type === "Don" || this.type === "Ka") && this.isDummyNote !== true;
+    this.isCombo =
+      (this.type === "Don" || this.type === "Ka" || this.type === "Kadon") &&
+      this.isDummyNote !== true;
   }
 }

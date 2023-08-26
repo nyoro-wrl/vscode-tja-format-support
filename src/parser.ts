@@ -429,7 +429,7 @@ export class Parser {
    * @param token
    */
   private parseNote(parent: MeasureNode, token: Token): void {
-    if (/[1-79]/.test(token.value)) {
+    if (/[1-79A-Z]/.test(token.value)) {
       if (token.value !== "8" && this.chartState.rollState !== "None") {
         const text =
           this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
@@ -443,7 +443,7 @@ export class Parser {
         );
       }
       this.chartState.rollState = "None";
-      if (/[1-6]/.test(token.value)) {
+      if (/[1-6A-Z]/.test(token.value)) {
         this.nowBalloonId = undefined;
         if (token.value === "5") {
           this.chartState.rollState = "Roll";
