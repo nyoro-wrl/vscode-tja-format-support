@@ -302,9 +302,9 @@
           },
           {
             "scope": [
-              "source.tja noteRange.roll.big note.start",
-              "source.tja noteRange.roll.big note.empty",
-              "source.tja noteRange.roll.big note.end"
+              "source.tja noteRange.balloon.big note.start",
+              "source.tja noteRange.balloon.big note.empty",
+              "source.tja noteRange.balloon.big note.end"
             ],
             "settings": {
               "foreground": "#ff8400",
