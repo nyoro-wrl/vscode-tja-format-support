@@ -21,7 +21,7 @@ import {
   RootHeadersNode,
   BranchNode,
   BranchSectionNode,
-  MeasureNode,
+  NoteNode,
 } from "../types/node";
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
@@ -333,9 +333,6 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
     const chartNode = root?.findDepth<ChartNode>(
       (x) => x instanceof ChartNode && x.range.contains(position)
     );
-    const containsMeasureEnd =
-      root?.find((x) => x instanceof MeasureEndNode && x.range.start.line === position.line) !==
-      undefined;
     const branchNode = root?.findDepth(
       (x) => x instanceof BranchNode && x.range.contains(position)
     );
@@ -348,43 +345,24 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
     ) {
       return snippets;
     }
-    const measureNode = root?.findDepth<MeasureNode>(
-      (x) => x instanceof MeasureNode && x.range.contains(position)
+    // 直前の行を取得する
+    const previewLine = root?.findLastRange<NoteNode>(
+      (x) => x instanceof NoteNode && x.range.start.line < position.line
+    )?.range.start.line;
+    const previewLineNotes = root?.filter<NoteNode>(
+      (x) => x instanceof NoteNode && x.range.start.line === previewLine
     );
-    // 1つ前の小節を取得する
-    let previewMeasureNode: MeasureNode | undefined;
-    if (measureNode !== undefined) {
-      const nowMeasure = measureNode.properties.measure;
-      if (nowMeasure <= 1) {
-        return snippets;
-      }
-      const previewMeasure = nowMeasure - 1;
-      const previewMeasureNodes = chartNode?.filter<MeasureNode>(
-        (x) => x instanceof MeasureNode && x.properties.measure === previewMeasure
-      );
-      if (previewMeasureNodes?.length === 1) {
-        previewMeasureNode = previewMeasureNodes[0];
-      }
-    } else if (branchSectionNode !== undefined) {
-      previewMeasureNode = branchSectionNode.findLastRange(
-        (x) => x instanceof MeasureNode && x.range.end.line < position.line
-      );
-    } else {
-      previewMeasureNode = chartNode?.findLastRange(
-        (x) => x instanceof MeasureNode && x.range.end.line < position.line
-      );
-    }
-    if (previewMeasureNode === undefined) {
+    if (previewLineNotes === undefined) {
       return snippets;
     }
-    const snippetLength = previewMeasureNode.properties.notesLength - word.length;
-    if (snippetLength < 1) {
+    const previewLineLength = previewLineNotes.length - word.length;
+    if (previewLineLength < 1) {
       return snippets;
     }
-    const text1 = word + "0".repeat(snippetLength) + ",";
-    const text2 = word + "0".repeat(snippetLength) + (containsMeasureEnd ? "" : ",");
-    const snippet = new CompletionItem(text1, CompletionItemKind.Snippet);
-    snippet.insertText = text2;
+    const text = word + "0".repeat(previewLineLength);
+    const snippet = new CompletionItem(text, CompletionItemKind.Snippet);
+    snippet.insertText = text;
+    snippet.detail = "直前の行と同じ長さで0埋め";
     snippets.push(snippet);
     return snippets;
   }
