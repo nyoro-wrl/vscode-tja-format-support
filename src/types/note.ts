@@ -39,6 +39,21 @@ export class Note {
    */
   readonly range: Range;
 
+  // ノーツ一覧
+  // 1: Don, Small
+  // 3: Don, Big
+  // A: Don, Big, Hands
+  // 2: Ka, Small
+  // 4: Ka, Big
+  // B: Ka, Big, Hands
+  // G: Kadon, Big
+  // 5: Roll, Small
+  // 6: Roll, Big
+  // 7: Balloon, Small
+  // 9: Balloon, Big
+  // C: Bomb
+  // F: Adlib
+
   constructor(token: Token, isGogotime: TriBoolean, isDummyNote: TriBoolean, balloonId?: number) {
     this.range = token.range;
     this.isGogotime = isGogotime;
@@ -78,11 +93,9 @@ export class Note {
       this.isLong = true;
     } else if (token.value === "C") {
       this.type = "Bomb";
-      this.size = "Small";
       this.isLong = false;
     } else if (token.value === "F") {
       this.type = "Adlib";
-      this.size = "Small";
       this.isLong = false;
     } else if (token.value === "G") {
       this.type = "Kadon";
@@ -92,5 +105,101 @@ export class Note {
     this.isCombo =
       (this.type === "Don" || this.type === "Ka" || this.type === "Kadon") &&
       this.isDummyNote !== true;
+  }
+
+  /**
+   * ドンに変換
+   * @param value
+   * @returns
+   */
+  static toDon(value: string): string {
+    switch (value) {
+      case "2":
+        return "1";
+      case "4":
+        return "3";
+      case "B":
+        return "A";
+      default:
+        return value;
+    }
+  }
+
+  /**
+   * カッに変換
+   * @param value
+   * @returns
+   */
+  static toKa(value: string): string {
+    switch (value) {
+      case "1":
+        return "2";
+      case "3":
+        return "4";
+      case "A":
+        return "B";
+      default:
+        return value;
+    }
+  }
+
+  /**
+   * あべこべ
+   * @param value
+   * @returns
+   */
+  static reverse(value: string): string {
+    switch (value) {
+      case "1":
+        return "2";
+      case "2":
+        return "1";
+      case "3":
+        return "4";
+      case "4":
+        return "3";
+      case "A":
+        return "B";
+      case "B":
+        return "A";
+      default:
+        return value;
+    }
+  }
+
+  /**
+   * 大音符に変換
+   * @param value
+   * @returns
+   */
+  static toBig(value: string): string {
+    switch (value) {
+      case "1":
+        return "3";
+      case "2":
+        return "4";
+      case "5":
+        return "6";
+      default:
+        return value;
+    }
+  }
+
+  /**
+   * 小音符に変換
+   * @param value
+   * @returns
+   */
+  static toSmall(value: string): string {
+    switch (value) {
+      case "3":
+        return "1";
+      case "4":
+        return "2";
+      case "6":
+        return "5";
+      default:
+        return value;
+    }
   }
 }

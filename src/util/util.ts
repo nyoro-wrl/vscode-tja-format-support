@@ -74,3 +74,49 @@ export function toPercent(value: number): string {
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+/**
+ * 最大公約数を計算
+ * @param a
+ * @param b
+ * @returns
+ */
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+/**
+ * 最大公約数を計算
+ * @param arr
+ * @returns
+ */
+export function gcdArray(arr: number[]): number {
+  let currentGcd = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    currentGcd = gcd(currentGcd, arr[i]);
+  }
+  return currentGcd;
+}
+
+/**
+ * 最小公倍数を計算
+ * @param a
+ * @param b
+ * @returns
+ */
+function lcm(a: number, b: number): number {
+  return Math.abs(a * b) / gcd(a, b);
+}
+
+/**
+ * 最小公倍数を計算
+ * @param arr
+ * @returns
+ */
+function lcmArray(arr: number[]): number {
+  let currentLcm = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    currentLcm = lcm(currentLcm, arr[i]);
+  }
+  return currentLcm;
+}

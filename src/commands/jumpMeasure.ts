@@ -29,7 +29,7 @@ export async function jumpMeasure(
         return;
       }
       if (Number.isNaN(Number(text))) {
-        return "数値を入力してください";
+        return "整数を入力してください";
       }
       const measure = Number(text);
       if (!Number.isInteger(measure)) {
@@ -43,7 +43,7 @@ export async function jumpMeasure(
       }
     },
   });
-  if (input === undefined) {
+  if (input === undefined || input === "") {
     return;
   }
 
@@ -86,12 +86,15 @@ export async function jumpMeasure(
         if (!text) {
           return;
         }
+        if (!text) {
+          return `${texts.join(", ")} のいずれかを入力してください`;
+        }
         if (!texts.includes(text.toUpperCase())) {
           return `${texts.join(", ")} のいずれかを入力してください`;
         }
       },
     });
-    if (input === undefined) {
+    if (input === undefined || input === "") {
       return;
     }
 

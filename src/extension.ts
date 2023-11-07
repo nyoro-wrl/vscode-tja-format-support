@@ -30,6 +30,18 @@ import { InfoTreeDataProvider } from "./providers/treeData";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
 import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
+import {
+  toBig,
+  toDon,
+  toKa,
+  toSmall,
+  toRest,
+  reverse,
+  whimsical,
+  haphazard,
+  zoom,
+  truncate,
+} from "./commands/chartEdit";
 
 export let activeTjaFile: ActiveTjaFile;
 /**
@@ -52,6 +64,16 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.createTreeView("tja.info", {
       treeDataProvider: new InfoTreeDataProvider(),
     }),
+    commands.registerCommand("tja.zoom", zoom),
+    commands.registerTextEditorCommand("tja.truncate", truncate),
+    commands.registerTextEditorCommand("tja.toDon", toDon),
+    commands.registerTextEditorCommand("tja.toKa", toKa),
+    commands.registerTextEditorCommand("tja.toBig", toBig),
+    commands.registerTextEditorCommand("tja.toSmall", toSmall),
+    commands.registerTextEditorCommand("tja.reverse", reverse),
+    commands.registerTextEditorCommand("tja.whimsical", whimsical),
+    commands.registerTextEditorCommand("tja.haphazard", haphazard),
+    commands.registerTextEditorCommand("tja.toRest", toRest),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
     commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
     languages.registerDocumentSemanticTokensProvider(
