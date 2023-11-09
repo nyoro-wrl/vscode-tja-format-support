@@ -12,7 +12,7 @@ import { ICommand } from "../types/command";
  * 譜面の拡大
  * @returns
  */
-export async function zoom(textEditor: TextEditor) {
+export async function zoom(textEditor: TextEditor, edit: TextEditorEdit) {
   const root = documents.parse(textEditor.document);
   if (!root) {
     return;
@@ -94,7 +94,7 @@ export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
  * @param edit
  * @returns
  */
-export async function constantScroll(textEditor: TextEditor) {
+export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdit) {
   const document = textEditor.document;
   const root = documents.parse(document);
   if (!root) {
@@ -195,7 +195,7 @@ export async function constantScroll(textEditor: TextEditor) {
  * @param edit
  * @returns
  */
-export async function deleteCommands(textEditor: TextEditor) {
+export async function deleteCommands(textEditor: TextEditor, edit: TextEditorEdit) {
   const root = documents.parse(textEditor.document);
   if (!root) {
     return;
@@ -309,7 +309,7 @@ export function toRest(textEditor: TextEditor, edit: TextEditorEdit) {
  * @param edit
  * @returns
  */
-export async function reverse(textEditor: TextEditor) {
+export async function reverse(textEditor: TextEditor, edit: TextEditorEdit) {
   const root = documents.parse(textEditor.document);
   if (!root) {
     return;
