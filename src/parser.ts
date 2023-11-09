@@ -68,6 +68,7 @@ export class Parser {
    * 譜面状態
    */
   private chartState: ChartState = new ChartState();
+  private initialBpm: number | undefined = undefined;
   private nowBalloonId: number | undefined;
   private balloonId: number = -1;
   private norBalloonId: number = -1;
@@ -142,7 +143,7 @@ export class Parser {
     let node = new StyleNode(parent, token.range);
     node = this.parseNode(node);
     parent.push(node);
-    this.chartState = new ChartState();
+    this.chartState = new ChartState(this.initialBpm);
     this.nowBalloonId = undefined;
     this.balloonId = -1;
     this.norBalloonId = -1;
@@ -239,6 +240,7 @@ export class Parser {
     } else if (command === commands.items.resetcommand) {
       this.chartState.showBarline = true;
       this.chartState.isDummyNote = false;
+      this.chartState.scroll = 1;
     }
     let node = new ChartStateCommandNode(parent, token.range, separator, this.chartState);
     node = this.parseNode(node);
@@ -298,7 +300,18 @@ export class Parser {
         return parent;
       }
     }
+    const name = parent.properties.name;
+    if (parent instanceof HeaderNode && headers.items.bpm.regexp.test(name)) {
+      const rawValue =
+        rawParameter.children[0] !== undefined ? Number(rawParameter.children[0].value) : undefined;
+      const value = Number.isNaN(rawValue) ? undefined : rawValue;
+      this.initialBpm = value;
+      this.chartState.bpm = value;
+    }
     parent.push(rawParameter);
+    if (parent instanceof ChartStateCommandNode) {
+      this.chartState = parent.properties.chartState;
+    }
   }
 
   /**
@@ -313,7 +326,7 @@ export class Parser {
     this.position++;
     chart = this.parseNode(chart);
     parent.push(chart);
-    this.chartState = new ChartState();
+    this.chartState = new ChartState(this.initialBpm);
     this.nowBalloonId = undefined;
   }
 

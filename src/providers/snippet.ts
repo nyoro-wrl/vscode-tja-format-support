@@ -265,7 +265,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
       snippet.insertText = new SnippetString((containSharp ? "" : "#") + command.snippet);
       if (isTmg(document)) {
-        snippet.insertText = convertTmgCommandInsertText(snippet.insertText);
+        snippet.insertText = toTmgCommandSnippetText(snippet.insertText);
       }
       snippet.documentation = new MarkdownString().appendMarkdown(
         command.syntax + command.documentation
@@ -312,9 +312,9 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 }
 
 /**
- * 譜面の補完
+ * 譜面の0埋め
  */
-export class NotesCompletionItemProvider implements vscode.CompletionItemProvider {
+export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
   async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -328,6 +328,11 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
     if (wordRange !== undefined && wordRange.end.isAfter(position)) {
       return snippets;
     }
+    const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
+    const previewText = document.getText(previewRange);
+    if (/,/.test(previewText)) {
+      return snippets;
+    }
 
     const root = documents.parse(document, token);
     const chartNode = root?.findDepth<ChartNode>(
@@ -339,23 +344,36 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
     const branchSectionNode = root?.findDepth<BranchSectionNode>(
       (x) => x instanceof BranchSectionNode && x.range.contains(position)
     );
+    const commandNode = root?.findDepth<CommandNode>(
+      (x) => x instanceof CommandNode && x.range.contains(position)
+    );
     if (
       root !== undefined &&
-      (chartNode === undefined || (branchNode !== undefined && branchSectionNode === undefined))
+      (chartNode === undefined ||
+        (branchNode !== undefined && branchSectionNode === undefined) ||
+        commandNode !== undefined)
     ) {
       return snippets;
     }
     // 直前の行を取得する
-    const previewLine = root?.findLastRange<NoteNode>(
+    const previewLine = chartNode?.findLastRange<NoteNode>(
       (x) => x instanceof NoteNode && x.range.start.line < position.line
     )?.range.start.line;
-    const previewLineNotes = root?.filter<NoteNode>(
+    const previewLineNotes = chartNode?.filter<NoteNode>(
       (x) => x instanceof NoteNode && x.range.start.line === previewLine
     );
     if (previewLineNotes === undefined) {
       return snippets;
     }
-    const previewLineLength = previewLineNotes.length - word.length;
+    // 現在の行を取得する
+    const currentLineNotes = chartNode?.filter<NoteNode>(
+      (x) => x instanceof NoteNode && x.range.start.line === position.line
+    );
+    if (currentLineNotes === undefined) {
+      return snippets;
+    }
+
+    const previewLineLength = previewLineNotes.length - currentLineNotes.length;
     if (previewLineLength < 1) {
       return snippets;
     }
@@ -369,11 +387,11 @@ export class NotesCompletionItemProvider implements vscode.CompletionItemProvide
 }
 
 /**
- * 命令のスニペットをTMG用に変換する
+ * 命令のスニペットをTMG形式に変換する
  * @param insertText
  * @returns
  */
-function convertTmgCommandInsertText(insertText: SnippetString): SnippetString {
+function toTmgCommandSnippetText(insertText: SnippetString): SnippetString {
   const regex = /(#)?([A-Z0-9]+)(\s+)?(.+)?/;
   const match = insertText.value.match(regex);
 

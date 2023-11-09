@@ -1,5 +1,5 @@
 import { Range } from "vscode";
-import { CommandNode, NoteNode, MeasureEndNode } from "./node";
+import { CommandNode, NoteNode, MeasureEndNode, ChartTokenNode } from "./node";
 import { gcdArray } from "../util/util";
 
 export class ChartTruncater {
@@ -8,7 +8,7 @@ export class ChartTruncater {
    * @param values
    * @returns
    */
-  static toTimingData(values: (CommandNode | NoteNode | MeasureEndNode)[]): Timing[][] {
+  static toTimingData(values: (ChartTokenNode | CommandNode)[]): Timing[][] {
     const results: Timing[][] = [];
     let timings: Timing[] = [];
     let isTiming: boolean = true;
@@ -22,7 +22,7 @@ export class ChartTruncater {
         isTiming = false;
       } else if (value instanceof CommandNode) {
         isTiming = true;
-      } else if (timings.length > 0) {
+      } else if (value instanceof MeasureEndNode && timings.length > 0) {
         results.push(timings);
         timings = [];
         isTiming = true;

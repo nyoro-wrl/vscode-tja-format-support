@@ -9,7 +9,7 @@ import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider } from 
 import {
   CommandCompletionItemProvider,
   HeaderCompletionItemProvider,
-  NotesCompletionItemProvider,
+  NotesPaddingItemProvider,
 } from "./providers/snippet";
 import { DocumentSymbolProvider } from "./providers/symbol";
 import { DocumentSemanticTokensProvider, legend } from "./providers/semanticTokens";
@@ -32,16 +32,15 @@ import { ActiveTjaFile } from "./events/activeTjaFile";
 import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
 import {
   toBig,
-  toDon,
-  toKa,
   toSmall,
   toRest,
   reverse,
-  whimsical,
-  haphazard,
   zoom,
   truncate,
+  constantScroll,
+  deleteCommands,
 } from "./commands/chartEdit";
+import { SemVer } from "semver";
 
 export let activeTjaFile: ActiveTjaFile;
 /**
@@ -54,6 +53,7 @@ export let documents: Documents;
  * @param context
  */
 export function activate(context: vscode.ExtensionContext) {
+  versionCheck(context);
   activeTjaFile = new ActiveTjaFile();
   documents = new Documents();
 
@@ -64,16 +64,14 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.createTreeView("tja.info", {
       treeDataProvider: new InfoTreeDataProvider(),
     }),
-    commands.registerCommand("tja.zoom", zoom),
+    commands.registerTextEditorCommand("tja.zoom", zoom),
     commands.registerTextEditorCommand("tja.truncate", truncate),
-    commands.registerTextEditorCommand("tja.toDon", toDon),
-    commands.registerTextEditorCommand("tja.toKa", toKa),
+    commands.registerTextEditorCommand("tja.constantScroll", constantScroll),
+    commands.registerTextEditorCommand("tja.deleteCommands", deleteCommands),
     commands.registerTextEditorCommand("tja.toBig", toBig),
     commands.registerTextEditorCommand("tja.toSmall", toSmall),
-    commands.registerTextEditorCommand("tja.reverse", reverse),
-    commands.registerTextEditorCommand("tja.whimsical", whimsical),
-    commands.registerTextEditorCommand("tja.haphazard", haphazard),
     commands.registerTextEditorCommand("tja.toRest", toRest),
+    commands.registerTextEditorCommand("tja.reverse", reverse),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
     commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
     languages.registerDocumentSemanticTokensProvider(
@@ -83,7 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
     languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
-    languages.registerCompletionItemProvider(selector, new NotesCompletionItemProvider()),
+    languages.registerCompletionItemProvider(selector, new NotesPaddingItemProvider()),
     languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ","),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
@@ -104,3 +102,43 @@ export function activate(context: vscode.ExtensionContext) {
  * 拡張機能が無効になったとき
  */
 export function deactivate() {}
+
+/**
+ * バージョン確認
+ * @param context
+ */
+function versionCheck(context: vscode.ExtensionContext) {
+  const currentVersion = new SemVer(context.extension.packageJSON.version);
+  const previousVersionText = context.globalState.get<string>("version");
+  const previousVersion = previousVersionText ? new SemVer(previousVersionText) : undefined;
+
+  // 通過時に更新通知を行うバージョン
+  const noticeVersion = [
+    new SemVer("1.4.0"),
+    new SemVer("1.3.0"),
+    new SemVer("1.2.0"),
+    new SemVer("1.1.0"),
+  ];
+
+  if (previousVersion && noticeVersion.some((x) => x > previousVersion && x <= currentVersion)) {
+    vscode.window
+      .showInformationMessage(
+        "TJA Format Supportに新たな機能が追加されました",
+        "OK",
+        "変更ログの確認"
+      )
+      .then((selection) => {
+        if (selection === "変更ログの確認") {
+          const changelogUrl = vscode.Uri.parse(
+            "https://marketplace.visualstudio.com/items/nyoro.tja-format-support/changelog"
+          );
+          vscode.env.openExternal(changelogUrl);
+          // vscode.commands.executeCommand("extension.open", context.extension.id);
+        }
+      });
+  }
+
+  if (!previousVersion || currentVersion > previousVersion) {
+    context.globalState.update("version", currentVersion.version);
+  }
+}
