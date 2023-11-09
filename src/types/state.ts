@@ -32,4 +32,16 @@ export class ChartState implements ChartStateProperties {
    * 分岐状態
    */
   branchState: BranchState = "None";
+  /**
+   * BPM
+   */
+  bpm: number | undefined = undefined;
+  /**
+   * スクロール速度
+   */
+  scroll: number | undefined = 1;
+
+  constructor(bpm: number | undefined = undefined) {
+    this.bpm = bpm;
+  }
 }

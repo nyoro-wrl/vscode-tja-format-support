@@ -64,6 +64,8 @@ export interface ChartStateProperties {
   isDummyNote: TriBoolean;
   rollState: RollState;
   branchState: BranchState;
+  bpm: number | undefined;
+  scroll: number | undefined;
 }
 
 interface MeasureProperties {
@@ -632,6 +634,20 @@ export class ChartStateCommandNode extends CommandNode {
    */
   public push(node: StatementNameNode | ParametersNode) {
     super._pushStatement(node);
+
+    if (node instanceof ParametersNode) {
+      if (commands.items.bpmchange.regexp.test(this.properties.name)) {
+        const rawValue =
+          node.children[0] !== undefined ? Number(node.children[0].value) : undefined;
+        const value = Number.isNaN(rawValue) ? undefined : rawValue;
+        this.properties.chartState.bpm = value;
+      } else if (commands.items.scroll.regexp.test(this.properties.name)) {
+        const rawValue =
+          node.children[0] !== undefined ? Number(node.children[0].value) : undefined;
+        const value = Number.isNaN(rawValue) ? undefined : rawValue;
+        this.properties.chartState.scroll = value;
+      }
+    }
   }
 }
 
@@ -838,6 +854,12 @@ export class MeasureNode extends ParentNode<
         if (this.properties.endChartState.rollState !== chartState.rollState) {
           this.properties.endChartState.rollState = "None";
         }
+        if (this.properties.endChartState.bpm !== chartState.bpm) {
+          this.properties.endChartState.bpm = undefined;
+        }
+        if (this.properties.endChartState.scroll !== chartState.scroll) {
+          this.properties.endChartState.scroll = undefined;
+        }
       }
     }
   }
@@ -929,6 +951,12 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
         }
         if (this.properties.endChartState.rollState !== node.properties.endChartState.rollState) {
           this.properties.endChartState.rollState = "None";
+        }
+        if (this.properties.endChartState.bpm !== node.properties.endChartState.bpm) {
+          this.properties.endChartState.bpm = undefined;
+        }
+        if (this.properties.endChartState.scroll !== node.properties.endChartState.scroll) {
+          this.properties.endChartState.scroll = undefined;
         }
       }
     }
