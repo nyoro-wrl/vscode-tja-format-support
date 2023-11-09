@@ -22,4 +22,6 @@
 
 ![sample](images/sample.png)
 
+![command](images/command.gif)
+
 ![balloon](images/balloon.gif)
