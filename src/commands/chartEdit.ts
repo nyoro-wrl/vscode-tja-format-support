@@ -303,8 +303,26 @@ export function toRest(textEditor: TextEditor, edit: TextEditorEdit) {
   }
 }
 
+// /**
+//  * 特定音符の削除
+//  * @param textEditor
+//  * @param edit
+//  * @returns
+//  */
+// export function toDelete(textEditor: TextEditor, edit: TextEditorEdit) {
+//   const root = documents.parse(textEditor.document);
+//   if (!root) {
+//     return;
+//   }
+//   for (const selection of textEditor.selections) {
+//     root
+//       .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+//       .forEach((note) => edit.replace(note.range, "0"));
+//   }
+// }
+
 /**
- * ドン/カッの反転
+ * 色の反転
  * @param textEditor
  * @param edit
  * @returns
@@ -314,32 +332,34 @@ export async function reverse(textEditor: TextEditor, edit: TextEditorEdit) {
   if (!root) {
     return;
   }
-  const input = await vscode.window.showInputBox({
-    title: "ドン/カッの反転",
-    prompt: "反転させる確率を0~100で入力してください（100: あべこべ, 50: でたらめ, 25: きまぐれ）",
-    value: "100",
-    placeHolder: `0 ~ 100`,
-    validateInput: (text) => {
-      if (!text) {
-        return;
-      }
-      const number = Number(text);
-      if (Number.isNaN(number) || number < 0 || number > 100) {
-        return "0~100までの数値を入力してください";
-      }
-    },
-  });
-  if (input === undefined || input === "") {
-    return;
-  }
-  const percent = Number(input) / 100;
-
   textEditor.edit((editBuilder) => {
     for (const selection of textEditor.selections) {
       root
         .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
         .forEach((note) => {
-          if ((percent > 0 && Math.random() < percent) || percent === 100) {
+          editBuilder.replace(note.range, Note.reverse(note.value));
+        });
+    }
+  });
+}
+
+/**
+ * 色の反転
+ * @param textEditor
+ * @param edit
+ * @returns
+ */
+export async function random(textEditor: TextEditor, edit: TextEditorEdit) {
+  const root = documents.parse(textEditor.document);
+  if (!root) {
+    return;
+  }
+  textEditor.edit((editBuilder) => {
+    for (const selection of textEditor.selections) {
+      root
+        .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+        .forEach((note) => {
+          if (Math.random() > 0.5) {
             editBuilder.replace(note.range, Note.reverse(note.value));
           }
         });

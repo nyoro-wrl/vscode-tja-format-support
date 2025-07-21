@@ -31,6 +31,7 @@ import { InfoTreeDataProvider } from "./providers/treeData";
 import { BalloonParameterCodeActionProvider } from "./providers/codeAction";
 import { TjaDocumentLinkProvider } from "./providers/documentLink";
 import { FilePathCompletionProvider } from "./providers/filePathCompletion";
+import { MeasureCountInlayHintsProvider } from "./providers/inlayHints";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
 import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
@@ -43,6 +44,7 @@ import {
   truncate,
   constantScroll,
   deleteCommands,
+  random,
 } from "./commands/chartEdit";
 import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
@@ -77,6 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
     commands.registerTextEditorCommand("tja.toSmall", toSmall),
     commands.registerTextEditorCommand("tja.toRest", toRest),
     commands.registerTextEditorCommand("tja.reverse", reverse),
+    commands.registerTextEditorCommand("tja.random", random),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
     commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
     commands.registerCommand("tja.balloonParameterQuickFix", balloonParameterQuickFix),
@@ -100,10 +103,11 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerColorProvider(selector, new DantickColorDocumentColorProvider()),
     languages.registerColorProvider(selector, new ColorCommandDocumentColorProvider()),
     languages.registerCodeActionsProvider(selector, new BalloonParameterCodeActionProvider(), {
-      providedCodeActionKinds: BalloonParameterCodeActionProvider.providedCodeActionKinds
+      providedCodeActionKinds: BalloonParameterCodeActionProvider.providedCodeActionKinds,
     }),
     languages.registerDocumentLinkProvider(selector, new TjaDocumentLinkProvider()),
     languages.registerCompletionItemProvider(selector, new FilePathCompletionProvider(), ":"),
+    languages.registerInlayHintsProvider(selector, new MeasureCountInlayHintsProvider()),
     new MeasureStatusBarItem(),
     new ComboStatusBarItem(),
     new LiteModeStatusBarItem()

@@ -70,7 +70,13 @@
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.reverse",
-        "title": "ドン/カッの反転",
+        "title": "ドン/カッを反転",
+        "category": "tja"
+      },
+      {
+        "enablement": "editorLangId == tja && editorHasSelection",
+        "command": "tja.random",
+        "title": "ドン/カッをランダム",
         "category": "tja"
       }
     ],
@@ -115,6 +121,11 @@
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.reverse",
           "group": "1_tja_editNotes@6"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.random",
+          "group": "1_tja_editNotes@7"
         }
       ]
     },
@@ -155,6 +166,11 @@
             "tmg": false
           },
           "additionalProperties": false
+        },
+        "tjaFormatSupport.measureCountHint": {
+          "type": "boolean",
+          "default": true,
+          "description": "空行後の小節に小節番号を表示します。"
         }
       }
     },
@@ -272,6 +288,10 @@
         "editor.suggest.showWords": false,
         "editor.occurrencesHighlight": "off",
         "editor.semanticHighlighting.enabled": true
+      },
+      "workbench.colorCustomizations": {
+        "editorInlayHint.foreground": "#969696e7",
+        "editorInlayHint.background": "#00000000"
       },
       "editor.tokenColorCustomizations": {
         "textMateRules": [
