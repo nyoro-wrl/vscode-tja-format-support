@@ -125,12 +125,32 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const balloonNote = root.find<NoteNode>(
+    // Find all balloon notes that contain the cursor position
+    const candidateNotes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined
     );
+
+    if (candidateNotes.length === 0) {
+      return undefined;
+    }
+
+    // If multiple candidates exist, choose the one closest to cursor position
+    let balloonNote = candidateNotes[0];
+    if (candidateNotes.length > 1) {
+      // Find the note whose range is closest to the cursor position
+      let minDistance = Math.abs(position.character - candidateNotes[0].range.start.character);
+
+      for (let i = 1; i < candidateNotes.length; i++) {
+        const distance = Math.abs(position.character - candidateNotes[i].range.start.character);
+        if (distance < minDistance) {
+          minDistance = distance;
+          balloonNote = candidateNotes[i];
+        }
+      }
+    }
 
     if (!balloonNote || balloonNote.properties.note.balloonId === undefined) {
       return undefined;
@@ -182,12 +202,31 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const balloonNote = root.find<NoteNode>(
+    // Find all balloon notes that contain the cursor position
+    const candidateNotes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined
     );
+
+    if (candidateNotes.length === 0) {
+      return undefined;
+    }
+
+    // If multiple candidates exist, choose the one closest to cursor position
+    let balloonNote = candidateNotes[0];
+    if (candidateNotes.length > 1) {
+      // Find the note whose range is closest to the cursor position
+      let minDistance = Math.abs(position.character - candidateNotes[0].range.start.character);
+      for (let i = 1; i < candidateNotes.length; i++) {
+        const distance = Math.abs(position.character - candidateNotes[i].range.start.character);
+        if (distance < minDistance) {
+          minDistance = distance;
+          balloonNote = candidateNotes[i];
+        }
+      }
+    }
 
     if (!balloonNote || balloonNote.properties.note.balloonId === undefined) {
       return undefined;
@@ -242,12 +281,31 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const balloonNote = root.find<NoteNode>(
+    // Find all balloon notes that contain the cursor position
+    const candidateNotes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined
     );
+
+    if (candidateNotes.length === 0) {
+      return undefined;
+    }
+
+    // If multiple candidates exist, choose the one closest to cursor position
+    let balloonNote = candidateNotes[0];
+    if (candidateNotes.length > 1) {
+      // Find the note whose range is closest to the cursor position
+      let minDistance = Math.abs(position.character - candidateNotes[0].range.start.character);
+      for (let i = 1; i < candidateNotes.length; i++) {
+        const distance = Math.abs(position.character - candidateNotes[i].range.start.character);
+        if (distance < minDistance) {
+          minDistance = distance;
+          balloonNote = candidateNotes[i];
+        }
+      }
+    }
 
     if (!balloonNote || balloonNote.properties.note.balloonId === undefined) {
       return undefined;
@@ -333,12 +391,31 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     // Try to find balloon note
     const balloonNoteResult = this.findBalloonNote(document, position, root);
     if (balloonNoteResult) {
-      const balloonNote = root.find<NoteNode>(
+      // Find all balloon notes that contain the cursor position
+      const candidateNotes = root.filter<NoteNode>(
         (x) =>
           x instanceof NoteNode &&
           x.range.contains(position) &&
           x.properties.note.balloonId !== undefined
       );
+
+      if (candidateNotes.length === 0) {
+        throw new Error("風船音符の打数パラメータではありません");
+      }
+
+      // If multiple candidates exist, choose the one closest to cursor position
+      let balloonNote = candidateNotes[0];
+      if (candidateNotes.length > 1) {
+        // Find the note whose range is closest to the cursor position
+        let minDistance = Math.abs(position.character - candidateNotes[0].range.start.character);
+        for (let i = 1; i < candidateNotes.length; i++) {
+          const distance = Math.abs(position.character - candidateNotes[i].range.start.character);
+          if (distance < minDistance) {
+            minDistance = distance;
+            balloonNote = candidateNotes[i];
+          }
+        }
+      }
 
       const style = balloonNote?.findParent<StyleNode>((x) => x instanceof StyleNode);
       if (!style || !balloonNote || balloonNote.properties.note.balloonId === undefined) {
@@ -394,6 +471,6 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       };
     }
 
-    throw new Error("風船音符の打数パラメータではありません");
+    throw new Error("風船音符ではありません");
   }
 }

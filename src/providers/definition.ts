@@ -97,13 +97,31 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
     if (root === undefined) {
       return Promise.reject();
     }
-    const balloonNote = root.find<NoteNode>(
+    // Find all balloon notes that contain the cursor position
+    const candidateNotes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined,
-      (x) => x instanceof HeadersNode
+        x.properties.note.balloonId !== undefined
     );
+
+    if (candidateNotes.length === 0) {
+      return Promise.reject();
+    }
+
+    // If multiple candidates exist, choose the one closest to cursor position
+    let balloonNote = candidateNotes[0];
+    if (candidateNotes.length > 1) {
+      // Find the note whose range is closest to the cursor position
+      let minDistance = Math.abs(position.character - candidateNotes[0].range.start.character);
+      for (let i = 1; i < candidateNotes.length; i++) {
+        const distance = Math.abs(position.character - candidateNotes[i].range.start.character);
+        if (distance < minDistance) {
+          minDistance = distance;
+          balloonNote = candidateNotes[i];
+        }
+      }
+    }
     const style = balloonNote?.findParent((x) => x instanceof StyleNode);
     if (
       balloonNote === undefined ||
