@@ -148,11 +148,13 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
       return Promise.reject();
     }
 
-    const balloonParameters = balloonHeader.filter((x) => x instanceof ParameterNode);
-    if (balloonParameters.length <= balloonNote.properties.note.balloonId) {
+    // Find parameter by balloonId using the parameter's index property
+    const balloonParameter = balloonHeader.find<ParameterNode>(
+      (x) => x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+    );
+    if (!balloonParameter) {
       return Promise.reject();
     }
-    const balloonParameter = balloonParameters[balloonNote.properties.note.balloonId];
 
     const location = new vscode.Location(document.uri, balloonParameter.range);
     return Promise.resolve(location);

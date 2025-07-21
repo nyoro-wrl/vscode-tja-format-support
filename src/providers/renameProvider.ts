@@ -8,6 +8,7 @@ import {
   NoteNode,
   RootNode,
   StyleHeadersNode,
+  ParametersNode,
 } from "../types/node";
 
 export class BalloonParameterRenameProvider implements vscode.RenameProvider {
@@ -47,18 +48,66 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     if (balloonNoteWithoutParam) {
       const workspaceEdit = new vscode.WorkspaceEdit();
 
-      // Add or extend balloon parameter in header
+      // Add balloon parameter at the correct index position
+      const targetIndex = balloonNoteWithoutParam.balloonNote.properties.note.balloonId;
+      if (targetIndex === undefined) {
+        return undefined;
+      }
+
       if (balloonNoteWithoutParam.existingParameters.length === 0) {
         // No parameters exist, add first parameter
         const headerEndPosition = balloonNoteWithoutParam.balloonHeader.range.end;
-        workspaceEdit.insert(document.uri, headerEndPosition, `:${newName}`);
+        // Add empty parameters up to the target index if needed
+        const parameterValues = Array(targetIndex).fill("").concat([newName]);
+        workspaceEdit.insert(document.uri, headerEndPosition, `:${parameterValues.join(",")}`);
       } else {
-        // Parameters exist, extend with new parameter
-        const lastParam =
-          balloonNoteWithoutParam.existingParameters[
-            balloonNoteWithoutParam.existingParameters.length - 1
-          ];
-        workspaceEdit.insert(document.uri, lastParam.range.end, `,${newName}`);
+        // Parameters exist, need to insert at the correct position
+        const maxExistingIndex = Math.max(
+          ...balloonNoteWithoutParam.existingParameters.map((p) => p.properties.index)
+        );
+
+        if (targetIndex <= maxExistingIndex) {
+          // Insert in the middle - need to find the right position
+          const sortedParams = balloonNoteWithoutParam.existingParameters.sort(
+            (a, b) => a.properties.index - b.properties.index
+          );
+          let insertPosition: vscode.Position;
+
+          // Find where to insert
+          const insertAfterParam = sortedParams.find(
+            (p) =>
+              p.properties.index < targetIndex &&
+              (!sortedParams.find((next) => next.properties.index === p.properties.index + 1) ||
+                sortedParams.find((next) => next.properties.index > targetIndex))
+          );
+
+          if (insertAfterParam) {
+            insertPosition = insertAfterParam.range.end;
+          } else {
+            // Insert at the beginning
+            insertPosition = sortedParams[0].range.start;
+          }
+
+          // Calculate how many commas and empty values we need
+          const gapsToFill =
+            targetIndex - (insertAfterParam ? insertAfterParam.properties.index + 1 : 0);
+          const insertText =
+            (insertAfterParam ? "," : "") +
+            Array(gapsToFill).fill("").join(",") +
+            (gapsToFill > 0 ? "," : "") +
+            newName;
+          workspaceEdit.insert(document.uri, insertPosition, insertText);
+        } else {
+          // Append at the end with gaps if needed
+          const lastParam =
+            balloonNoteWithoutParam.existingParameters[
+              balloonNoteWithoutParam.existingParameters.length - 1
+            ];
+          const gapsToFill = targetIndex - maxExistingIndex - 1;
+          const insertText =
+            "," + Array(gapsToFill).fill("").join(",") + (gapsToFill > 0 ? "," : "") + newName;
+          workspaceEdit.insert(document.uri, lastParam.range.end, insertText);
+        }
       }
 
       return workspaceEdit;
@@ -179,14 +228,15 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const balloonParameters = balloonHeader.filter<ParameterNode>(
-      (x) => x instanceof ParameterNode
+    // Find parameter by balloonId using the parameter's index property
+    const balloonParameter = balloonHeader.find<ParameterNode>(
+      (x) =>
+        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
     );
-    if (balloonParameters.length <= balloonNote.properties.note.balloonId) {
+
+    if (!balloonParameter) {
       return undefined;
     }
-
-    const balloonParameter = balloonParameters[balloonNote.properties.note.balloonId];
     return { parameterRange: balloonParameter.range };
   }
 
@@ -255,14 +305,18 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
+    // Check if this balloon note's parameter already exists
+    const existingParameter = balloonHeader.find<ParameterNode>(
+      (x) =>
+        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+    );
+    if (existingParameter) {
+      return undefined; // Parameter already exists
+    }
+
     const balloonParameters = balloonHeader.filter<ParameterNode>(
       (x) => x instanceof ParameterNode
     );
-
-    // Check if this balloon note's parameter doesn't exist
-    if (balloonParameters.length > balloonNote.properties.note.balloonId) {
-      return undefined; // Parameter already exists
-    }
 
     return {
       balloonHeader: balloonHeader,
@@ -439,17 +493,17 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
         throw new Error("対応する風船音符ヘッダが見つかりません");
       }
 
-      const balloonParameters = balloonHeader.filter<ParameterNode>(
-        (x) => x instanceof ParameterNode
+      // Find parameter by balloonId using the parameter's index property
+      const balloonParameter = balloonHeader.find<ParameterNode>(
+        (x) =>
+          x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
       );
-      if (balloonParameters.length <= balloonNote.properties.note.balloonId) {
+      if (!balloonParameter) {
         throw new Error("風船音符のパラメータが見つかりません");
       }
-
-      const balloonParameter = balloonParameters[balloonNote.properties.note.balloonId];
       return {
         range: balloonNote.range,
-        placeholder: balloonParameter.value,
+        placeholder: balloonParameter.value || " ",
       };
     }
 

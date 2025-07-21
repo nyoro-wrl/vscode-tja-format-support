@@ -28,6 +28,7 @@ import {
 } from "./providers/color";
 import { Documents } from "./providers/documents";
 import { InfoTreeDataProvider } from "./providers/treeData";
+import { BalloonParameterCodeActionProvider } from "./providers/codeAction";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
 import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
@@ -41,6 +42,7 @@ import {
   constantScroll,
   deleteCommands,
 } from "./commands/chartEdit";
+import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
 
 export let activeTjaFile: ActiveTjaFile;
@@ -75,6 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
     commands.registerTextEditorCommand("tja.reverse", reverse),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
     commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
+    commands.registerCommand("tja.balloonParameterQuickFix", balloonParameterQuickFix),
     languages.registerDocumentSemanticTokensProvider(
       selector,
       new DocumentSemanticTokensProvider(),
@@ -94,6 +97,9 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerDocumentSymbolProvider(selector, new DocumentSymbolProvider()),
     languages.registerColorProvider(selector, new DantickColorDocumentColorProvider()),
     languages.registerColorProvider(selector, new ColorCommandDocumentColorProvider()),
+    languages.registerCodeActionsProvider(selector, new BalloonParameterCodeActionProvider(), {
+      providedCodeActionKinds: BalloonParameterCodeActionProvider.providedCodeActionKinds
+    }),
     new MeasureStatusBarItem(),
     new ComboStatusBarItem(),
     new LiteModeStatusBarItem()

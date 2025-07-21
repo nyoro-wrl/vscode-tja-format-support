@@ -143,12 +143,98 @@ export class Parser {
     let node = new StyleNode(parent, token.range);
     node = this.parseNode(node);
     parent.push(node);
+
+    // Check for unused balloon parameters after parsing the style
+    this.checkUnusedBalloonParameters(node);
+
     this.chartState = new ChartState(this.initialBpm);
     this.nowBalloonId = undefined;
     this.balloonId = -1;
     this.norBalloonId = -1;
     this.expBalloonId = -1;
     this.masBalloonId = -1;
+  }
+
+  /**
+   * 未使用の風船パラメータをチェックして警告を表示
+   * @param styleNode
+   */
+  private checkUnusedBalloonParameters(styleNode: StyleNode): void {
+    const balloonHeaders = [
+      {
+        header: styleNode.properties.headers.find((x) => headers.items.balloon.regexp.test(x.name)),
+        maxId: this.balloonId,
+      },
+      {
+        header: styleNode.properties.headers.find((x) =>
+          headers.items.balloonnor.regexp.test(x.name)
+        ),
+        maxId: this.norBalloonId,
+      },
+      {
+        header: styleNode.properties.headers.find((x) =>
+          headers.items.balloonexp.regexp.test(x.name)
+        ),
+        maxId: this.expBalloonId,
+      },
+      {
+        header: styleNode.properties.headers.find((x) =>
+          headers.items.balloonmas.regexp.test(x.name)
+        ),
+        maxId: this.masBalloonId,
+      },
+    ];
+
+    for (const { header, maxId } of balloonHeaders) {
+      if (header && header.parameters.length > maxId + 1) {
+        // Find the range of unused parameters
+        const headerNode = styleNode.find<HeaderNode>(
+          (x) => x instanceof HeaderNode && x.properties.name === header.name
+        );
+        if (headerNode) {
+          const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
+          if (parametersNode instanceof ParametersNode) {
+            // Find the first unused parameter
+            const firstUnusedIndex = maxId + 1;
+            let startRange: vscode.Range | undefined;
+            let endRange: vscode.Range | undefined;
+
+            // Find the start position (including preceding delimiter)
+            for (let i = 0; i < parametersNode.children.length; i++) {
+              const child = parametersNode.children[i];
+              if (child instanceof ParameterNode && child.properties.index === firstUnusedIndex) {
+                // Look for the preceding delimiter
+                if (i > 0 && parametersNode.children[i - 1] instanceof DelimiterNode) {
+                  startRange = parametersNode.children[i - 1].range;
+                } else {
+                  startRange = child.range;
+                }
+                break;
+              }
+            }
+
+            // Find the end position (last unused parameter)
+            for (let i = parametersNode.children.length - 1; i >= 0; i--) {
+              const child = parametersNode.children[i];
+              if (child instanceof ParameterNode && child.properties.index >= firstUnusedIndex) {
+                endRange = child.range;
+                break;
+              }
+            }
+
+            if (startRange && endRange) {
+              const diagnosticRange = new vscode.Range(startRange.start, endRange.end);
+              this.addDiagnostic(
+                "Unedited",
+                diagnosticRange,
+                "風船音符がありません。",
+                DiagnosticSeverity.Warning
+              );
+            }
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -286,9 +372,10 @@ export class Parser {
             range: parameter.range,
             value: parameter.value,
           },
-          parameterIndex++
+          parameterIndex
         );
         rawParameter.push(node);
+        parameterIndex++; // Increment after creating ParameterNode
       } else if (parameter.kind === "Delimiter") {
         const node = new DelimiterNode(rawParameter, {
           kind: parameter.kind,
@@ -296,6 +383,7 @@ export class Parser {
           value: parameter.value,
         });
         rawParameter.push(node);
+        // Don't increment parameterIndex for delimiters
       } else {
         return parent;
       }
@@ -524,16 +612,33 @@ export class Parser {
           token.range.end,
           /([79]0*8?|0*8|0+)/
         );
-        if (
-          wordRange !== undefined &&
-          (balloonHeader === undefined || balloonHeader.parameters.length <= this.nowBalloonId)
-        ) {
-          this.addDiagnostic(
-            "Unedited",
-            wordRange,
-            "風船音符の打数が定義されていません。",
-            DiagnosticSeverity.Warning
-          );
+        if (wordRange !== undefined) {
+          let shouldShowWarning = false;
+
+          if (balloonHeader === undefined) {
+            // ヘッダーが存在しない場合
+            shouldShowWarning = true;
+          } else if (balloonHeader.parameters.length <= this.nowBalloonId) {
+            // パラメータの数が不足している場合
+            shouldShowWarning = true;
+          } else {
+            // パラメータは存在するが、値が空または無効な場合
+            const parameter = balloonHeader.parameters[this.nowBalloonId];
+            if (!parameter || parameter.trim() === "") {
+              shouldShowWarning = true;
+            }
+          }
+
+          if (shouldShowWarning) {
+            // 診断メッセージに風船音符の正確な位置情報とballoonIdを含める
+            const balloonNoteInfo = `${token.range.start.line}:${token.range.start.character}:${this.nowBalloonId}`;
+            this.addDiagnostic(
+              "Unedited",
+              wordRange,
+              `打数が定義されていません。[${balloonNoteInfo}]`,
+              DiagnosticSeverity.Warning
+            );
+          }
         }
       }
     }
