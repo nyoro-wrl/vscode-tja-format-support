@@ -1,7 +1,14 @@
 import * as vscode from "vscode";
 import { headers } from "../constants/headers";
 import { documents } from "../extension";
-import { HeaderNode, ParameterNode, StyleNode, NoteNode, RootNode } from "../types/node";
+import {
+  HeaderNode,
+  ParameterNode,
+  StyleNode,
+  NoteNode,
+  RootNode,
+  StyleHeadersNode,
+} from "../types/node";
 
 export class BalloonParameterRenameProvider implements vscode.RenameProvider {
   async provideRenameEdits(
@@ -32,6 +39,41 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     if (balloonNoteResult) {
       const workspaceEdit = new vscode.WorkspaceEdit();
       workspaceEdit.replace(document.uri, balloonNoteResult.parameterRange, newName);
+      return workspaceEdit;
+    }
+
+    // Try to find balloon note without parameter (parameter needs to be added)
+    const balloonNoteWithoutParam = this.findBalloonNoteWithoutParameter(document, position, root);
+    if (balloonNoteWithoutParam) {
+      const workspaceEdit = new vscode.WorkspaceEdit();
+
+      // Add or extend balloon parameter in header
+      if (balloonNoteWithoutParam.existingParameters.length === 0) {
+        // No parameters exist, add first parameter
+        const headerEndPosition = balloonNoteWithoutParam.balloonHeader.range.end;
+        workspaceEdit.insert(document.uri, headerEndPosition, `:${newName}`);
+      } else {
+        // Parameters exist, extend with new parameter
+        const lastParam =
+          balloonNoteWithoutParam.existingParameters[
+            balloonNoteWithoutParam.existingParameters.length - 1
+          ];
+        workspaceEdit.insert(document.uri, lastParam.range.end, `,${newName}`);
+      }
+
+      return workspaceEdit;
+    }
+
+    // Try to find balloon note without header (header needs to be created)
+    const balloonNoteWithoutHeader = this.findBalloonNoteWithoutHeader(document, position, root);
+    if (balloonNoteWithoutHeader) {
+      const workspaceEdit = new vscode.WorkspaceEdit();
+
+      // Create new balloon header
+      const headerName = this.getBalloonHeaderName(balloonNoteWithoutHeader.balloonNote);
+      const insertPosition = balloonNoteWithoutHeader.insertPosition;
+      workspaceEdit.insert(document.uri, insertPosition, `${headerName}:${newName}\n`);
+
       return workspaceEdit;
     }
 
@@ -128,6 +170,144 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     return { parameterRange: balloonParameter.range };
   }
 
+  private findBalloonNoteWithoutParameter(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    root: RootNode
+  ):
+    | { balloonHeader: HeaderNode; existingParameters: ParameterNode[]; balloonNote: NoteNode }
+    | undefined {
+    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    if (!wordRange) {
+      return undefined;
+    }
+
+    const balloonNote = root.find<NoteNode>(
+      (x) =>
+        x instanceof NoteNode &&
+        x.range.contains(position) &&
+        x.properties.note.balloonId !== undefined
+    );
+
+    if (!balloonNote || balloonNote.properties.note.balloonId === undefined) {
+      return undefined;
+    }
+
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode);
+    if (!style) {
+      return undefined;
+    }
+
+    // Find corresponding balloon header
+    const balloonHeader = style.find<HeaderNode>(
+      (x) =>
+        x instanceof HeaderNode &&
+        ((balloonNote.properties.branchState === "None" &&
+          headers.items.balloon.regexp.test(x.properties.name)) ||
+          (balloonNote.properties.branchState === "Normal" &&
+            headers.items.balloonnor.regexp.test(x.properties.name)) ||
+          (balloonNote.properties.branchState === "Expert" &&
+            headers.items.balloonexp.regexp.test(x.properties.name)) ||
+          (balloonNote.properties.branchState === "Master" &&
+            headers.items.balloonmas.regexp.test(x.properties.name)))
+    );
+
+    if (!balloonHeader) {
+      return undefined;
+    }
+
+    const balloonParameters = balloonHeader.filter<ParameterNode>(
+      (x) => x instanceof ParameterNode
+    );
+
+    // Check if this balloon note's parameter doesn't exist
+    if (balloonParameters.length > balloonNote.properties.note.balloonId) {
+      return undefined; // Parameter already exists
+    }
+
+    return {
+      balloonHeader: balloonHeader,
+      existingParameters: balloonParameters,
+      balloonNote: balloonNote,
+    };
+  }
+
+  private findBalloonNoteWithoutHeader(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    root: RootNode
+  ): { balloonNote: NoteNode; insertPosition: vscode.Position } | undefined {
+    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    if (!wordRange) {
+      return undefined;
+    }
+
+    const balloonNote = root.find<NoteNode>(
+      (x) =>
+        x instanceof NoteNode &&
+        x.range.contains(position) &&
+        x.properties.note.balloonId !== undefined
+    );
+
+    if (!balloonNote || balloonNote.properties.note.balloonId === undefined) {
+      return undefined;
+    }
+
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode);
+    if (!style) {
+      return undefined;
+    }
+
+    // Check if corresponding balloon header exists
+    const balloonHeader = style.find<HeaderNode>(
+      (x) =>
+        x instanceof HeaderNode &&
+        ((balloonNote.properties.branchState === "None" &&
+          headers.items.balloon.regexp.test(x.properties.name)) ||
+          (balloonNote.properties.branchState === "Normal" &&
+            headers.items.balloonnor.regexp.test(x.properties.name)) ||
+          (balloonNote.properties.branchState === "Expert" &&
+            headers.items.balloonexp.regexp.test(x.properties.name)) ||
+          (balloonNote.properties.branchState === "Master" &&
+            headers.items.balloonmas.regexp.test(x.properties.name)))
+    );
+
+    if (balloonHeader) {
+      return undefined; // Header already exists
+    }
+
+    // Find where to insert the header - after the last header in the style
+    const styleHeaders = style.find<StyleHeadersNode>((x) => x instanceof StyleHeadersNode);
+    let insertPosition: vscode.Position;
+
+    if (styleHeaders && styleHeaders.children.length > 0) {
+      // Insert after the last header
+      const lastHeader = styleHeaders.children[styleHeaders.children.length - 1];
+      insertPosition = new vscode.Position(lastHeader.range.end.line + 1, 0);
+    } else {
+      // Insert at the beginning of the style
+      insertPosition = new vscode.Position(style.range.start.line + 1, 0);
+    }
+
+    return {
+      balloonNote: balloonNote,
+      insertPosition: insertPosition,
+    };
+  }
+
+  private getBalloonHeaderName(balloonNote: NoteNode): string {
+    switch (balloonNote.properties.branchState) {
+      case "Normal":
+        return "BALLOONNOR";
+      case "Expert":
+        return "BALLOONEXP";
+      case "Master":
+        return "BALLOONMAS";
+      default:
+        return "BALLOON";
+    }
+  }
+
   async prepareRename(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -193,6 +373,24 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return {
         range: balloonNote.range,
         placeholder: balloonParameter.value,
+      };
+    }
+
+    // Try to find balloon note without parameter (allow editing to add parameter)
+    const balloonNoteWithoutParam = this.findBalloonNoteWithoutParameter(document, position, root);
+    if (balloonNoteWithoutParam) {
+      return {
+        range: balloonNoteWithoutParam.balloonNote.range,
+        placeholder: " ",
+      };
+    }
+
+    // Try to find balloon note without header (allow editing to create header)
+    const balloonNoteWithoutHeader = this.findBalloonNoteWithoutHeader(document, position, root);
+    if (balloonNoteWithoutHeader) {
+      return {
+        range: balloonNoteWithoutHeader.balloonNote.range,
+        placeholder: " ",
       };
     }
 
