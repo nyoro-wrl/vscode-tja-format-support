@@ -315,6 +315,17 @@ export class Parser {
   }
 
   /**
+   * 現在までの実際の小節数を取得
+   * @param parent
+   * @returns
+   */
+  private getActualMeasureCount(parent: ChartNode | SongNode): number {
+    // 親ノードから実際のMeasureNodeの数を数える
+    const measureNodes = parent.filter((x) => x instanceof MeasureNode);
+    return measureNodes.length;
+  }
+
+  /**
    * 譜面の作成
    * @param parent
    * @param token
@@ -351,7 +362,12 @@ export class Parser {
    * @param separator
    */
   private parseBranch(parent: ChartNode | SongNode, token: Token, separator: Separator): void {
-    let branch = new BranchNode(parent, token.range, this.chartState);
+    // 現在までの実際の小節数を取得（命令のみ小節の影響を受けない正確な値）
+    const actualMeasureCount = this.getActualMeasureCount(parent);
+    const correctedChartState = { ...this.chartState };
+    correctedChartState.measure = actualMeasureCount;
+
+    let branch = new BranchNode(parent, token.range, correctedChartState);
     this.parseCommand(branch, token, separator);
     this.position++;
     branch = this.parseNode(branch);
