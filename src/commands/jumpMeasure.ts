@@ -68,42 +68,30 @@ export async function jumpMeasure(
       (x) => x.parent instanceof BranchSectionNode && x.parent.properties.kind === "M"
     );
 
-    const texts: string[] = [];
+    const items: { label: string; value: string }[] = [];
     if (nBranch !== undefined) {
-      texts.push("N");
+      items.push({ label: "普通 (Normal)", value: "N" });
     }
     if (eBranch !== undefined) {
-      texts.push("E");
+      items.push({ label: "玄人 (Expert)", value: "E" });
     }
     if (mBranch !== undefined) {
-      texts.push("M");
+      items.push({ label: "達人 (Master)", value: "M" });
     }
 
-    const input = await vscode.window.showInputBox({
-      prompt: "移動先の譜面分岐を入力してください",
-      placeHolder: texts.join(", "),
-      validateInput: (text) => {
-        if (!text) {
-          return;
-        }
-        if (!text) {
-          return `${texts.join(", ")} のいずれかを入力してください`;
-        }
-        if (!texts.includes(text.toUpperCase())) {
-          return `${texts.join(", ")} のいずれかを入力してください`;
-        }
-      },
+    const selectedItem = await vscode.window.showQuickPick(items, {
+      placeHolder: "移動先の譜面分岐を選択してください",
     });
-    if (input === undefined || input === "") {
+    if (selectedItem === undefined) {
       return;
     }
 
     let measureNode: MeasureNode | undefined;
-    if (input.toUpperCase() === "N") {
+    if (selectedItem.value === "N") {
       measureNode = nBranch;
-    } else if (input.toUpperCase() === "E") {
+    } else if (selectedItem.value === "E") {
       measureNode = eBranch;
-    } else if (input.toUpperCase() === "M") {
+    } else if (selectedItem.value === "M") {
       measureNode = mBranch;
     }
     if (measureNode === undefined) {
