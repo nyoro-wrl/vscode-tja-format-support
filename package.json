@@ -136,6 +136,25 @@
           "type": "boolean",
           "default": false,
           "description": "構文解析をスキップして処理速度を向上させます。あらゆる機能が無効化されます。"
+        },
+        "tjaFormatSupport.completion": {
+          "type": "object",
+          "description": "プレイヤー固有命令の補完表示設定",
+          "properties": {
+            "tjap": {
+              "type": "boolean",
+              "description": "TJAPlayer"
+            },
+            "tmg": {
+              "type": "boolean",
+              "description": "TaikoManyGimmicks"
+            }
+          },
+          "default": {
+            "tjap": true,
+            "tmg": false
+          },
+          "additionalProperties": false
         }
       }
     },
@@ -160,7 +179,8 @@
         {
           "id": "tja.info",
           "name": "譜面情報",
-          "when": "tja.activeFile"
+          "when": "tja.activeFile",
+          "icon": "images/icon.png"
         }
       ]
     },
@@ -250,7 +270,7 @@
         "editor.snippetSuggestions": "top",
         "editor.unicodeHighlight.invisibleCharacters": false,
         "editor.suggest.showWords": false,
-        "editor.occurrencesHighlight": false,
+        "editor.occurrencesHighlight": "off",
         "editor.semanticHighlighting.enabled": true
       },
       "editor.tokenColorCustomizations": {
