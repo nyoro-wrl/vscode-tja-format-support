@@ -375,7 +375,7 @@ export class Parser {
           parameterIndex
         );
         rawParameter.push(node);
-        parameterIndex++; // Increment after creating ParameterNode
+        parameterIndex++;
       } else if (parameter.kind === "Delimiter") {
         const node = new DelimiterNode(rawParameter, {
           kind: parameter.kind,

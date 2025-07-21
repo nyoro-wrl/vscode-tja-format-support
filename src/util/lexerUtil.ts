@@ -33,7 +33,6 @@ export function splitString(
   let match;
   let start = 0;
   while ((match = sepalater.exec(input)) !== null) {
-    // Always add token (including empty ones)
     tokens.push({
       value: input.slice(start, match.index),
       start,
@@ -46,7 +45,6 @@ export function splitString(
     });
     start = sepalater.lastIndex;
   }
-  // Always add final token (including empty ones)
   tokens.push({
     value: input.slice(start),
     start,
