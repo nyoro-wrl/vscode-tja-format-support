@@ -5,6 +5,7 @@ import {
   JumpBalloonNotesDefinitionProvider,
   JumpBalloonParameterDefinitionProvider,
 } from "./providers/definition";
+import { BalloonParameterRenameProvider } from "./providers/renameProvider";
 import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider } from "./providers/hover";
 import {
   CommandCompletionItemProvider,
@@ -85,6 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ","),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
+    languages.registerRenameProvider(selector, new BalloonParameterRenameProvider()),
     languages.registerHoverProvider(selector, new HeaderHoverProvider()),
     languages.registerHoverProvider(selector, new CommandHoverProvider()),
     languages.registerHoverProvider(selector, new BalloonHoverProvider()),
