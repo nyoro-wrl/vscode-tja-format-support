@@ -186,50 +186,75 @@ export class Parser {
     ];
 
     for (const { header, maxId } of balloonHeaders) {
-      if (header && header.parameters.length > maxId + 1) {
-        // Find the range of unused parameters
-        const headerNode = styleNode.find<HeaderNode>(
-          (x) => x instanceof HeaderNode && x.properties.name === header.name
-        );
-        if (headerNode) {
-          const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
-          if (parametersNode instanceof ParametersNode) {
-            // Find the first unused parameter
-            const firstUnusedIndex = maxId + 1;
-            let startRange: vscode.Range | undefined;
-            let endRange: vscode.Range | undefined;
+      if (header) {
+        // Check if there are any non-empty parameters
+        const hasNonEmptyParameters = header.parameters.some((param) => param.trim() !== "");
 
-            // Find the start position (including preceding delimiter)
-            for (let i = 0; i < parametersNode.children.length; i++) {
-              const child = parametersNode.children[i];
-              if (child instanceof ParameterNode && child.properties.index === firstUnusedIndex) {
-                // Look for the preceding delimiter
-                if (i > 0 && parametersNode.children[i - 1] instanceof DelimiterNode) {
-                  startRange = parametersNode.children[i - 1].range;
-                } else {
-                  startRange = child.range;
-                }
-                break;
-              }
-            }
-
-            // Find the end position (last unused parameter)
-            for (let i = parametersNode.children.length - 1; i >= 0; i--) {
-              const child = parametersNode.children[i];
-              if (child instanceof ParameterNode && child.properties.index >= firstUnusedIndex) {
-                endRange = child.range;
-                break;
-              }
-            }
-
-            if (startRange && endRange) {
-              const diagnosticRange = new vscode.Range(startRange.start, endRange.end);
+        if (maxId === -1 && hasNonEmptyParameters) {
+          // BALLOON: header has parameters but no balloon notes in chart - warn on parameters
+          const headerNode = styleNode.find<HeaderNode>(
+            (x) => x instanceof HeaderNode && x.properties.name === header.name
+          );
+          if (headerNode) {
+            const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
+            if (parametersNode instanceof ParametersNode) {
+              const diagnosticRange = new vscode.Range(
+                parametersNode.range.start,
+                parametersNode.range.end
+              );
               this.addDiagnostic(
                 "Unedited",
                 diagnosticRange,
                 "風船音符がありません。",
                 DiagnosticSeverity.Warning
               );
+            }
+          }
+        } else if (maxId > -1 && header.parameters.length > maxId + 1) {
+          // Find the range of unused parameters
+          const headerNode = styleNode.find<HeaderNode>(
+            (x) => x instanceof HeaderNode && x.properties.name === header.name
+          );
+          if (headerNode) {
+            const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
+            if (parametersNode instanceof ParametersNode) {
+              // Find the first unused parameter
+              const firstUnusedIndex = maxId + 1;
+              let startRange: vscode.Range | undefined;
+              let endRange: vscode.Range | undefined;
+
+              // Find the start position (including preceding delimiter)
+              for (let i = 0; i < parametersNode.children.length; i++) {
+                const child = parametersNode.children[i];
+                if (child instanceof ParameterNode && child.properties.index === firstUnusedIndex) {
+                  // Look for the preceding delimiter
+                  if (i > 0 && parametersNode.children[i - 1] instanceof DelimiterNode) {
+                    startRange = parametersNode.children[i - 1].range;
+                  } else {
+                    startRange = child.range;
+                  }
+                  break;
+                }
+              }
+
+              // Find the end position (last unused parameter)
+              for (let i = parametersNode.children.length - 1; i >= 0; i--) {
+                const child = parametersNode.children[i];
+                if (child instanceof ParameterNode && child.properties.index >= firstUnusedIndex) {
+                  endRange = child.range;
+                  break;
+                }
+              }
+
+              if (startRange && endRange) {
+                const diagnosticRange = new vscode.Range(startRange.start, endRange.end);
+                this.addDiagnostic(
+                  "Unedited",
+                  diagnosticRange,
+                  "風船音符がありません。",
+                  DiagnosticSeverity.Warning
+                );
+              }
             }
           }
         }

@@ -8,7 +8,6 @@ import {
   NoteNode,
   RootNode,
   StyleHeadersNode,
-  ParametersNode,
 } from "../types/node";
 
 export class BalloonParameterRenameProvider implements vscode.RenameProvider {
@@ -54,12 +53,38 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
         return undefined;
       }
 
-      if (balloonNoteWithoutParam.existingParameters.length === 0) {
+      // Check if there are any meaningful parameters (non-empty values)
+      const meaningfulParameters = balloonNoteWithoutParam.existingParameters.filter(
+        (param) => param.value.trim() !== ""
+      );
+
+      if (meaningfulParameters.length === 0) {
         // No parameters exist, add first parameter
-        const headerEndPosition = balloonNoteWithoutParam.balloonHeader.range.end;
-        // Add empty parameters up to the target index if needed
-        const parameterValues = Array(targetIndex).fill("").concat([newName]);
-        workspaceEdit.insert(document.uri, headerEndPosition, `:${parameterValues.join(",")}`);
+        const headerLine = document.lineAt(
+          balloonNoteWithoutParam.balloonHeader.range.start.line
+        ).text;
+        const headerStartChar = balloonNoteWithoutParam.balloonHeader.range.start.character;
+        const headerText = headerLine.substring(headerStartChar);
+
+        // Find colon position in the header text
+        const colonIndex = headerText.indexOf(":");
+
+        if (colonIndex !== -1) {
+          // Colon exists, insert after it
+          const insertPosition = new vscode.Position(
+            balloonNoteWithoutParam.balloonHeader.range.start.line,
+            headerStartChar + colonIndex + 1
+          );
+
+          // Add empty parameters up to the target index if needed
+          const parameterValues = Array(targetIndex).fill("").concat([newName]);
+          workspaceEdit.insert(document.uri, insertPosition, parameterValues.join(","));
+        } else {
+          // No colon exists, add colon and parameters at the end of the header
+          const insertPosition = balloonNoteWithoutParam.balloonHeader.range.end;
+          const parameterValues = Array(targetIndex).fill("").concat([newName]);
+          workspaceEdit.insert(document.uri, insertPosition, `:${parameterValues.join(",")}`);
+        }
       } else {
         // Parameters exist, need to insert at the correct position
         const maxExistingIndex = Math.max(
@@ -234,7 +259,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
         x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
     );
 
-    if (!balloonParameter) {
+    if (!balloonParameter || balloonParameter.value.trim() === "") {
       return undefined;
     }
     return { parameterRange: balloonParameter.range };
@@ -305,13 +330,15 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    // Check if this balloon note's parameter already exists
+    // Check if this balloon note's parameter already exists and has a meaningful value
     const existingParameter = balloonHeader.find<ParameterNode>(
       (x) =>
-        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+        x instanceof ParameterNode &&
+        x.properties.index === balloonNote.properties.note.balloonId &&
+        x.value.trim() !== ""
     );
     if (existingParameter) {
-      return undefined; // Parameter already exists
+      return undefined; // Parameter already exists with a value
     }
 
     const balloonParameters = balloonHeader.filter<ParameterNode>(
