@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { documents } from "../extension";
-import { NoteNode, ParameterNode } from "../types/node";
+import { NoteNode } from "../types/node";
 
 export class BalloonParameterCodeActionProvider implements vscode.CodeActionProvider {
   public static readonly providedCodeActionKinds = [vscode.CodeActionKind.QuickFix];
@@ -22,6 +22,11 @@ export class BalloonParameterCodeActionProvider implements vscode.CodeActionProv
         }
       } else if (diagnostic.message === "風船音符がありません。") {
         const action = this.createUnusedBalloonParameterQuickFix(document, diagnostic, token);
+        if (action) {
+          actions.push(action);
+        }
+      } else if (diagnostic.message === "#END がありません。") {
+        const action = this.createEndCommandQuickFix(document, diagnostic, token);
         if (action) {
           actions.push(action);
         }
@@ -116,6 +121,27 @@ export class BalloonParameterCodeActionProvider implements vscode.CodeActionProv
     // Use the diagnostic range directly (which already includes the correct range)
     const edit = new vscode.WorkspaceEdit();
     edit.delete(document.uri, diagnostic.range);
+    action.edit = edit;
+    action.isPreferred = true;
+
+    return action;
+  }
+
+  private createEndCommandQuickFix(
+    document: vscode.TextDocument,
+    diagnostic: vscode.Diagnostic,
+    token: vscode.CancellationToken
+  ): vscode.CodeAction | undefined {
+    const action = new vscode.CodeAction("#END の作成", vscode.CodeActionKind.QuickFix);
+    action.diagnostics = [diagnostic];
+
+    // Insert #END at the line after the diagnostic position
+    const edit = new vscode.WorkspaceEdit();
+    const diagnosticLine = diagnostic.range.start.line;
+    const insertPosition = new vscode.Position(diagnosticLine + 1, 0);
+    const insertText = "\n#END";
+
+    edit.insert(document.uri, insertPosition, insertText);
     action.edit = edit;
     action.isPreferred = true;
 
