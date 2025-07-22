@@ -5,7 +5,13 @@ import { Note } from "../types/note";
 import { Position, Range, TextEditor, TextEditorEdit } from "vscode";
 import { ChartTruncater } from "../types/chartTruncater";
 import { commands } from "../constants/commands";
-import { getChartState, isTmg, toTmgCommandText } from "../util/util";
+import {
+  getChartState,
+  isEndOfLineIgnoringWhitespace,
+  isStartOfLineIgnoringWhitespace,
+  isTmg,
+  toTmgCommandText,
+} from "../util/util";
 import { ICommand } from "../types/command";
 
 /**
@@ -142,42 +148,6 @@ export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
   for (const deleteRange of deleteRanges) {
     edit.delete(deleteRange);
   }
-}
-
-function isStartOfLineIgnoringWhitespace(
-  document: vscode.TextDocument,
-  position: vscode.Position
-): boolean {
-  // 行が存在するかチェック
-  if (position.line >= document.lineCount) {
-    return false;
-  }
-
-  const line = document.lineAt(position.line);
-
-  // 行頭の空白文字を除いた最初の文字の位置を取得
-  const firstNonWhitespaceIndex = line.firstNonWhitespaceCharacterIndex;
-
-  // 現在位置が、空白を除いた行頭以前にあるかチェック
-  return position.character <= firstNonWhitespaceIndex;
-}
-
-function isEndOfLineIgnoringWhitespace(
-  document: vscode.TextDocument,
-  position: vscode.Position
-): boolean {
-  // 行が存在するかチェック
-  if (position.line >= document.lineCount) {
-    return false;
-  }
-
-  const line = document.lineAt(position.line);
-
-  // 行末の空白文字を除いた文字列の長さを取得
-  const trimmedLength = line.text.trimEnd().length;
-
-  // 現在位置が、空白を除いた行末以降にあるかチェック
-  return position.character >= trimmedLength;
 }
 
 /**
