@@ -44,6 +44,12 @@
         "category": "tja"
       },
       {
+        "enablement": "editorLangId == tja && editorHasSelection && !editorHasMultipleSelections",
+        "command": "tja.transitionScroll",
+        "title": "スクロール速度の遷移",
+        "category": "tja"
+      },
+      {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.deleteCommands",
         "title": "命令の一括削除",
@@ -85,47 +91,52 @@
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.zoom",
-          "group": "1_tja_editChart@1"
+          "group": "1_tja_0@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.truncate",
-          "group": "1_tja_editChart@2"
-        },
-        {
-          "when": "editorLangId == tja && editorHasSelection",
-          "command": "tja.constantScroll",
-          "group": "1_tja_editChart@3"
-        },
-        {
-          "when": "editorLangId == tja && editorHasSelection",
-          "command": "tja.deleteCommands",
-          "group": "1_tja_editChart_warn@1"
+          "group": "1_tja_0@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toBig",
-          "group": "1_tja_editNotes@1"
+          "group": "1_tja_1@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toSmall",
-          "group": "1_tja_editNotes@2"
+          "group": "1_tja_1@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toRest",
-          "group": "1_tja_editNotes@5"
+          "group": "1_tja_1@3"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.reverse",
-          "group": "1_tja_editNotes@6"
+          "group": "1_tja_1@4"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.random",
-          "group": "1_tja_editNotes@7"
+          "group": "1_tja_1@5"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.constantScroll",
+          "group": "1_tja_2@1"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.transitionScroll",
+          "group": "1_tja_2@2"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.deleteCommands",
+          "group": "1_tja_3@1"
         }
       ]
     },

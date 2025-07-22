@@ -45,6 +45,7 @@ import {
   constantScroll,
   deleteCommands,
   random,
+  transitionScroll,
 } from "./commands/chartEdit";
 import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
@@ -74,6 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
     commands.registerTextEditorCommand("tja.zoom", zoom),
     commands.registerTextEditorCommand("tja.truncate", truncate),
     commands.registerTextEditorCommand("tja.constantScroll", constantScroll),
+    commands.registerTextEditorCommand("tja.transitionScroll", transitionScroll),
     commands.registerTextEditorCommand("tja.deleteCommands", deleteCommands),
     commands.registerTextEditorCommand("tja.toBig", toBig),
     commands.registerTextEditorCommand("tja.toSmall", toSmall),

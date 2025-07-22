@@ -133,7 +133,7 @@ export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
       continue;
     }
     const prevToken = root.findLastRange<NoteNode>(
-      (x) => x.range.end.line < deleteRange.start.line
+      (x) => x.range.end.line < deleteRange.start.line && x instanceof NoteNode
     );
     if (prevToken === undefined) {
       continue;
@@ -198,7 +198,7 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
   const input = await vscode.window.showInputBox({
     title: "スクロール速度の一定化",
     prompt: "スクロール速度の基準となるBPMを入力してください",
-    placeHolder: `BPM`,
+    placeHolder: "BPM",
     validateInput: (text) => {
       if (!text) {
         return;
@@ -247,6 +247,133 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
 
       editBuilder.insert(position, command + "\r\n");
       beforeScroll = scroll;
+    }
+  });
+}
+
+/**
+ * スクロール速度の遷移
+ * @param textEditor
+ * @param edit
+ */
+export async function transitionScroll(textEditor: TextEditor, edit: TextEditorEdit) {
+  const document = textEditor.document;
+  const root = documents.parse(document);
+  if (!root) {
+    return;
+  }
+  const selection = textEditor.selection;
+
+  const startInput = await vscode.window.showInputBox({
+    title: "スクロール速度の開始値",
+    prompt: "スクロール速度の開始値を入力してください",
+    placeHolder: "1",
+    validateInput: (text) => {
+      if (!text) {
+        return;
+      }
+      if (Number.isNaN(Number(text))) {
+        return "数値を入力してください";
+      }
+    },
+  });
+  if (startInput === undefined || startInput === "") {
+    return;
+  }
+  const start = Number(startInput);
+
+  const endInput = await vscode.window.showInputBox({
+    title: "スクロール速度の終了値",
+    prompt: "スクロール速度の終了値を入力してください",
+    placeHolder: "1",
+    validateInput: (text) => {
+      if (!text) {
+        return;
+      }
+      if (Number.isNaN(Number(text))) {
+        return "数値を入力してください";
+      }
+    },
+  });
+  if (endInput === undefined || endInput === "") {
+    return;
+  }
+  const end = Number(endInput);
+
+  const selected = await vscode.window.showQuickPick(["小節", "行", "音符", "常時"], {
+    title: "スクロール速度の遷移頻度",
+    placeHolder: "スクロール速度を遷移させる頻度を選択してください",
+  });
+  if (selected === undefined) {
+    return;
+  }
+
+  // 挿入位置を集める
+  const positions: Position[] = [];
+  if (selected === "小節") {
+    const notes = root.filter<NoteNode>(
+      (x) => selection.contains(x.range) && x instanceof NoteNode
+    );
+    positions.push(
+      ...notes
+        .filter(
+          (note, index, self) =>
+            index ===
+            self.findIndex(
+              (x) =>
+                x.properties.measure === note.properties.measure &&
+                x.properties.branchState === note.properties.branchState
+            )
+        )
+        .map((x) => x.range.start)
+    );
+  } else if (selected === "行") {
+    positions.push(
+      ...root
+        .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+        .map((x) => x.range.start.line)
+        .unique()
+        .map((x) => new Position(x, 0))
+    );
+  } else if (selected === "音符") {
+    positions.push(
+      ...root
+        .filter<NoteNode>(
+          (x) => selection.contains(x.range) && x instanceof NoteNode && x.value !== "0"
+        )
+        .map((x) => x.range.start)
+    );
+  } else if (selected === "常時") {
+    positions.push(
+      ...root
+        .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+        .map((x) => x.range.start)
+    );
+  }
+
+  textEditor.edit((editBuilder) => {
+    // 既存のSCROLL命令を全て削除
+    root
+      .filter<CommandNode>(
+        (x) =>
+          selection.contains(x.range) &&
+          x instanceof CommandNode &&
+          commands.items.scroll.regexp.test(x.properties.name)
+      )
+      .forEach((command) => {
+        const start = new Position(command.range.start.line, 0);
+        const end = new Position(command.range.start.line + 1, 0);
+        const range = new Range(start, end);
+        editBuilder.delete(range);
+      });
+
+    // SCROLL命令の挿入
+    for (let index = 0; index < positions.length; index++) {
+      const position = positions[index];
+      const raw = start + (end - start) * (index / (positions.length - 1));
+      const value = Math.round(raw * 1000) / 1000;
+      const prefix = position.character > 0 ? "\r\n" : "";
+      editBuilder.insert(position, `${prefix}#SCROLL ${value}\r\n`);
     }
   });
 }
