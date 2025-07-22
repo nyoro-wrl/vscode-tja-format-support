@@ -66,7 +66,8 @@ export async function zoom(textEditor: TextEditor, edit: TextEditorEdit) {
  * @returns
  */
 export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
-  const root = documents.parse(textEditor.document);
+  const document = textEditor.document;
+  const root = documents.parse(document);
   if (!root) {
     return;
   }
@@ -76,16 +77,107 @@ export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
       (x instanceof ChartTokenNode || x instanceof CommandNode)
   );
   const timingsList = ChartTruncater.toTimingData(items);
+  const deleteRanges: Range[] = [];
   for (const timings of timingsList) {
     const gcd = ChartTruncater.getGCD(timings);
     for (const timing of timings) {
       const newLength = timing.length / gcd;
       const ranges = timing.getTruncateRanges(newLength);
-      for (const range of ranges) {
-        edit.delete(range);
+      ranges: for (const range of ranges) {
+        for (let index = 0; index < deleteRanges.length; index++) {
+          const deleteRange = deleteRanges[index];
+          // 同じ行内での範囲結合
+          if (deleteRange.end.isEqual(range.start)) {
+            deleteRanges[index] = deleteRange.union(range);
+            continue ranges;
+          }
+          // 隣接する行での範囲結合
+          if (
+            deleteRange.end.line + 1 === range.start.line &&
+            range.start.character === 0 &&
+            isEndOfLineIgnoringWhitespace(document, deleteRange.end)
+          ) {
+            deleteRanges[index] = deleteRange.union(range);
+            continue ranges;
+          }
+        }
+        // 新規作成
+        deleteRanges.push(range);
       }
     }
   }
+  // 行全体の削除に変換
+  for (let index = 0; index < deleteRanges.length; index++) {
+    const deleteRange = deleteRanges[index];
+    if (
+      isStartOfLineIgnoringWhitespace(document, deleteRange.start) &&
+      isEndOfLineIgnoringWhitespace(document, deleteRange.end)
+    ) {
+      deleteRanges[index] = new Range(deleteRange.start.line, 0, deleteRange.end.line + 1, 0);
+    }
+  }
+  // ,のみになる場合に手前の改行を削除
+  for (let index = 0; index < deleteRanges.length; index++) {
+    const deleteRange = deleteRanges[index];
+    if (!isStartOfLineIgnoringWhitespace(document, deleteRange.start)) {
+      continue;
+    }
+    const afterChar = document.lineAt(deleteRange.end.line).text.charAt(deleteRange.end.character);
+    if (afterChar !== ",") {
+      continue;
+    }
+    const prevToken = root.findLastRange<NoteNode>(
+      (x) => x.range.end.line < deleteRange.start.line
+    );
+    if (prevToken === undefined) {
+      continue;
+    }
+    const range = new Range(prevToken.range.end, deleteRange.start);
+    if (document.getText(range).trim() !== "") {
+      continue;
+    }
+    deleteRanges[index] = range.union(deleteRange);
+  }
+  // 削除
+  for (const deleteRange of deleteRanges) {
+    edit.delete(deleteRange);
+  }
+}
+
+function isStartOfLineIgnoringWhitespace(
+  document: vscode.TextDocument,
+  position: vscode.Position
+): boolean {
+  // 行が存在するかチェック
+  if (position.line >= document.lineCount) {
+    return false;
+  }
+
+  const line = document.lineAt(position.line);
+
+  // 行頭の空白文字を除いた最初の文字の位置を取得
+  const firstNonWhitespaceIndex = line.firstNonWhitespaceCharacterIndex;
+
+  // 現在位置が、空白を除いた行頭以前にあるかチェック
+  return position.character <= firstNonWhitespaceIndex;
+}
+
+function isEndOfLineIgnoringWhitespace(
+  document: vscode.TextDocument,
+  position: vscode.Position
+): boolean {
+  // 行が存在するかチェック
+  if (position.line >= document.lineCount) {
+    return false;
+  }
+
+  const line = document.lineAt(position.line);
+
+  // 行末の空白文字を除いた文字列の長さを取得
+  const trimmedLength = line.text.trimEnd().length;
+
+  // 現在位置が、空白を除いた行末以降にあるかチェック
+  return position.character >= trimmedLength;
 }
 
 /**
