@@ -330,16 +330,34 @@ export class Parser {
     command?: ICommand
   ): void {
     if (command === commands.items.barlineoff) {
+      if (this.chartState.showBarline === false) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.showBarline = false;
     } else if (command === commands.items.barlineon) {
+      if (this.chartState.showBarline === true) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.showBarline = true;
     } else if (command === commands.items.gogostart) {
+      if (this.chartState.isGogotime === true) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isGogotime = true;
     } else if (command === commands.items.gogoend) {
+      if (this.chartState.isGogotime === false) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isGogotime = false;
     } else if (command === commands.items.dummystart) {
+      if (this.chartState.isDummyNote === true) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isDummyNote = true;
     } else if (command === commands.items.dummyend) {
+      if (this.chartState.isDummyNote === false) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isDummyNote = false;
     } else if (
       command === commands.items.n ||
@@ -421,6 +439,70 @@ export class Parser {
       this.initialBpm = value;
       this.chartState.bpm = value;
     }
+    // Check for duplicate values in commands BEFORE updating chart state
+    if (parent instanceof CommandNode) {
+      const commandName = parent.properties.name;
+      if (commandName === commands.items.bpmchange.name) {
+        const bpmValue = Number(rawParameter.children[0]?.value);
+        // Compare with current state before updating
+        if (!Number.isNaN(bpmValue) && this.chartState.bpm === bpmValue) {
+          this.addDiagnostic(
+            "Unedited",
+            parent.range,
+            "不要な命令です。",
+            DiagnosticSeverity.Warning,
+            "redundant-command"
+          );
+        }
+        // Update chart state with new BPM value
+        if (!Number.isNaN(bpmValue)) {
+          this.chartState.bpm = bpmValue;
+        }
+      } else if (commandName === commands.items.scroll.name) {
+        const scrollValue = Number(rawParameter.children[0]?.value);
+        // Compare with current state before updating
+        if (!Number.isNaN(scrollValue) && this.chartState.scroll === scrollValue) {
+          this.addDiagnostic(
+            "Unedited",
+            parent.range,
+            "不要な命令です。",
+            DiagnosticSeverity.Warning,
+            "redundant-command"
+          );
+        }
+        // Update chart state with new scroll value
+        if (!Number.isNaN(scrollValue)) {
+          this.chartState.scroll = scrollValue;
+        }
+      } else if (commandName === commands.items.measure.name) {
+        // #MEASURE takes two parameters: numerator/denominator (e.g., 3/4)
+        const numeratorValue = Number(rawParameter.children[0]?.value);
+        const denominatorValue = Number(rawParameter.children[1]?.value);
+        // Compare with current state before updating
+        if (
+          !Number.isNaN(numeratorValue) &&
+          !Number.isNaN(denominatorValue) &&
+          this.chartState.measureNumerator === numeratorValue &&
+          this.chartState.measureDenominator === denominatorValue
+        ) {
+          this.addDiagnostic(
+            "Unedited",
+            parent.range,
+            "不要な命令です。",
+            DiagnosticSeverity.Warning,
+            "redundant-command"
+          );
+        }
+        // Update chart state with new measure values
+        if (!Number.isNaN(numeratorValue)) {
+          this.chartState.measureNumerator = numeratorValue;
+        }
+        if (!Number.isNaN(denominatorValue)) {
+          this.chartState.measureDenominator = denominatorValue;
+        }
+      }
+    }
+
     parent.push(rawParameter);
     if (parent instanceof ChartStateCommandNode) {
       this.chartState = parent.properties.chartState;
@@ -790,12 +872,17 @@ export class Parser {
     kind: "Realtime" | "Unedited",
     range: Range,
     message: string,
-    severity?: vscode.DiagnosticSeverity
+    severity?: vscode.DiagnosticSeverity,
+    code?: string
   ): void {
+    const diagnostic = new Diagnostic(range, message, severity);
+    if (code) {
+      diagnostic.code = code;
+    }
     if (kind === "Realtime") {
-      this.diagnostics.realtime.push(new Diagnostic(range, message, severity));
+      this.diagnostics.realtime.push(diagnostic);
     } else if (kind === "Unedited") {
-      this.diagnostics.unedited.push(new Diagnostic(range, message, severity));
+      this.diagnostics.unedited.push(diagnostic);
     }
   }
 

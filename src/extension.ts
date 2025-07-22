@@ -28,7 +28,7 @@ import {
 } from "./providers/color";
 import { Documents } from "./providers/documents";
 import { InfoTreeDataProvider } from "./providers/treeData";
-import { BalloonParameterCodeActionProvider } from "./providers/codeAction";
+import { TjaCodeActionProvider } from "./providers/codeAction";
 import { TjaDocumentLinkProvider } from "./providers/documentLink";
 import { FilePathCompletionProvider } from "./providers/filePathCompletion";
 import { MeasureCountInlayHintsProvider } from "./providers/inlayHints";
@@ -102,8 +102,8 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerDocumentSymbolProvider(selector, new DocumentSymbolProvider()),
     languages.registerColorProvider(selector, new DantickColorDocumentColorProvider()),
     languages.registerColorProvider(selector, new ColorCommandDocumentColorProvider()),
-    languages.registerCodeActionsProvider(selector, new BalloonParameterCodeActionProvider(), {
-      providedCodeActionKinds: BalloonParameterCodeActionProvider.providedCodeActionKinds,
+    languages.registerCodeActionsProvider(selector, new TjaCodeActionProvider(), {
+      providedCodeActionKinds: TjaCodeActionProvider.providedCodeActionKinds,
     }),
     languages.registerDocumentLinkProvider(selector, new TjaDocumentLinkProvider()),
     languages.registerCompletionItemProvider(selector, new FilePathCompletionProvider(), ":"),

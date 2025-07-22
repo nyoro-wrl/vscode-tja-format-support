@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { documents } from "../extension";
 import { NoteNode } from "../types/node";
 
-export class BalloonParameterCodeActionProvider implements vscode.CodeActionProvider {
+export class TjaCodeActionProvider implements vscode.CodeActionProvider {
   public static readonly providedCodeActionKinds = [vscode.CodeActionKind.QuickFix];
 
   async provideCodeActions(
@@ -27,6 +27,11 @@ export class BalloonParameterCodeActionProvider implements vscode.CodeActionProv
         }
       } else if (diagnostic.message === "#END がありません。") {
         const action = this.createEndCommandQuickFix(document, diagnostic, token);
+        if (action) {
+          actions.push(action);
+        }
+      } else if (diagnostic.code === "redundant-command") {
+        const action = this.createRedundantCommandQuickFix(document, diagnostic, token);
         if (action) {
           actions.push(action);
         }
@@ -142,6 +147,27 @@ export class BalloonParameterCodeActionProvider implements vscode.CodeActionProv
     const insertText = "\n#END";
 
     edit.insert(document.uri, insertPosition, insertText);
+    action.edit = edit;
+    action.isPreferred = true;
+
+    return action;
+  }
+
+  private createRedundantCommandQuickFix(
+    document: vscode.TextDocument,
+    diagnostic: vscode.Diagnostic,
+    token: vscode.CancellationToken
+  ): vscode.CodeAction | undefined {
+    const action = new vscode.CodeAction("不要な命令を削除", vscode.CodeActionKind.QuickFix);
+    action.diagnostics = [diagnostic];
+
+    // Calculate the range to delete (include the entire line)
+    const lineStart = new vscode.Position(diagnostic.range.start.line, 0);
+    const lineEnd = new vscode.Position(diagnostic.range.start.line + 1, 0);
+    const deleteRange = new vscode.Range(lineStart, lineEnd);
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.delete(document.uri, deleteRange);
     action.edit = edit;
     action.isPreferred = true;
 
