@@ -91,52 +91,52 @@
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.zoom",
-          "group": "1_tja_0@1"
+          "group": "0_tja_0@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.truncate",
-          "group": "1_tja_0@2"
+          "group": "0_tja_0@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toBig",
-          "group": "1_tja_1@1"
+          "group": "0_tja_1@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toSmall",
-          "group": "1_tja_1@2"
+          "group": "0_tja_1@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toRest",
-          "group": "1_tja_1@3"
+          "group": "0_tja_1@3"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.reverse",
-          "group": "1_tja_1@4"
+          "group": "0_tja_1@4"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.random",
-          "group": "1_tja_1@5"
+          "group": "0_tja_1@5"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.constantScroll",
-          "group": "1_tja_2@1"
+          "group": "0_tja_2@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.transitionScroll",
-          "group": "1_tja_2@2"
+          "group": "0_tja_2@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.deleteCommands",
-          "group": "1_tja_3@1"
+          "group": "0_tja_3@1"
         }
       ]
     },
