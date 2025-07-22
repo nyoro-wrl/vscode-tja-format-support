@@ -13,6 +13,7 @@ import {
   toTmgCommandText,
 } from "../util/util";
 import { ICommand } from "../types/command";
+import { easingStrings, isEasingType, lerp } from "../util/easing";
 
 /**
  * 譜面の拡大
@@ -264,6 +265,12 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
   }
   const selection = textEditor.selection;
 
+  const notes = root.filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode);
+  if (notes.length === 0) {
+    vscode.window.showWarningMessage("選択範囲に譜面が見つかりませんでした");
+    return;
+  }
+
   const startInput = await vscode.window.showInputBox({
     title: "スクロール速度の開始値",
     prompt: "スクロール速度の開始値を入力してください",
@@ -300,20 +307,25 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
   }
   const end = Number(endInput);
 
-  const selected = await vscode.window.showQuickPick(["小節", "行", "音符", "常時"], {
+  const frequencySelected = await vscode.window.showQuickPick(["小節", "行", "音符", "常時"], {
     title: "スクロール速度の遷移頻度",
     placeHolder: "スクロール速度を遷移させる頻度を選択してください",
   });
-  if (selected === undefined) {
+  if (frequencySelected === undefined) {
+    return;
+  }
+
+  const easingSelected = await vscode.window.showQuickPick(easingStrings, {
+    title: "スクロール速度のイージング",
+    placeHolder: "イージングを選択してください",
+  });
+  if (easingSelected === undefined || !isEasingType(easingSelected)) {
     return;
   }
 
   // 挿入位置を集める
   const positions: Position[] = [];
-  if (selected === "小節") {
-    const notes = root.filter<NoteNode>(
-      (x) => selection.contains(x.range) && x instanceof NoteNode
-    );
+  if (frequencySelected === "小節") {
     positions.push(
       ...notes
         .filter(
@@ -327,28 +339,17 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
         )
         .map((x) => x.range.start)
     );
-  } else if (selected === "行") {
+  } else if (frequencySelected === "行") {
     positions.push(
-      ...root
-        .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+      ...notes
         .map((x) => x.range.start.line)
         .unique()
         .map((x) => new Position(x, 0))
     );
-  } else if (selected === "音符") {
-    positions.push(
-      ...root
-        .filter<NoteNode>(
-          (x) => selection.contains(x.range) && x instanceof NoteNode && x.value !== "0"
-        )
-        .map((x) => x.range.start)
-    );
-  } else if (selected === "常時") {
-    positions.push(
-      ...root
-        .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
-        .map((x) => x.range.start)
-    );
+  } else if (frequencySelected === "音符") {
+    positions.push(...notes.filter((x) => x.value !== "0").map((x) => x.range.start));
+  } else if (frequencySelected === "常時") {
+    positions.push(...notes.map((x) => x.range.start));
   }
 
   textEditor.edit((editBuilder) => {
@@ -370,7 +371,8 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
     // SCROLL命令の挿入
     for (let index = 0; index < positions.length; index++) {
       const position = positions[index];
-      const raw = start + (end - start) * (index / (positions.length - 1));
+      const t = index / (positions.length - 1);
+      const raw = lerp(start, end, t, easingSelected);
       const value = Math.round(raw * 1000) / 1000;
       const prefix = position.character > 0 ? "\r\n" : "";
       editBuilder.insert(position, `${prefix}#SCROLL ${value}\r\n`);

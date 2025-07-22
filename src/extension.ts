@@ -132,6 +132,7 @@ function versionCheck(context: vscode.ExtensionContext) {
 
   // 通過時に更新通知を行うバージョン
   const noticeVersion = [
+    new SemVer("1.5.0"),
     new SemVer("1.4.0"),
     new SemVer("1.3.0"),
     new SemVer("1.2.0"),
