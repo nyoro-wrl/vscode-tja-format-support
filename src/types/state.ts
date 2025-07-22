@@ -40,6 +40,14 @@ export class ChartState implements ChartStateProperties {
    * スクロール速度
    */
   scroll: number | undefined = 1;
+  /**
+   * 拍子の分子（デフォルトは4拍子の4）
+   */
+  measureNumerator: number = 4;
+  /**
+   * 拍子の分母（デフォルトは4拍子の4）
+   */
+  measureDenominator: number = 4;
 
   constructor(bpm: number | undefined = undefined) {
     this.bpm = bpm;

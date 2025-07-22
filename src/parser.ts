@@ -143,12 +143,123 @@ export class Parser {
     let node = new StyleNode(parent, token.range);
     node = this.parseNode(node);
     parent.push(node);
+
+    // Check for unused balloon parameters after parsing the style
+    this.checkUnusedBalloonParameters(node);
+
     this.chartState = new ChartState(this.initialBpm);
     this.nowBalloonId = undefined;
     this.balloonId = -1;
     this.norBalloonId = -1;
     this.expBalloonId = -1;
     this.masBalloonId = -1;
+  }
+
+  /**
+   * 未使用の風船パラメータをチェックして警告を表示
+   * @param styleNode
+   */
+  private checkUnusedBalloonParameters(styleNode: StyleNode): void {
+    const balloonHeaders = [
+      {
+        header: styleNode.properties.headers.find((x) => headers.items.balloon.regexp.test(x.name)),
+        maxId: this.balloonId,
+      },
+      {
+        header: styleNode.properties.headers.find((x) =>
+          headers.items.balloonnor.regexp.test(x.name)
+        ),
+        maxId: this.norBalloonId,
+      },
+      {
+        header: styleNode.properties.headers.find((x) =>
+          headers.items.balloonexp.regexp.test(x.name)
+        ),
+        maxId: this.expBalloonId,
+      },
+      {
+        header: styleNode.properties.headers.find((x) =>
+          headers.items.balloonmas.regexp.test(x.name)
+        ),
+        maxId: this.masBalloonId,
+      },
+    ];
+
+    for (const { header, maxId } of balloonHeaders) {
+      if (header) {
+        // Check if there are any non-empty parameters
+        const hasNonEmptyParameters = header.parameters.some((param) => param.trim() !== "");
+
+        if (maxId === -1 && hasNonEmptyParameters) {
+          // BALLOON: header has parameters but no balloon notes in chart - warn on parameters
+          const headerNode = styleNode.find<HeaderNode>(
+            (x) => x instanceof HeaderNode && x.properties.name === header.name
+          );
+          if (headerNode) {
+            const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
+            if (parametersNode instanceof ParametersNode) {
+              const diagnosticRange = new vscode.Range(
+                parametersNode.range.start,
+                parametersNode.range.end
+              );
+              this.addDiagnostic(
+                "Unedited",
+                diagnosticRange,
+                "風船音符がありません。",
+                DiagnosticSeverity.Warning
+              );
+            }
+          }
+        } else if (maxId > -1 && header.parameters.length > maxId + 1) {
+          // Find the range of unused parameters
+          const headerNode = styleNode.find<HeaderNode>(
+            (x) => x instanceof HeaderNode && x.properties.name === header.name
+          );
+          if (headerNode) {
+            const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
+            if (parametersNode instanceof ParametersNode) {
+              // Find the first unused parameter
+              const firstUnusedIndex = maxId + 1;
+              let startRange: vscode.Range | undefined;
+              let endRange: vscode.Range | undefined;
+
+              // Find the start position (including preceding delimiter)
+              for (let i = 0; i < parametersNode.children.length; i++) {
+                const child = parametersNode.children[i];
+                if (child instanceof ParameterNode && child.properties.index === firstUnusedIndex) {
+                  // Look for the preceding delimiter
+                  if (i > 0 && parametersNode.children[i - 1] instanceof DelimiterNode) {
+                    startRange = parametersNode.children[i - 1].range;
+                  } else {
+                    startRange = child.range;
+                  }
+                  break;
+                }
+              }
+
+              // Find the end position (last unused parameter)
+              for (let i = parametersNode.children.length - 1; i >= 0; i--) {
+                const child = parametersNode.children[i];
+                if (child instanceof ParameterNode && child.properties.index >= firstUnusedIndex) {
+                  endRange = child.range;
+                  break;
+                }
+              }
+
+              if (startRange && endRange) {
+                const diagnosticRange = new vscode.Range(startRange.start, endRange.end);
+                this.addDiagnostic(
+                  "Unedited",
+                  diagnosticRange,
+                  "風船音符がありません。",
+                  DiagnosticSeverity.Warning
+                );
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -219,16 +330,34 @@ export class Parser {
     command?: ICommand
   ): void {
     if (command === commands.items.barlineoff) {
+      if (this.chartState.showBarline === false) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.showBarline = false;
     } else if (command === commands.items.barlineon) {
+      if (this.chartState.showBarline === true) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.showBarline = true;
     } else if (command === commands.items.gogostart) {
+      if (this.chartState.isGogotime === true) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isGogotime = true;
     } else if (command === commands.items.gogoend) {
+      if (this.chartState.isGogotime === false) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isGogotime = false;
     } else if (command === commands.items.dummystart) {
+      if (this.chartState.isDummyNote === true) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isDummyNote = true;
     } else if (command === commands.items.dummyend) {
+      if (this.chartState.isDummyNote === false) {
+        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+      }
       this.chartState.isDummyNote = false;
     } else if (
       command === commands.items.n ||
@@ -286,9 +415,10 @@ export class Parser {
             range: parameter.range,
             value: parameter.value,
           },
-          parameterIndex++
+          parameterIndex
         );
         rawParameter.push(node);
+        parameterIndex++;
       } else if (parameter.kind === "Delimiter") {
         const node = new DelimiterNode(rawParameter, {
           kind: parameter.kind,
@@ -296,6 +426,7 @@ export class Parser {
           value: parameter.value,
         });
         rawParameter.push(node);
+        // Don't increment parameterIndex for delimiters
       } else {
         return parent;
       }
@@ -308,10 +439,85 @@ export class Parser {
       this.initialBpm = value;
       this.chartState.bpm = value;
     }
+    // Check for duplicate values in commands BEFORE updating chart state
+    if (parent instanceof CommandNode) {
+      const commandName = parent.properties.name;
+      if (commandName === commands.items.bpmchange.name) {
+        const bpmValue = Number(rawParameter.children[0]?.value);
+        // Compare with current state before updating
+        if (!Number.isNaN(bpmValue) && this.chartState.bpm === bpmValue) {
+          this.addDiagnostic(
+            "Unedited",
+            parent.range,
+            "不要な命令です。",
+            DiagnosticSeverity.Warning,
+            "redundant-command"
+          );
+        }
+        // Update chart state with new BPM value
+        if (!Number.isNaN(bpmValue)) {
+          this.chartState.bpm = bpmValue;
+        }
+      } else if (commandName === commands.items.scroll.name) {
+        const scrollValue = Number(rawParameter.children[0]?.value);
+        // Compare with current state before updating
+        if (!Number.isNaN(scrollValue) && this.chartState.scroll === scrollValue) {
+          this.addDiagnostic(
+            "Unedited",
+            parent.range,
+            "不要な命令です。",
+            DiagnosticSeverity.Warning,
+            "redundant-command"
+          );
+        }
+        // Update chart state with new scroll value
+        if (!Number.isNaN(scrollValue)) {
+          this.chartState.scroll = scrollValue;
+        }
+      } else if (commandName === commands.items.measure.name) {
+        // #MEASURE takes two parameters: numerator/denominator (e.g., 3/4)
+        const numeratorValue = Number(rawParameter.children[0]?.value);
+        const denominatorValue = Number(rawParameter.children[1]?.value);
+        // Compare with current state before updating
+        if (
+          !Number.isNaN(numeratorValue) &&
+          !Number.isNaN(denominatorValue) &&
+          this.chartState.measureNumerator === numeratorValue &&
+          this.chartState.measureDenominator === denominatorValue
+        ) {
+          this.addDiagnostic(
+            "Unedited",
+            parent.range,
+            "不要な命令です。",
+            DiagnosticSeverity.Warning,
+            "redundant-command"
+          );
+        }
+        // Update chart state with new measure values
+        if (!Number.isNaN(numeratorValue)) {
+          this.chartState.measureNumerator = numeratorValue;
+        }
+        if (!Number.isNaN(denominatorValue)) {
+          this.chartState.measureDenominator = denominatorValue;
+        }
+      }
+    }
+
     parent.push(rawParameter);
     if (parent instanceof ChartStateCommandNode) {
       this.chartState = parent.properties.chartState;
     }
+  }
+
+  /**
+   * 現在までの実際の小節数を取得
+   * @param parent
+   * @returns
+   */
+  private getActualMeasureCount(parent: ChartNode | SongNode): number {
+    // 親ノードから実際のMeasureNodeの数を数える
+    const measureNodes = parent.filter((x) => x instanceof MeasureNode);
+    return measureNodes.length;
   }
 
   /**
@@ -351,7 +557,12 @@ export class Parser {
    * @param separator
    */
   private parseBranch(parent: ChartNode | SongNode, token: Token, separator: Separator): void {
-    let branch = new BranchNode(parent, token.range, this.chartState);
+    // 現在までの実際の小節数を取得（命令のみ小節の影響を受けない正確な値）
+    const actualMeasureCount = this.getActualMeasureCount(parent);
+    const correctedChartState = { ...this.chartState };
+    correctedChartState.measure = actualMeasureCount;
+
+    let branch = new BranchNode(parent, token.range, correctedChartState);
     this.parseCommand(branch, token, separator);
     this.position++;
     branch = this.parseNode(branch);
@@ -508,16 +719,33 @@ export class Parser {
           token.range.end,
           /([79]0*8?|0*8|0+)/
         );
-        if (
-          wordRange !== undefined &&
-          (balloonHeader === undefined || balloonHeader.parameters.length <= this.nowBalloonId)
-        ) {
-          this.addDiagnostic(
-            "Unedited",
-            wordRange,
-            "風船音符の打数が定義されていません。",
-            DiagnosticSeverity.Warning
-          );
+        if (wordRange !== undefined) {
+          let shouldShowWarning = false;
+
+          if (balloonHeader === undefined) {
+            // ヘッダーが存在しない場合
+            shouldShowWarning = true;
+          } else if (balloonHeader.parameters.length <= this.nowBalloonId) {
+            // パラメータの数が不足している場合
+            shouldShowWarning = true;
+          } else {
+            // パラメータは存在するが、値が空または無効な場合
+            const parameter = balloonHeader.parameters[this.nowBalloonId];
+            if (!parameter || parameter.trim() === "") {
+              shouldShowWarning = true;
+            }
+          }
+
+          if (shouldShowWarning) {
+            // 診断メッセージに風船音符の正確な位置情報とballoonIdを含める
+            const balloonNoteInfo = `${token.range.start.line}:${token.range.start.character}:${this.nowBalloonId}`;
+            this.addDiagnostic(
+              "Unedited",
+              wordRange,
+              `打数が定義されていません。[${balloonNoteInfo}]`,
+              DiagnosticSeverity.Warning
+            );
+          }
         }
       }
     }
@@ -644,12 +872,17 @@ export class Parser {
     kind: "Realtime" | "Unedited",
     range: Range,
     message: string,
-    severity?: vscode.DiagnosticSeverity
+    severity?: vscode.DiagnosticSeverity,
+    code?: string
   ): void {
+    const diagnostic = new Diagnostic(range, message, severity);
+    if (code) {
+      diagnostic.code = code;
+    }
     if (kind === "Realtime") {
-      this.diagnostics.realtime.push(new Diagnostic(range, message, severity));
+      this.diagnostics.realtime.push(diagnostic);
     } else if (kind === "Unedited") {
-      this.diagnostics.unedited.push(new Diagnostic(range, message, severity));
+      this.diagnostics.unedited.push(diagnostic);
     }
   }
 

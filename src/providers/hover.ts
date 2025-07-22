@@ -100,13 +100,13 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
     if (balloonHeader === undefined) {
       return Promise.reject();
     }
-    const balloonParameters = balloonHeader.filter<ParameterNode>(
-      (x) => x instanceof ParameterNode
+    // Find parameter by balloonId using the parameter's index property
+    const balloonParameter = balloonHeader.find<ParameterNode>(
+      (x) => x instanceof ParameterNode && x.properties.index === balloonId
     );
-    if (balloonParameters.length <= balloonId) {
+    if (!balloonParameter) {
       return Promise.reject();
     }
-    const balloonParameter = balloonParameters[balloonId];
 
     const symbol = new MarkdownString(balloonParameter.value);
     return new Hover([symbol], wordRange);

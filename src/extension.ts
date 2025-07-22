@@ -5,6 +5,7 @@ import {
   JumpBalloonNotesDefinitionProvider,
   JumpBalloonParameterDefinitionProvider,
 } from "./providers/definition";
+import { BalloonParameterRenameProvider } from "./providers/renameProvider";
 import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider } from "./providers/hover";
 import {
   CommandCompletionItemProvider,
@@ -27,6 +28,10 @@ import {
 } from "./providers/color";
 import { Documents } from "./providers/documents";
 import { InfoTreeDataProvider } from "./providers/treeData";
+import { TjaCodeActionProvider } from "./providers/codeAction";
+import { TjaDocumentLinkProvider } from "./providers/documentLink";
+import { FilePathCompletionProvider } from "./providers/filePathCompletion";
+import { MeasureCountInlayHintsProvider } from "./providers/inlayHints";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
 import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
@@ -39,7 +44,10 @@ import {
   truncate,
   constantScroll,
   deleteCommands,
+  random,
+  transitionScroll,
 } from "./commands/chartEdit";
+import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
 
 export let activeTjaFile: ActiveTjaFile;
@@ -67,13 +75,16 @@ export function activate(context: vscode.ExtensionContext) {
     commands.registerTextEditorCommand("tja.zoom", zoom),
     commands.registerTextEditorCommand("tja.truncate", truncate),
     commands.registerTextEditorCommand("tja.constantScroll", constantScroll),
+    commands.registerTextEditorCommand("tja.transitionScroll", transitionScroll),
     commands.registerTextEditorCommand("tja.deleteCommands", deleteCommands),
     commands.registerTextEditorCommand("tja.toBig", toBig),
     commands.registerTextEditorCommand("tja.toSmall", toSmall),
     commands.registerTextEditorCommand("tja.toRest", toRest),
     commands.registerTextEditorCommand("tja.reverse", reverse),
+    commands.registerTextEditorCommand("tja.random", random),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
     commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
+    commands.registerCommand("tja.balloonParameterQuickFix", balloonParameterQuickFix),
     languages.registerDocumentSemanticTokensProvider(
       selector,
       new DocumentSemanticTokensProvider(),
@@ -85,6 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ","),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
+    languages.registerRenameProvider(selector, new BalloonParameterRenameProvider()),
     languages.registerHoverProvider(selector, new HeaderHoverProvider()),
     languages.registerHoverProvider(selector, new CommandHoverProvider()),
     languages.registerHoverProvider(selector, new BalloonHoverProvider()),
@@ -92,6 +104,12 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerDocumentSymbolProvider(selector, new DocumentSymbolProvider()),
     languages.registerColorProvider(selector, new DantickColorDocumentColorProvider()),
     languages.registerColorProvider(selector, new ColorCommandDocumentColorProvider()),
+    languages.registerCodeActionsProvider(selector, new TjaCodeActionProvider(), {
+      providedCodeActionKinds: TjaCodeActionProvider.providedCodeActionKinds,
+    }),
+    languages.registerDocumentLinkProvider(selector, new TjaDocumentLinkProvider()),
+    languages.registerCompletionItemProvider(selector, new FilePathCompletionProvider(), ":"),
+    languages.registerInlayHintsProvider(selector, new MeasureCountInlayHintsProvider()),
     new MeasureStatusBarItem(),
     new ComboStatusBarItem(),
     new LiteModeStatusBarItem()
@@ -114,6 +132,7 @@ function versionCheck(context: vscode.ExtensionContext) {
 
   // 通過時に更新通知を行うバージョン
   const noticeVersion = [
+    new SemVer("1.5.0"),
     new SemVer("1.4.0"),
     new SemVer("1.3.0"),
     new SemVer("1.2.0"),

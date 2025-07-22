@@ -97,13 +97,31 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
     if (root === undefined) {
       return Promise.reject();
     }
-    const balloonNote = root.find<NoteNode>(
+    // Find all balloon notes that contain the cursor position
+    const candidateNotes = root.filter<NoteNode>(
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined,
-      (x) => x instanceof HeadersNode
+        x.properties.note.balloonId !== undefined
     );
+
+    if (candidateNotes.length === 0) {
+      return Promise.reject();
+    }
+
+    // If multiple candidates exist, choose the one closest to cursor position
+    let balloonNote = candidateNotes[0];
+    if (candidateNotes.length > 1) {
+      // Find the note whose range is closest to the cursor position
+      let minDistance = Math.abs(position.character - candidateNotes[0].range.start.character);
+      for (let i = 1; i < candidateNotes.length; i++) {
+        const distance = Math.abs(position.character - candidateNotes[i].range.start.character);
+        if (distance < minDistance) {
+          minDistance = distance;
+          balloonNote = candidateNotes[i];
+        }
+      }
+    }
     const style = balloonNote?.findParent((x) => x instanceof StyleNode);
     if (
       balloonNote === undefined ||
@@ -130,11 +148,13 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
       return Promise.reject();
     }
 
-    const balloonParameters = balloonHeader.filter((x) => x instanceof ParameterNode);
-    if (balloonParameters.length <= balloonNote.properties.note.balloonId) {
+    // Find parameter by balloonId using the parameter's index property
+    const balloonParameter = balloonHeader.find<ParameterNode>(
+      (x) => x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+    );
+    if (!balloonParameter) {
       return Promise.reject();
     }
-    const balloonParameter = balloonParameters[balloonNote.properties.note.balloonId];
 
     const location = new vscode.Location(document.uri, balloonParameter.range);
     return Promise.resolve(location);

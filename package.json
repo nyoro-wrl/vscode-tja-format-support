@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -44,6 +44,12 @@
         "category": "tja"
       },
       {
+        "enablement": "editorLangId == tja && editorHasSelection && !editorHasMultipleSelections",
+        "command": "tja.transitionScroll",
+        "title": "スクロール速度の遷移",
+        "category": "tja"
+      },
+      {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.deleteCommands",
         "title": "命令の一括削除",
@@ -70,7 +76,13 @@
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.reverse",
-        "title": "ドン/カッの反転",
+        "title": "ドン/カッを反転",
+        "category": "tja"
+      },
+      {
+        "enablement": "editorLangId == tja && editorHasSelection",
+        "command": "tja.random",
+        "title": "ドン/カッをランダム",
         "category": "tja"
       }
     ],
@@ -79,42 +91,52 @@
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.zoom",
-          "group": "1_tja_editChart@1"
+          "group": "0_tja_0@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.truncate",
-          "group": "1_tja_editChart@2"
-        },
-        {
-          "when": "editorLangId == tja && editorHasSelection",
-          "command": "tja.constantScroll",
-          "group": "1_tja_editChart@3"
-        },
-        {
-          "when": "editorLangId == tja && editorHasSelection",
-          "command": "tja.deleteCommands",
-          "group": "1_tja_editChart_warn@1"
+          "group": "0_tja_0@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toBig",
-          "group": "1_tja_editNotes@1"
+          "group": "0_tja_1@1"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toSmall",
-          "group": "1_tja_editNotes@2"
+          "group": "0_tja_1@2"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.toRest",
-          "group": "1_tja_editNotes@5"
+          "group": "0_tja_1@3"
         },
         {
           "when": "editorLangId == tja && editorHasSelection",
           "command": "tja.reverse",
-          "group": "1_tja_editNotes@6"
+          "group": "0_tja_1@4"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.random",
+          "group": "0_tja_1@5"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.constantScroll",
+          "group": "0_tja_2@1"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.transitionScroll",
+          "group": "0_tja_2@2"
+        },
+        {
+          "when": "editorLangId == tja && editorHasSelection",
+          "command": "tja.deleteCommands",
+          "group": "0_tja_3@1"
         }
       ]
     },
@@ -136,6 +158,30 @@
           "type": "boolean",
           "default": false,
           "description": "構文解析をスキップして処理速度を向上させます。あらゆる機能が無効化されます。"
+        },
+        "tjaFormatSupport.completion": {
+          "type": "object",
+          "description": "プレイヤー固有命令の補完表示設定",
+          "properties": {
+            "tjap": {
+              "type": "boolean",
+              "description": "TJAPlayer"
+            },
+            "tmg": {
+              "type": "boolean",
+              "description": "TaikoManyGimmicks"
+            }
+          },
+          "default": {
+            "tjap": true,
+            "tmg": false
+          },
+          "additionalProperties": false
+        },
+        "tjaFormatSupport.measureCountHint": {
+          "type": "boolean",
+          "default": true,
+          "description": "空行後の小節に小節番号を表示します。"
         }
       }
     },
@@ -160,7 +206,8 @@
         {
           "id": "tja.info",
           "name": "譜面情報",
-          "when": "tja.activeFile"
+          "when": "tja.activeFile",
+          "icon": "images/icon.png"
         }
       ]
     },
@@ -250,8 +297,12 @@
         "editor.snippetSuggestions": "top",
         "editor.unicodeHighlight.invisibleCharacters": false,
         "editor.suggest.showWords": false,
-        "editor.occurrencesHighlight": false,
+        "editor.occurrencesHighlight": "off",
         "editor.semanticHighlighting.enabled": true
+      },
+      "workbench.colorCustomizations": {
+        "editorInlayHint.foreground": "#969696e7",
+        "editorInlayHint.background": "#00000000"
       },
       "editor.tokenColorCustomizations": {
         "textMateRules": [

@@ -136,6 +136,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
     const snippets: vscode.CompletionItem[] = [];
 
+    const _isTmg = isTmg(document);
     const wordRange = document.getWordRangeAtPosition(position, /([a-zA-Z]+|#[a-zA-Z]*)/);
     const word = wordRange === undefined ? "" : document.getText(wordRange);
     const containSharp = /^#/.test(word);
@@ -164,10 +165,23 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
     const measureHead =
       beforeChartTokenNode === undefined || beforeChartTokenNode instanceof MeasureEndNode;
 
+    // 設定から各カテゴリーの表示状態を取得
+    const config = vscode.workspace.getConfiguration("tjaFormatSupport.completion");
+    const showTJAPlayer = config.get<boolean>("tjap", true);
+    const showTaikoManyGimmicks = config.get<boolean>("tmg", false);
+
     let order = 0;
     for (const command of commands) {
       if (token.isCancellationRequested) {
         return snippets;
+      }
+
+      // カテゴリーによるフィルタリング
+      if (
+        (command.category === "TJAP" && !showTJAPlayer) ||
+        (!_isTmg && command.category === "TMG" && !showTaikoManyGimmicks)
+      ) {
+        continue;
       }
       if (root !== undefined) {
         // 補完の非表示判定
@@ -264,7 +278,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
       snippet.insertText = new SnippetString((containSharp ? "" : "#") + command.snippet);
-      if (isTmg(document)) {
+      if (_isTmg) {
         snippet.insertText = toTmgCommandSnippetText(snippet.insertText);
       }
       snippet.documentation = new MarkdownString().appendMarkdown(

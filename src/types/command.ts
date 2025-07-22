@@ -23,6 +23,15 @@ export type CommandSection =
   | "Unknown";
 
 /**
+ * 命令のカテゴリー
+ *
+ *     "Base" // 基本
+ *     "TJAP" // TJAPlayer2forPC and TJAPlayer3
+ *     "TMG" // TaikoManyGimmicks
+ */
+export type CommandCategory = "Base" | "TJAP" | "TMG";
+
+/**
  * 命令
  */
 export interface ICommand extends IStatement {
@@ -30,6 +39,10 @@ export interface ICommand extends IStatement {
    * 命令の記載位置
    */
   readonly section: CommandSection;
+  /**
+   * 命令のカテゴリー
+   */
+  readonly category: CommandCategory;
 }
 
 /**

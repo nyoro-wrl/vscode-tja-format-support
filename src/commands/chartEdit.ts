@@ -5,8 +5,15 @@ import { Note } from "../types/note";
 import { Position, Range, TextEditor, TextEditorEdit } from "vscode";
 import { ChartTruncater } from "../types/chartTruncater";
 import { commands } from "../constants/commands";
-import { getChartState, isTmg, toTmgCommandText } from "../util/util";
+import {
+  getChartState,
+  isEndOfLineIgnoringWhitespace,
+  isStartOfLineIgnoringWhitespace,
+  isTmg,
+  toTmgCommandText,
+} from "../util/util";
 import { ICommand } from "../types/command";
+import { easingStrings, isEasingType, lerp } from "../util/easing";
 
 /**
  * 譜面の拡大
@@ -66,7 +73,8 @@ export async function zoom(textEditor: TextEditor, edit: TextEditorEdit) {
  * @returns
  */
 export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
-  const root = documents.parse(textEditor.document);
+  const document = textEditor.document;
+  const root = documents.parse(document);
   if (!root) {
     return;
   }
@@ -76,15 +84,70 @@ export function truncate(textEditor: TextEditor, edit: TextEditorEdit) {
       (x instanceof ChartTokenNode || x instanceof CommandNode)
   );
   const timingsList = ChartTruncater.toTimingData(items);
+  const deleteRanges: Range[] = [];
   for (const timings of timingsList) {
     const gcd = ChartTruncater.getGCD(timings);
     for (const timing of timings) {
       const newLength = timing.length / gcd;
       const ranges = timing.getTruncateRanges(newLength);
-      for (const range of ranges) {
-        edit.delete(range);
+      ranges: for (const range of ranges) {
+        for (let index = 0; index < deleteRanges.length; index++) {
+          const deleteRange = deleteRanges[index];
+          // 同じ行内での範囲結合
+          if (deleteRange.end.isEqual(range.start)) {
+            deleteRanges[index] = deleteRange.union(range);
+            continue ranges;
+          }
+          // 隣接する行での範囲結合
+          if (
+            deleteRange.end.line + 1 === range.start.line &&
+            range.start.character === 0 &&
+            isEndOfLineIgnoringWhitespace(document, deleteRange.end)
+          ) {
+            deleteRanges[index] = deleteRange.union(range);
+            continue ranges;
+          }
+        }
+        // 新規作成
+        deleteRanges.push(range);
       }
     }
+  }
+  // 行全体の削除に変換
+  for (let index = 0; index < deleteRanges.length; index++) {
+    const deleteRange = deleteRanges[index];
+    if (
+      isStartOfLineIgnoringWhitespace(document, deleteRange.start) &&
+      isEndOfLineIgnoringWhitespace(document, deleteRange.end)
+    ) {
+      deleteRanges[index] = new Range(deleteRange.start.line, 0, deleteRange.end.line + 1, 0);
+    }
+  }
+  // ,のみになる場合に手前の改行を削除
+  for (let index = 0; index < deleteRanges.length; index++) {
+    const deleteRange = deleteRanges[index];
+    if (!isStartOfLineIgnoringWhitespace(document, deleteRange.start)) {
+      continue;
+    }
+    const afterChar = document.lineAt(deleteRange.end.line).text.charAt(deleteRange.end.character);
+    if (afterChar !== ",") {
+      continue;
+    }
+    const prevToken = root.findLastRange<NoteNode>(
+      (x) => x.range.end.line < deleteRange.start.line && x instanceof NoteNode
+    );
+    if (prevToken === undefined) {
+      continue;
+    }
+    const range = new Range(prevToken.range.end, deleteRange.start);
+    if (document.getText(range).trim() !== "") {
+      continue;
+    }
+    deleteRanges[index] = range.union(deleteRange);
+  }
+  // 削除
+  for (const deleteRange of deleteRanges) {
+    edit.delete(deleteRange);
   }
 }
 
@@ -136,7 +199,7 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
   const input = await vscode.window.showInputBox({
     title: "スクロール速度の一定化",
     prompt: "スクロール速度の基準となるBPMを入力してください",
-    placeHolder: `BPM`,
+    placeHolder: "BPM",
     validateInput: (text) => {
       if (!text) {
         return;
@@ -185,6 +248,134 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
 
       editBuilder.insert(position, command + "\r\n");
       beforeScroll = scroll;
+    }
+  });
+}
+
+/**
+ * スクロール速度の遷移
+ * @param textEditor
+ * @param edit
+ */
+export async function transitionScroll(textEditor: TextEditor, edit: TextEditorEdit) {
+  const document = textEditor.document;
+  const root = documents.parse(document);
+  if (!root) {
+    return;
+  }
+  const selection = textEditor.selection;
+
+  const notes = root.filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode);
+  if (notes.length === 0) {
+    vscode.window.showWarningMessage("選択範囲に譜面が見つかりませんでした");
+    return;
+  }
+
+  const startInput = await vscode.window.showInputBox({
+    title: "スクロール速度の開始値",
+    prompt: "スクロール速度の開始値を入力してください",
+    placeHolder: "1",
+    validateInput: (text) => {
+      if (!text) {
+        return;
+      }
+      if (Number.isNaN(Number(text))) {
+        return "数値を入力してください";
+      }
+    },
+  });
+  if (startInput === undefined || startInput === "") {
+    return;
+  }
+  const start = Number(startInput);
+
+  const endInput = await vscode.window.showInputBox({
+    title: "スクロール速度の終了値",
+    prompt: "スクロール速度の終了値を入力してください",
+    placeHolder: "1",
+    validateInput: (text) => {
+      if (!text) {
+        return;
+      }
+      if (Number.isNaN(Number(text))) {
+        return "数値を入力してください";
+      }
+    },
+  });
+  if (endInput === undefined || endInput === "") {
+    return;
+  }
+  const end = Number(endInput);
+
+  const frequencySelected = await vscode.window.showQuickPick(["小節", "行", "音符", "常時"], {
+    title: "スクロール速度の遷移頻度",
+    placeHolder: "スクロール速度を遷移させる頻度を選択してください",
+  });
+  if (frequencySelected === undefined) {
+    return;
+  }
+
+  const easingSelected = await vscode.window.showQuickPick(easingStrings, {
+    title: "スクロール速度のイージング",
+    placeHolder: "イージングを選択してください",
+  });
+  if (easingSelected === undefined || !isEasingType(easingSelected)) {
+    return;
+  }
+
+  // 挿入位置を集める
+  const positions: Position[] = [];
+  if (frequencySelected === "小節") {
+    positions.push(
+      ...notes
+        .filter(
+          (note, index, self) =>
+            index ===
+            self.findIndex(
+              (x) =>
+                x.properties.measure === note.properties.measure &&
+                x.properties.branchState === note.properties.branchState
+            )
+        )
+        .map((x) => x.range.start)
+    );
+  } else if (frequencySelected === "行") {
+    positions.push(
+      ...notes
+        .map((x) => x.range.start.line)
+        .unique()
+        .map((x) => new Position(x, 0))
+    );
+  } else if (frequencySelected === "音符") {
+    positions.push(...notes.filter((x) => x.value !== "0").map((x) => x.range.start));
+  } else if (frequencySelected === "常時") {
+    positions.push(...notes.map((x) => x.range.start));
+  }
+
+  textEditor.edit((editBuilder) => {
+    // 既存のSCROLL命令を全て削除
+    root
+      .filter<CommandNode>(
+        (x) =>
+          selection.contains(x.range) &&
+          x instanceof CommandNode &&
+          commands.items.scroll.regexp.test(x.properties.name)
+      )
+      .forEach((command) => {
+        const start = new Position(command.range.start.line, 0);
+        const end = new Position(command.range.start.line + 1, 0);
+        const range = new Range(start, end);
+        editBuilder.delete(range);
+      });
+
+    // SCROLL命令の挿入
+    for (let index = 0; index < positions.length; index++) {
+      const position = positions[index];
+      const t = index / (positions.length - 1);
+      const raw = lerp(start, end, t, easingSelected);
+      const value = Math.round(raw * 1000) / 1000;
+      const prefix = position.character > 0 ? "\r\n" : "";
+      editBuilder.insert(position, `${prefix}#SCROLL ${value}\r\n`);
     }
   });
 }
@@ -303,8 +494,26 @@ export function toRest(textEditor: TextEditor, edit: TextEditorEdit) {
   }
 }
 
+// /**
+//  * 特定音符の削除
+//  * @param textEditor
+//  * @param edit
+//  * @returns
+//  */
+// export function toDelete(textEditor: TextEditor, edit: TextEditorEdit) {
+//   const root = documents.parse(textEditor.document);
+//   if (!root) {
+//     return;
+//   }
+//   for (const selection of textEditor.selections) {
+//     root
+//       .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+//       .forEach((note) => edit.replace(note.range, "0"));
+//   }
+// }
+
 /**
- * ドン/カッの反転
+ * 色の反転
  * @param textEditor
  * @param edit
  * @returns
@@ -314,32 +523,34 @@ export async function reverse(textEditor: TextEditor, edit: TextEditorEdit) {
   if (!root) {
     return;
   }
-  const input = await vscode.window.showInputBox({
-    title: "ドン/カッの反転",
-    prompt: "反転させる確率を0~100で入力してください（100: あべこべ, 50: でたらめ, 25: きまぐれ）",
-    value: "100",
-    placeHolder: `0 ~ 100`,
-    validateInput: (text) => {
-      if (!text) {
-        return;
-      }
-      const number = Number(text);
-      if (Number.isNaN(number) || number < 0 || number > 100) {
-        return "0~100までの数値を入力してください";
-      }
-    },
-  });
-  if (input === undefined || input === "") {
-    return;
-  }
-  const percent = Number(input) / 100;
-
   textEditor.edit((editBuilder) => {
     for (const selection of textEditor.selections) {
       root
         .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
         .forEach((note) => {
-          if ((percent > 0 && Math.random() < percent) || percent === 100) {
+          editBuilder.replace(note.range, Note.reverse(note.value));
+        });
+    }
+  });
+}
+
+/**
+ * 色の反転
+ * @param textEditor
+ * @param edit
+ * @returns
+ */
+export async function random(textEditor: TextEditor, edit: TextEditorEdit) {
+  const root = documents.parse(textEditor.document);
+  if (!root) {
+    return;
+  }
+  textEditor.edit((editBuilder) => {
+    for (const selection of textEditor.selections) {
+      root
+        .filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode)
+        .forEach((note) => {
+          if (Math.random() > 0.5) {
             editBuilder.replace(note.range, Note.reverse(note.value));
           }
         });

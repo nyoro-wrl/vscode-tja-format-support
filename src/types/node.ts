@@ -66,6 +66,8 @@ export interface ChartStateProperties {
   branchState: BranchState;
   bpm: number | undefined;
   scroll: number | undefined;
+  measureNumerator: number;
+  measureDenominator: number;
 }
 
 interface MeasureProperties {
