@@ -362,11 +362,26 @@ export const commands = new CommandCollection({
   },
   senotechange: {
     name: "SENOTECHANGE",
-    detail: "",
+    detail: "音符文字の変更",
     regexp: /^SENOTECHANGE$/,
     syntax: new MarkdownString().appendCodeblock("#SENOTECHANGE" + " <type>").value,
     snippet: new SnippetString().appendText("SENOTECHANGE ").value,
-    documentation: "",
+    documentation: new MarkdownString()
+      .appendMarkdown("音符文字を変更します。  \n")
+      .appendMarkdown("`<type>`: `1` ~ `12`で指定します。  \n\n")
+      .appendMarkdown("### **種類**  \n")
+      .appendMarkdown("`1`: ドン  \n")
+      .appendMarkdown("`2`: ド  \n")
+      .appendMarkdown("`3`: コ  \n")
+      .appendMarkdown("`4`: カッ  \n")
+      .appendMarkdown("`5`: カ  \n")
+      .appendMarkdown("`6`: ドン(大)  \n")
+      .appendMarkdown("`7`: カッ(大)  \n")
+      .appendMarkdown("`8`: 連打  \n")
+      .appendMarkdown("`9`: ー  \n")
+      .appendMarkdown("`10`: ーっ!!  \n")
+      .appendMarkdown("`11`: 連打(大)  \n")
+      .appendMarkdown("`12`: ふうせん").value,
     separator: "None",
     section: "Inner",
     category: "TJAP",
@@ -586,11 +601,13 @@ export const commands = new CommandCollection({
   },
   hispeed: {
     name: "HISPEED",
-    detail: "",
+    detail: "疑似速度変更",
     regexp: /^HISPEED$/,
-    syntax: new MarkdownString().appendCodeblock("#HISPEED" + " <speed>").value,
+    syntax: new MarkdownString().appendCodeblock("#HISPEED" + " <rate>").value,
     snippet: new SnippetString().appendText("HISPEED ").value,
-    documentation: "",
+    documentation: new MarkdownString()
+      .appendMarkdown("`#BMSCROLL`中にBPMを変更したときのようにスクロール速度を変更します。  \n")
+      .appendMarkdown("デフォルトは`1.00`です。").value,
     separator: "None",
     section: "Inner",
     category: "TMG",
@@ -598,11 +615,12 @@ export const commands = new CommandCollection({
   },
   include: {
     name: "INCLUDE",
-    detail: "",
+    detail: "定義の読み込み",
     regexp: /^INCLUDE$/,
     syntax: new MarkdownString().appendCodeblock("#INCLUDE" + " <filepath>").value,
     snippet: new SnippetString().appendText("INCLUDE ").value,
-    documentation: "",
+    documentation: new MarkdownString().appendMarkdown("ファイルからヘッダーや命令を読み込みます。")
+      .value,
     separator: "None",
     section: "Unknown",
     category: "TMG",
@@ -636,11 +654,11 @@ export const commands = new CommandCollection({
   },
   bgaon: {
     name: "BGAON",
-    detail: "",
+    detail: "BGAの再生",
     regexp: /^BGAON$/,
     syntax: new MarkdownString().appendCodeblock("#BGAON <index> <offset>").value,
     snippet: new SnippetString().appendText("BGAON ").value,
-    documentation: "",
+    documentation: new MarkdownString().appendMarkdown("BGAを再生します。").value,
     separator: "Space",
     section: "Inner",
     category: "OpTk",
@@ -648,11 +666,11 @@ export const commands = new CommandCollection({
   },
   bgaoff: {
     name: "BGAOFF",
-    detail: "",
+    detail: "BGAの停止",
     regexp: /^BGAOFF$/,
     syntax: new MarkdownString().appendCodeblock("#BGAOFF <index>").value,
     snippet: new SnippetString().appendText("BGAON ").value,
-    documentation: "",
+    documentation: new MarkdownString().appendMarkdown("BGAを停止します。").value,
     separator: "None",
     section: "Inner",
     category: "OpTk",

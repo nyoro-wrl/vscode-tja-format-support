@@ -392,7 +392,7 @@ export const headers = new HeaderCollection({
     detail: "譜面分岐を隠す",
     regexp: /^HIDDENBRANCH$/,
     syntax: new MarkdownString().appendCodeblock("HIDDENBRANCH:1").value,
-    snippet: new SnippetString().appendText("HIDDENBRANCH:").value,
+    snippet: new SnippetString().appendText("HIDDENBRANCH:1").value,
     documentation: new MarkdownString().appendMarkdown("譜面分岐を分岐する瞬間まで隠します。")
       .value,
     section: "Course",
@@ -402,7 +402,7 @@ export const headers = new HeaderCollection({
   },
   headscroll: {
     name: "HEADSCROLL",
-    detail: "HEADSCROLL",
+    detail: "初期スクロール速度",
     regexp: /^HEADSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("HEADSCROLL:<rate>").value,
     snippet: new SnippetString().appendText("HEADSCROLL:").value,
@@ -417,25 +417,14 @@ export const headers = new HeaderCollection({
   // TJAPlayer3
   gaugeincr: {
     name: "GAUGEINCR",
-    detail: "",
+    detail: "魂ゲージの端数処理",
     regexp: /^GAUGEINCR$/,
-    syntax: "",
+    syntax: new MarkdownString().appendCodeblock("GAUGEINCR:<type>").value,
     snippet: new SnippetString().appendText("GAUGEINCR:").value,
-    documentation: "",
+    documentation: new MarkdownString()
+      .appendMarkdown("魂ゲージの端数処理を設定します。  \n")
+      .appendMarkdown("`<type>`: `Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`").value,
     section: "Course",
-    separator: "None",
-    recommend: [],
-    order: 2,
-  },
-  // TJAPlayer3派生
-  lyricfile: {
-    name: "LYRICFILE",
-    detail: "",
-    regexp: /^LYRICFILE$/,
-    syntax: "",
-    snippet: new SnippetString().appendText("LYRICFILE:").value,
-    documentation: "",
-    section: "Root",
     separator: "None",
     recommend: [],
     order: 2,
@@ -483,7 +472,7 @@ export const headers = new HeaderCollection({
       .value,
     section: "Root",
     separator: "None",
-    recommend: ["SELECTBG"],
+    recommend: [],
     order: 1,
   },
   bgoffset: {
@@ -508,7 +497,7 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("DANTICK:").value,
     documentation: new MarkdownString()
       .appendMarkdown("段位の種別を指定します。  \n")
-      .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します詳細は下部に記載。\n\n")
+      .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します。\n\n")
       .appendMarkdown("### **段位の種別**  \n\n")
       .appendMarkdown("`0`: 初級以下  \n")
       .appendMarkdown("`1`: 青段位  \n")
@@ -547,25 +536,25 @@ export const headers = new HeaderCollection({
     recommend: [],
     order: 1,
   },
-  towertype: {
-    name: "TOWERTYPE",
-    detail: "",
-    regexp: /^TOWERTYPE$/,
-    syntax: "",
-    snippet: new SnippetString().appendText("TOWERTYPE:").value,
-    documentation: "",
-    section: "Course",
+  bga: {
+    name: "BGA",
+    detail: "背景アニメ",
+    regexp: /^BGA$/,
+    syntax: new MarkdownString().appendCodeblock("BGA:<filepath>").value,
+    snippet: new SnippetString().appendText("BGA:").value,
+    documentation: new MarkdownString().appendMarkdown("動画ファイルのパス。").value,
+    section: "Root",
     separator: "None",
     recommend: [],
     order: 2,
   },
   lyrics: {
     name: "LYRICS",
-    detail: "",
+    detail: "歌詞ファイル",
     regexp: /^LYRICS$/,
-    syntax: "",
+    syntax: new MarkdownString().appendCodeblock("LYRICS:<filepath>").value,
     snippet: new SnippetString().appendText("LYRICS:").value,
-    documentation: "",
+    documentation: new MarkdownString().appendMarkdown("歌詞ファイルのパス。").value,
     section: "Root",
     separator: "None",
     recommend: [],
@@ -573,11 +562,13 @@ export const headers = new HeaderCollection({
   },
   explicit: {
     name: "EXPLICIT",
-    detail: "",
+    detail: "歌詞の不適切表現",
     regexp: /^EXPLICIT$/,
-    syntax: "",
-    snippet: new SnippetString().appendText("EXPLICIT:").value,
-    documentation: "",
+    syntax: new MarkdownString().appendCodeblock("EXPLICIT:1").value,
+    snippet: new SnippetString().appendText("EXPLICIT:1").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "歌詞に不適切な表現が含まれていることを示します。"
+    ).value,
     section: "Root",
     separator: "None",
     recommend: [],
