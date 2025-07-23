@@ -28,8 +28,9 @@ export type CommandSection =
  *     "Base" // 基本
  *     "TJAP" // TJAPlayer2forPC and TJAPlayer3
  *     "TMG" // TaikoManyGimmicks
+ *     "OpTk" // OpenTaiko
  */
-export type CommandCategory = "Base" | "TJAP" | "TMG";
+export type CommandCategory = "Base" | "TJAP" | "TMG" | "OpTk";
 
 /**
  * 命令

@@ -168,6 +168,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
     // 設定から各カテゴリーの表示状態を取得
     const config = vscode.workspace.getConfiguration("tjaFormatSupport.completion");
     const showTJAPlayer = config.get<boolean>("tjap", true);
+    const showOpenTaiko = config.get<boolean>("optk", false);
     const showTaikoManyGimmicks = config.get<boolean>("tmg", false);
 
     let order = 0;
@@ -179,6 +180,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       // カテゴリーによるフィルタリング
       if (
         (command.category === "TJAP" && !showTJAPlayer) ||
+        (command.category === "OpTk" && !showOpenTaiko) ||
         (!_isTmg && command.category === "TMG" && !showTaikoManyGimmicks)
       ) {
         continue;

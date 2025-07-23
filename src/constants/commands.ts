@@ -360,6 +360,33 @@ export const commands = new CommandCollection({
     category: "TJAP",
     order: 2,
   },
+  senotechange: {
+    name: "SENOTECHANGE",
+    detail: "音符文字の変更",
+    regexp: /^SENOTECHANGE$/,
+    syntax: new MarkdownString().appendCodeblock("#SENOTECHANGE" + " <type>").value,
+    snippet: new SnippetString().appendText("SENOTECHANGE ").value,
+    documentation: new MarkdownString()
+      .appendMarkdown("音符文字を変更します。  \n")
+      .appendMarkdown("`<type>`: `1` ~ `12`で指定します。  \n\n")
+      .appendMarkdown("### **種類**  \n")
+      .appendMarkdown("`1`: ドン  \n")
+      .appendMarkdown("`2`: ド  \n")
+      .appendMarkdown("`3`: コ  \n")
+      .appendMarkdown("`4`: カッ  \n")
+      .appendMarkdown("`5`: カ  \n")
+      .appendMarkdown("`6`: ドン(大)  \n")
+      .appendMarkdown("`7`: カッ(大)  \n")
+      .appendMarkdown("`8`: 連打  \n")
+      .appendMarkdown("`9`: ー  \n")
+      .appendMarkdown("`10`: ーっ!!  \n")
+      .appendMarkdown("`11`: 連打(大)  \n")
+      .appendMarkdown("`12`: ふうせん").value,
+    separator: "None",
+    section: "Inner",
+    category: "TJAP",
+    order: 2,
+  },
   // TaikoManyGimmicks
   judgedelay: {
     name: "JUDGEDELAY",
@@ -571,5 +598,82 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
+  },
+  hispeed: {
+    name: "HISPEED",
+    detail: "疑似速度変更",
+    regexp: /^HISPEED$/,
+    syntax: new MarkdownString().appendCodeblock("#HISPEED" + " <rate>").value,
+    snippet: new SnippetString().appendText("HISPEED ").value,
+    documentation: new MarkdownString()
+      .appendMarkdown("`#BMSCROLL`中にBPMを変更したときのようにスクロール速度を変更します。  \n")
+      .appendMarkdown("デフォルトは`1.00`です。").value,
+    separator: "None",
+    section: "Inner",
+    category: "TMG",
+    order: 2,
+  },
+  include: {
+    name: "INCLUDE",
+    detail: "定義の読み込み",
+    regexp: /^INCLUDE$/,
+    syntax: new MarkdownString().appendCodeblock("#INCLUDE" + " <filepath>").value,
+    snippet: new SnippetString().appendText("INCLUDE ").value,
+    documentation: new MarkdownString().appendMarkdown("ファイルからヘッダーや命令を読み込みます。")
+      .value,
+    separator: "None",
+    section: "Unknown",
+    category: "TMG",
+    order: 2,
+  },
+  // OpenTaiko
+  nmscroll: {
+    name: "NMSCROLL",
+    detail: "スクロール方式変更",
+    regexp: /^NMSCROLL$/,
+    syntax: new MarkdownString().appendCodeblock("#NMSCROLL").value,
+    snippet: new SnippetString().appendText("NMSCROLL").value,
+    documentation: new MarkdownString().appendMarkdown("譜面のスクロールをデフォルトに戻します。")
+      .value,
+    separator: "None",
+    section: "Unknown",
+    category: "OpTk",
+    order: 2,
+  },
+  barline: {
+    name: "BARLINE",
+    detail: "偽の小節線",
+    regexp: /^BARLINE$/,
+    syntax: new MarkdownString().appendCodeblock("#BARLINE").value,
+    snippet: new SnippetString().appendText("BARLINE").value,
+    documentation: new MarkdownString().appendMarkdown("偽の小節線を表示します。").value,
+    separator: "None",
+    section: "Inner",
+    category: "OpTk",
+    order: 2,
+  },
+  bgaon: {
+    name: "BGAON",
+    detail: "BGAの再生",
+    regexp: /^BGAON$/,
+    syntax: new MarkdownString().appendCodeblock("#BGAON <index> <offset>").value,
+    snippet: new SnippetString().appendText("BGAON ").value,
+    documentation: new MarkdownString().appendMarkdown("BGAを再生します。").value,
+    separator: "Space",
+    section: "Inner",
+    category: "OpTk",
+    order: 2,
+  },
+  bgaoff: {
+    name: "BGAOFF",
+    detail: "BGAの停止",
+    regexp: /^BGAOFF$/,
+    syntax: new MarkdownString().appendCodeblock("#BGAOFF <index>").value,
+    snippet: new SnippetString().appendText("BGAON ").value,
+    documentation: new MarkdownString().appendMarkdown("BGAを停止します。").value,
+    separator: "None",
+    section: "Inner",
+    category: "OpTk",
+    order: 2,
   },
 });

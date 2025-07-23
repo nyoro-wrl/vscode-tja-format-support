@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { documents } from "../extension";
-import { HeaderNode, ParameterNode } from "../types/node";
 
 /**
  * ファイルパス指定ヘッダーのファイル補完プロバイダー
@@ -11,7 +10,16 @@ export class FilePathCompletionProvider implements vscode.CompletionItemProvider
   /**
    * ファイルパスを指定するヘッダー名の一覧
    */
-  private readonly filePathHeaders = ["WAVE", "SONG", "SIDEREV", "BGIMAGE", "BGMOVIE", "PREIMAGE"];
+  private readonly filePathHeaders = [
+    "WAVE",
+    "SONG",
+    "SIDEREV",
+    "BGIMAGE",
+    "BGMOVIE",
+    "PREIMAGE",
+    "BGA",
+    "LYRICS",
+  ];
 
   /**
    * ヘッダー別のファイル拡張子フィルター
@@ -23,6 +31,8 @@ export class FilePathCompletionProvider implements vscode.CompletionItemProvider
     ["BGIMAGE", [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]],
     ["BGMOVIE", [".mp4", ".avi", ".mov", ".wmv", ".webm"]],
     ["PREIMAGE", [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]],
+    ["BGA", [".mp4", ".avi", ".mov", ".wmv", ".webm"]],
+    ["LYRICS", [".txt", ".lrc"]],
   ]);
 
   async provideCompletionItems(

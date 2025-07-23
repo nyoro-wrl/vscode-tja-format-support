@@ -9,7 +9,7 @@ export const headers = new HeaderCollection({
   title: {
     name: "TITLE",
     detail: "タイトル",
-    regexp: /^TITLE$/,
+    regexp: /^TITLE([A-Z]{2})?$/,
     syntax: new MarkdownString().appendCodeblock("TITLE:<string>").value,
     snippet: new SnippetString().appendText("TITLE:").value,
     documentation: new MarkdownString().appendMarkdown("曲のタイトル。").value,
@@ -392,13 +392,43 @@ export const headers = new HeaderCollection({
     detail: "譜面分岐を隠す",
     regexp: /^HIDDENBRANCH$/,
     syntax: new MarkdownString().appendCodeblock("HIDDENBRANCH:1").value,
-    snippet: new SnippetString().appendText("HIDDENBRANCH:").value,
+    snippet: new SnippetString().appendText("HIDDENBRANCH:1").value,
     documentation: new MarkdownString().appendMarkdown("譜面分岐を分岐する瞬間まで隠します。")
       .value,
     section: "Course",
     separator: "None",
     recommend: [],
     order: 1,
+  },
+  headscroll: {
+    name: "HEADSCROLL",
+    detail: "初期スクロール速度",
+    regexp: /^HEADSCROLL$/,
+    syntax: new MarkdownString().appendCodeblock("HEADSCROLL:<rate>").value,
+    snippet: new SnippetString().appendText("HEADSCROLL:").value,
+    documentation: new MarkdownString()
+      .appendMarkdown("譜面開始前のスクロール速度。  \n")
+      .appendMarkdown("デフォルトは`1.00`です。").value,
+    section: "Course",
+    separator: "None",
+    recommend: [],
+    order: 2,
+  },
+  // TJAPlayer3
+  gaugeincr: {
+    name: "GAUGEINCR",
+    detail: "魂ゲージの端数処理",
+    regexp: /^GAUGEINCR$/,
+    syntax: new MarkdownString().appendCodeblock("GAUGEINCR:<type>").value,
+    snippet: new SnippetString().appendText("GAUGEINCR:").value,
+    documentation: new MarkdownString()
+      .appendMarkdown("魂ゲージの端数処理を設定します。  \n")
+      .appendMarkdown("`<type>`: `Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`から指定します。")
+      .value,
+    section: "Course",
+    separator: "None",
+    recommend: [],
+    order: 2,
   },
   // OpenTaiko
   exam: {
@@ -468,7 +498,7 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("DANTICK:").value,
     documentation: new MarkdownString()
       .appendMarkdown("段位の種別を指定します。  \n")
-      .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します詳細は下部に記載。\n\n")
+      .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します。\n\n")
       .appendMarkdown("### **段位の種別**  \n\n")
       .appendMarkdown("`0`: 初級以下  \n")
       .appendMarkdown("`1`: 青段位  \n")
@@ -489,6 +519,56 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("DANTICKCOLOR:#FFFFFF").value,
     documentation: new MarkdownString().appendMarkdown(
       "段位の表示色をHTMLカラーコードで指定します。"
+    ).value,
+    section: "Root",
+    separator: "None",
+    recommend: [],
+    order: 2,
+  },
+  maker: {
+    name: "MAKER",
+    detail: "譜面制作者",
+    regexp: /^MAKER$/,
+    syntax: new MarkdownString().appendCodeblock("MAKER:<string>").value,
+    snippet: new SnippetString().appendText("MAKER:").value,
+    documentation: new MarkdownString().appendMarkdown("譜面の制作者。").value,
+    section: "Root",
+    separator: "None",
+    recommend: [],
+    order: 1,
+  },
+  bga: {
+    name: "BGA",
+    detail: "背景アニメ",
+    regexp: /^BGA$/,
+    syntax: new MarkdownString().appendCodeblock("BGA:<filepath>").value,
+    snippet: new SnippetString().appendText("BGA:").value,
+    documentation: new MarkdownString().appendMarkdown("動画ファイルのパス。").value,
+    section: "Root",
+    separator: "None",
+    recommend: [],
+    order: 2,
+  },
+  lyrics: {
+    name: "LYRICS",
+    detail: "歌詞ファイル",
+    regexp: /^LYRICS$/,
+    syntax: new MarkdownString().appendCodeblock("LYRICS:<filepath>").value,
+    snippet: new SnippetString().appendText("LYRICS:").value,
+    documentation: new MarkdownString().appendMarkdown("歌詞ファイルのパス。").value,
+    section: "Root",
+    separator: "None",
+    recommend: [],
+    order: 2,
+  },
+  explicit: {
+    name: "EXPLICIT",
+    detail: "歌詞の不適切表現",
+    regexp: /^EXPLICIT$/,
+    syntax: new MarkdownString().appendCodeblock("EXPLICIT:1").value,
+    snippet: new SnippetString().appendText("EXPLICIT:1").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "歌詞に不適切な表現が含まれていることを示します。"
     ).value,
     section: "Root",
     separator: "None",

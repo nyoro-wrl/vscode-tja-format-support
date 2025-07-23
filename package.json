@@ -167,6 +167,10 @@
               "type": "boolean",
               "description": "TJAPlayer"
             },
+            "optk": {
+              "type": "boolean",
+              "description": "OpenTaiko"
+            },
             "tmg": {
               "type": "boolean",
               "description": "TaikoManyGimmicks"
@@ -174,6 +178,7 @@
           },
           "default": {
             "tjap": true,
+            "optk": true,
             "tmg": false
           },
           "additionalProperties": false

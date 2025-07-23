@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { documents } from "../extension";
-import { headers } from "../constants/headers";
 import { HeaderNode, ParameterNode } from "../types/node";
 
 /**
@@ -14,11 +13,13 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
    */
   private readonly filePathHeaders = [
     "WAVE",
-    "SONG", 
+    "SONG",
     "SIDEREV",
     "BGIMAGE",
-    "BGMOVIE", 
-    "PREIMAGE"
+    "BGMOVIE",
+    "PREIMAGE",
+    "BGA",
+    "LYRICS",
   ];
 
   async provideDocumentLinks(
@@ -26,7 +27,7 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
     token: vscode.CancellationToken
   ): Promise<vscode.DocumentLink[]> {
     const links: vscode.DocumentLink[] = [];
-    
+
     const root = documents.parse(document, token);
     if (!root) {
       return links;
@@ -34,10 +35,10 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
 
     // ファイルパス指定ヘッダーを検索
     const headerNodes = root.filter<HeaderNode>((x) => x instanceof HeaderNode);
-    
+
     for (const headerNode of headerNodes) {
       const headerName = headerNode.properties.name.toUpperCase();
-      
+
       // ファイルパス指定ヘッダーかチェック
       if (!this.filePathHeaders.includes(headerName)) {
         continue;
@@ -50,11 +51,11 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
       }
 
       const filePath = parameterNode.value.trim();
-      
+
       // 相対パスから絶対パスを構築
       const documentDir = path.dirname(document.uri.fsPath);
       const absolutePath = path.resolve(documentDir, filePath);
-      
+
       // ファイルが存在するかチェック
       try {
         if (!fs.existsSync(absolutePath)) {
@@ -63,16 +64,13 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
       } catch (error) {
         continue; // アクセスエラーの場合もスキップ
       }
-      
+
       // DocumentLinkを作成
-      const link = new vscode.DocumentLink(
-        parameterNode.range,
-        vscode.Uri.file(absolutePath)
-      );
-      
+      const link = new vscode.DocumentLink(parameterNode.range, vscode.Uri.file(absolutePath));
+
       // ツールチップを設定
       link.tooltip = this.getTooltipForHeader(headerName, filePath);
-      
+
       links.push(link);
     }
 
@@ -96,6 +94,10 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
         return `背景動画を開く: ${filePath}`;
       case "PREIMAGE":
         return `選曲画面画像を開く: ${filePath}`;
+      case "BGA":
+        return `BGAを開く: ${filePath}`;
+      case "LYRICS":
+        return `歌詞ファイルを開く: ${filePath}`;
       default:
         return `ファイルを開く: ${filePath}`;
     }
