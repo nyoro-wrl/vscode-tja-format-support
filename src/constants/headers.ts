@@ -423,7 +423,8 @@ export const headers = new HeaderCollection({
     snippet: new SnippetString().appendText("GAUGEINCR:").value,
     documentation: new MarkdownString()
       .appendMarkdown("魂ゲージの端数処理を設定します。  \n")
-      .appendMarkdown("`<type>`: `Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`").value,
+      .appendMarkdown("`<type>`: `Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`から指定します。")
+      .value,
     section: "Course",
     separator: "None",
     recommend: [],
