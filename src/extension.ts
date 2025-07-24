@@ -10,6 +10,7 @@ import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider } from 
 import {
   CommandCompletionItemProvider,
   HeaderCompletionItemProvider,
+  HeaderParameterCompletionItemProvider,
   NotesPaddingItemProvider,
 } from "./providers/snippet";
 import { DocumentSymbolProvider } from "./providers/symbol";
@@ -30,7 +31,6 @@ import { Documents } from "./providers/documents";
 import { InfoTreeDataProvider } from "./providers/treeData";
 import { TjaCodeActionProvider } from "./providers/codeAction";
 import { TjaDocumentLinkProvider } from "./providers/documentLink";
-import { FilePathCompletionProvider } from "./providers/filePathCompletion";
 import { MeasureCountInlayHintsProvider } from "./providers/inlayHints";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
@@ -49,6 +49,7 @@ import {
 } from "./commands/chartEdit";
 import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
+
 
 export let activeTjaFile: ActiveTjaFile;
 /**
@@ -90,7 +91,8 @@ export function activate(context: vscode.ExtensionContext) {
       new DocumentSemanticTokensProvider(),
       legend
     ),
-    languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider()),
+    languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider(), ":", " "),
+    languages.registerCompletionItemProvider(selector, new HeaderParameterCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
     languages.registerCompletionItemProvider(selector, new NotesPaddingItemProvider()),
     languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ",", ":"),
@@ -108,7 +110,6 @@ export function activate(context: vscode.ExtensionContext) {
       providedCodeActionKinds: TjaCodeActionProvider.providedCodeActionKinds,
     }),
     languages.registerDocumentLinkProvider(selector, new TjaDocumentLinkProvider()),
-    languages.registerCompletionItemProvider(selector, new FilePathCompletionProvider(), ":"),
     languages.registerInlayHintsProvider(selector, new MeasureCountInlayHintsProvider()),
     new MeasureStatusBarItem(),
     new ComboStatusBarItem(),

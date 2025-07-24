@@ -10,12 +10,20 @@ import { IStatement, StatementCollection } from "./statement";
  */
 type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
 
+export type FilePathType = "Audio" | "tja" | "Image" | "Movie" | "Lyrics";
+
 /**
  * パラメータ定義
  */
 export type StatementParameter = {
   name: string;
-  description?: string;
+  description: string;
+  snippet?: readonly SnippetParameter[] | FilePathType;
+};
+
+export type SnippetParameter = {
+  value: string;
+  detail: string;
 };
 
 /**
@@ -29,7 +37,7 @@ export interface IHeader extends IStatement {
   /**
    * この後に書かれる可能性の高いヘッダ
    */
-  readonly recommend: string[];
+  readonly recommend: readonly string[];
   /**
    * パラメータ定義の配列
    */

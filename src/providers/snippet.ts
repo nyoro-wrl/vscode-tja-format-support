@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
 import {
   CompletionItem,
   CompletionItemKind,
@@ -25,8 +27,61 @@ import {
 } from "../types/node";
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
-import { getChartState, isTmg, generateSyntax } from "../util/util";
+import { getChartState, isTmg, generateSyntax, getSeparatorChar, isInComment } from "../util/util";
 import { getRegExp } from "../types/statement";
+import { IHeader, FilePathType } from "../types/header";
+
+/**
+ * FilePathTypeに対応するファイル拡張子マッピング
+ */
+const FILE_EXTENSIONS: Record<FilePathType, readonly string[]> = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Audio: [".wav", ".mp3", ".ogg", ".m4a", ".flac"],
+  tja: [".tja", ".tjc"],
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Image: [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"],
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Movie: [".mp4", ".avi", ".mov", ".wmv", ".webm"],
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Lyrics: [".txt", ".lrc"],
+} as const;
+
+/**
+ * FilePathTypeから対応する拡張子リストを取得
+ * @param filePathType ファイルパスタイプ
+ * @returns 対応する拡張子の配列
+ */
+function getExtensionsForFilePathType(filePathType: FilePathType): readonly string[] {
+  return FILE_EXTENSIONS[filePathType] || [];
+}
+
+/**
+ * ファイルパラメータの置換範囲を計算
+ * @param document テキストドキュメント
+ * @param position カーソル位置
+ * @returns 置換範囲、または計算できない場合はundefined
+ */
+function calculateParameterReplaceRange(
+  document: vscode.TextDocument,
+  position: vscode.Position
+): vscode.Range | undefined {
+  const currentLine = document.lineAt(position.line).text;
+  const colonIndex = currentLine.indexOf(":");
+
+  if (colonIndex === -1) {
+    return undefined;
+  }
+
+  const parameterStart = colonIndex + 1;
+
+  // 空白をスキップして実際のパラメータ開始位置を取得
+  let actualStart = parameterStart;
+  while (actualStart < currentLine.length && currentLine[actualStart] === " ") {
+    actualStart++;
+  }
+
+  return new vscode.Range(position.line, actualStart, position.line, currentLine.length);
+}
 
 /**
  * ヘッダの補完
@@ -39,6 +94,14 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
     context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
     const snippets: vscode.CompletionItem[] = [];
+
+    // 現在行でカーソル位置より前にコロンが含まれている場合はヘッダー補完を無効化
+    const line = document.lineAt(position).text;
+    const beforeCursor = line.substring(0, position.character);
+
+    if (beforeCursor.includes(":")) {
+      return snippets;
+    }
 
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9]+/);
     const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
@@ -125,7 +188,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       snippet.documentation = new MarkdownString().appendMarkdown(syntax + header.documentation);
       snippet.detail = header.detail;
       snippet.sortText = sortText.toString();
-      // ヘッダー補完後にシグネチャヘルプをトリガー
+      // ヘッダー補完後に署名ヘルプをトリガー
       snippet.command = {
         command: "editor.action.triggerParameterHints",
         title: "Trigger Parameter Hints",
@@ -339,6 +402,293 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
     }
 
     return snippets;
+  }
+}
+
+/**
+ * ヘッダーパラメーターの補完
+ */
+export class HeaderParameterCompletionItemProvider implements vscode.CompletionItemProvider {
+  async provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken,
+    context: vscode.CompletionContext
+  ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
+    const snippets: vscode.CompletionItem[] = [];
+
+    // 現在行のテキストを取得
+    const line = document.lineAt(position).text;
+
+    // コメント内の場合は補完を無効化
+    if (isInComment(line, position)) {
+      return snippets;
+    }
+
+    // ヘッダー名を特定するための処理
+    let headerName: string | undefined = undefined;
+    let headerInfo: IHeader | undefined = undefined;
+
+    // 行全体でヘッダーマッチングを試行
+    const fullLineMatch = line.match(/^([A-Z]+[0-9]*):(.*)$/);
+    if (fullLineMatch) {
+      const testHeaderName = fullLineMatch[1];
+      const testHeaderInfo = headers.get(testHeaderName);
+
+      // コロンの位置を取得
+      const colonPosition = line.indexOf(":");
+      const isInParameterPart = colonPosition !== -1 && position.character > colonPosition;
+
+      if (testHeaderInfo && isInParameterPart) {
+        headerName = testHeaderName;
+        headerInfo = testHeaderInfo;
+      }
+    }
+
+    // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
+    if (!headerInfo) {
+      const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
+      if (specialMatch) {
+        const baseName = specialMatch[1];
+        const number = specialMatch[2];
+        const fullHeaderName = baseName + number;
+        const testHeaderInfo = headers.get(fullHeaderName);
+
+        const colonPosition = line.indexOf(":");
+        const isInParameterPart = colonPosition !== -1 && position.character > colonPosition;
+
+        if (testHeaderInfo && isInParameterPart) {
+          headerInfo = testHeaderInfo;
+          headerName = fullHeaderName;
+        }
+      }
+    }
+
+    if (!headerInfo || !headerName) {
+      return snippets;
+    }
+
+    // 区切り文字を取得
+    const separatorChar = getSeparatorChar(headerInfo.separator);
+
+    // 現在のパラメーター位置を計算
+    const colonPosition = line.indexOf(":");
+    const afterColon = line.substring(colonPosition + 1, position.character);
+    let currentParamIndex = 0;
+
+    if (separatorChar === "") {
+      // 区切り文字が存在しない場合は常に最初のパラメータ
+      currentParamIndex = 0;
+    } else {
+      const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+      const separatorCount = (afterColon.match(separatorRegex) || []).length;
+      // パラメータ数を超えた場合は補完を無効にする
+      currentParamIndex = separatorCount >= headerInfo.parameter.length ? -1 : separatorCount;
+    }
+
+    // パラメータ数を超えた場合は補完しない
+    if (currentParamIndex === -1) {
+      return snippets;
+    }
+
+    // 現在のパラメーター位置のパラメーター定義を取得
+    const currentParam = headerInfo.parameter[currentParamIndex];
+    if (!currentParam || !currentParam.snippet) {
+      return snippets;
+    }
+
+    // snippet の型によって処理を分ける
+    if (Array.isArray(currentParam.snippet)) {
+      // 選択肢系（SnippetParameter[]）の処理
+      const snippetArray = currentParam.snippet;
+      if (snippetArray.length === 0) {
+        return snippets;
+      }
+
+      // 補完アイテムを作成（parameter.snippetの順番を保持）
+      for (let i = 0; i < snippetArray.length; i++) {
+        const item = snippetArray[i];
+
+        // 数値と文字列でアイコンを分ける
+        const isNumeric = /^\d+$/.test(item.value);
+        const kind = isNumeric ? CompletionItemKind.Value : CompletionItemKind.EnumMember;
+
+        const snippet = new CompletionItem(item.value, kind);
+        snippet.insertText = item.value;
+        snippet.detail = item.detail;
+        snippet.documentation = new MarkdownString(currentParam.description);
+        snippet.sortText = i.toString().padStart(3, "0");
+        snippets.push(snippet);
+      }
+    } else {
+      // ファイルパス系（FilePathType）の処理
+      const filePathType = currentParam.snippet as FilePathType;
+      const filePathCompletions = await this.getFilePathCompletions(
+        document,
+        position,
+        filePathType,
+        line
+      );
+      return filePathCompletions;
+    }
+
+    return snippets;
+  }
+
+  /**
+   * ファイルパス補完を取得
+   * @param document テキストドキュメント
+   * @param position カーソル位置
+   * @param filePathType ファイルパスタイプ
+   * @param line 現在行のテキスト
+   * @returns ファイルパス補完アイテムの配列
+   */
+  private async getFilePathCompletions(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    filePathType: FilePathType,
+    line: string
+  ): Promise<vscode.CompletionItem[]> {
+    // カーソルがコロンの後にあることを確認
+    const colonIndex = line.indexOf(":");
+    if (colonIndex === -1 || position.character <= colonIndex) {
+      return [];
+    }
+
+    try {
+      // ドキュメントパスの検証
+      if (!document.uri.fsPath) {
+        return [];
+      }
+
+      const documentDir = path.dirname(document.uri.fsPath);
+      const currentFileName = path.basename(document.uri.fsPath);
+
+      // 現在のパラメータ値を取得
+      const headerMatch = line.match(/^\s*([A-Z]+):\s*(.*)$/);
+      const currentParameterValue = headerMatch ? headerMatch[2].trim() : "";
+
+      return await this.getFileCompletions(
+        documentDir,
+        filePathType,
+        currentFileName,
+        currentParameterValue,
+        position,
+        document
+      );
+    } catch (error) {
+      // エラーが発生した場合は空の配列を返す
+      console.warn("Failed to get file path completions:", error);
+      return [];
+    }
+  }
+
+  /**
+   * 指定ディレクトリからファイル補完候補を取得
+   * @param directoryPath 検索対象ディレクトリパス
+   * @param filePathType ファイルパスタイプ
+   * @param currentFileName 現在のファイル名（除外対象）
+   * @param currentParameterValue 現在のパラメータ値
+   * @param position カーソル位置
+   * @param document テキストドキュメント
+   * @returns ファイル補完アイテムの配列
+   */
+  private async getFileCompletions(
+    directoryPath: string,
+    filePathType: FilePathType,
+    currentFileName?: string,
+    currentParameterValue?: string,
+    position?: vscode.Position,
+    document?: vscode.TextDocument
+  ): Promise<vscode.CompletionItem[]> {
+    const completionItems: vscode.CompletionItem[] = [];
+
+    try {
+      const files = await fs.promises.readdir(directoryPath, { withFileTypes: true });
+      const allowedExtensions = getExtensionsForFilePathType(filePathType);
+
+      for (const file of files) {
+        if (file.isFile()) {
+          const fileName = file.name;
+
+          // 隠しファイルを除外
+          if (fileName.startsWith(".")) {
+            continue;
+          }
+
+          // 自身のファイルを除外
+          if (currentFileName && fileName === currentFileName) {
+            continue;
+          }
+
+          const fileExt = path.extname(fileName).toLowerCase();
+
+          const completionItem = new vscode.CompletionItem(
+            fileName,
+            vscode.CompletionItemKind.File
+          );
+
+          // ソート用の優先度を設定（推奨拡張子ほど上位に）
+          completionItem.sortText = this.getSortText(filePathType, fileExt, fileName);
+
+          // 既存のパラメータ値を置換する範囲を設定
+          if (position && document && currentParameterValue !== undefined) {
+            const replaceRange = calculateParameterReplaceRange(document, position);
+            if (replaceRange) {
+              completionItem.range = replaceRange;
+            }
+          }
+
+          completionItems.push(completionItem);
+        } else if (file.isDirectory()) {
+          // サブディレクトリも候補に追加
+          const completionItem = new vscode.CompletionItem(
+            file.name + "/",
+            vscode.CompletionItemKind.Folder
+          );
+          completionItem.detail = "フォルダ";
+          completionItem.insertText = file.name + "/";
+          completionItem.command = {
+            command: "editor.action.triggerSuggest",
+            title: "Re-trigger completions",
+          };
+
+          // フォルダにも同じ置換範囲を設定
+          if (position && document && currentParameterValue !== undefined) {
+            const replaceRange = calculateParameterReplaceRange(document, position);
+            if (replaceRange) {
+              completionItem.range = replaceRange;
+            }
+          }
+
+          completionItems.push(completionItem);
+        }
+      }
+    } catch (error) {
+      // ディレクトリアクセスエラーは無視
+    }
+
+    return completionItems;
+  }
+
+  /**
+   * ソート用のテキストを生成（推奨拡張子を優先）
+   * @param filePathType ファイルパスタイプ
+   * @param extension ファイル拡張子
+   * @param fileName ファイル名
+   * @returns ソート用文字列
+   */
+  private getSortText(filePathType: FilePathType, extension: string, fileName: string): string {
+    const allowedExtensions = getExtensionsForFilePathType(filePathType);
+    const index = allowedExtensions.indexOf(extension);
+
+    if (index >= 0) {
+      // 推奨拡張子の場合、インデックスに基づいて優先順位を設定
+      return `0${index.toString().padStart(2, "0")}_${fileName}`;
+    } else {
+      // 非推奨拡張子の場合、拡張子別にグループ化して後ろに配置
+      return `1${extension}_${fileName}`;
+    }
   }
 }
 

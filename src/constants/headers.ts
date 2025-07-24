@@ -27,12 +27,28 @@ export const headers = new HeaderCollection({
       "`Dan`または`6`を入れると段位道場譜面として認識されます。",
     parameter: [
       {
-        name: "<course>",
+        name: "course",
         description:
           "難易度  \n" +
           "`Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n" +
           "`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。  \n" +
           "`Dan`または`6`を入れると段位道場譜面として認識されます。",
+        snippet: [
+          { value: "0", detail: "かんたん" },
+          { value: "1", detail: "ふつう" },
+          { value: "2", detail: "むずかしい" },
+          { value: "3", detail: "おに" },
+          { value: "4", detail: "エディット" },
+          { value: "5", detail: "タワー" },
+          { value: "6", detail: "段位" },
+          { value: "Easy", detail: "かんたん" },
+          { value: "Normal", detail: "ふつう" },
+          { value: "Hard", detail: "むずかしい" },
+          { value: "Oni", detail: "おに" },
+          { value: "Edit", detail: "エディット" },
+          { value: "Tower", detail: "タワー" },
+          { value: "Dan", detail: "段位" },
+        ],
       },
     ],
     section: "Course",
@@ -65,7 +81,7 @@ export const headers = new HeaderCollection({
     detail: "音源ファイル",
     documentation:
       "音源ファイルのパス。  \n" + "殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。",
-    parameter: [{ name: "filepath", description: "音源ファイルパス" }],
+    parameter: [{ name: "filepath", description: "音源ファイルパス", snippet: "Audio" }],
     section: "Root",
     separator: "None",
     recommend: ["OFFSET"],
@@ -147,6 +163,12 @@ export const headers = new HeaderCollection({
       {
         name: "style",
         description: "プレイ人数  \n" + "`Single`,`Double`もしくは`1`,`2`の値を指定します。",
+        snippet: [
+          { value: "1", detail: "一人プレイ" },
+          { value: "2", detail: "二人プレイ" },
+          { value: "Single", detail: "一人プレイ" },
+          { value: "Double", detail: "二人プレイ" },
+        ],
       },
     ],
     section: "Style",
@@ -195,6 +217,14 @@ export const headers = new HeaderCollection({
           "`Normal`か`1`を入力した場合、曲選択画面で表状態のときのみ曲が表示され、  \n" +
           "`Ex`か`2`を入力した場合、曲選択画面で裏状態のときのみ曲が表示されます。  \n" +
           "`Both`か`3`を入力した場合は常に表示されます（初期設定）。",
+        snippet: [
+          { value: "1", detail: "表状態のときのみ表示" },
+          { value: "2", detail: "裏状態のときのみ表示" },
+          { value: "3", detail: "常に表示" },
+          { value: "Normal", detail: "表状態のときのみ表示" },
+          { value: "Ex", detail: "裏状態のときのみ表示" },
+          { value: "Both", detail: "常に表示" },
+        ],
       },
     ],
     section: "Root",
@@ -225,7 +255,7 @@ export const headers = new HeaderCollection({
       "コースに使用する譜面のファイルパス。  \n" +
       "`.tjc`ファイル上で有効なヘッダです。  \n" +
       "`<filepath>`: tjaファイルをルートディレクトリから指定します。",
-    parameter: [{ name: "filepath", description: "コースの課題曲" }],
+    parameter: [{ name: "filepath", description: "コースの課題曲", snippet: "tja" }],
     section: "Root",
     separator: "None",
     recommend: ["SONG"],
@@ -236,7 +266,7 @@ export const headers = new HeaderCollection({
     name: "SIDEREV",
     detail: "表裏の対応ファイル",
     documentation: "表裏で対になる譜面ファイルを指定します。",
-    parameter: [{ name: "filepath", description: "表裏の対応ファイル" }],
+    parameter: [{ name: "filepath", description: "表裏の対応ファイル", snippet: "tja" }],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -256,6 +286,12 @@ export const headers = new HeaderCollection({
           "配点方式  \n" +
           "`0` ~ `3`の値を指定します。  \n" +
           "`0`でドンだフル、`1`でAC14、`2`で新筐体、`3`で真打。",
+        snippet: [
+          { value: "0", detail: "ドンだフル" },
+          { value: "1", detail: "AC14" },
+          { value: "2", detail: "新筐体" },
+          { value: "3", detail: "真打" },
+        ],
       },
     ],
     section: "Root",
@@ -322,7 +358,7 @@ export const headers = new HeaderCollection({
     name: "BGIMAGE",
     detail: "背景画像",
     documentation: "背景画像ファイルのパス。",
-    parameter: [{ name: "filepath", description: "背景画像ファイルのパス" }],
+    parameter: [{ name: "filepath", description: "背景画像ファイルのパス", snippet: "Image" }],
     section: "Root",
     separator: "None",
     recommend: ["BGOFFSET", "BGMOVIE"],
@@ -332,7 +368,7 @@ export const headers = new HeaderCollection({
     name: "BGMOVIE",
     detail: "背景動画",
     documentation: "背景動画ファイルのパス。",
-    parameter: [{ name: "filepath", description: "背景動画ファイルのパス" }],
+    parameter: [{ name: "filepath", description: "背景動画ファイルのパス", snippet: "Movie" }],
     section: "Root",
     separator: "None",
     recommend: ["MOVIEOFFSET"],
@@ -354,7 +390,13 @@ export const headers = new HeaderCollection({
     name: "HIDDENBRANCH",
     detail: "譜面分岐を隠す",
     documentation: "譜面分岐を分岐する瞬間まで隠します。",
-    parameter: [{ name: "<type>", description: "`1`で分岐を隠す" }],
+    parameter: [
+      {
+        name: "type",
+        description: "`1`で分岐を隠す",
+        snippet: [{ value: "1", detail: "分岐を隠す" }],
+      },
+    ],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -382,6 +424,13 @@ export const headers = new HeaderCollection({
         name: "type",
         description:
           "魂ゲージの端数処理  \n" + "`Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`から指定します。",
+        snippet: [
+          { value: "Normal", detail: "通常" },
+          { value: "Floor", detail: "切り捨て" },
+          { value: "Round", detail: "四捨五入" },
+          { value: "Notfix", detail: "端数処理なし" },
+          { value: "Ceiling", detail: "切り上げ" },
+        ],
       },
     ],
     section: "Course",
@@ -414,8 +463,7 @@ export const headers = new HeaderCollection({
       {
         name: "type",
         description:
-          "条件の種類  \n" +
-          "### **条件の種類**  \n" +
+          "条件の種類  \n\n" +
           "`g`: 魂ゲージ(%)  \n" +
           "`jp`: 良の数  \n" +
           "`jg`: 可の数  \n" +
@@ -424,6 +472,16 @@ export const headers = new HeaderCollection({
           "`r`: 連打数  \n" +
           "`h`: 叩けた数  \n" +
           "`c`: 最大コンボ数",
+        snippet: [
+          { value: "g", detail: "魂ゲージ(%)" },
+          { value: "jp", detail: "良の数" },
+          { value: "jg", detail: "可の数" },
+          { value: "jb", detail: "不可の数" },
+          { value: "s", detail: "スコア" },
+          { value: "r", detail: "連打数" },
+          { value: "h", detail: "叩けた数" },
+          { value: "c", detail: "最大コンボ数" },
+        ],
       },
       {
         name: "red",
@@ -466,6 +524,10 @@ export const headers = new HeaderCollection({
           "`r`: 連打数  \n" +
           "`h`: 叩けた数  \n" +
           "`c`: 最大コンボ数",
+        snippet: [
+          { value: "m", detail: "基準値以上で合格" },
+          { value: "l", detail: "基準値未満で合格" },
+        ],
       },
     ],
     section: "Root",
@@ -479,7 +541,7 @@ export const headers = new HeaderCollection({
     name: "PREIMAGE",
     detail: "選曲画面の画像",
     documentation: "選曲画面に表示する画像ファイルのパス。",
-    parameter: [{ name: "filepath", description: "画像ファイルのパス" }],
+    parameter: [{ name: "filepath", description: "画像ファイルのパス", snippet: "Image" }],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -514,6 +576,14 @@ export const headers = new HeaderCollection({
         name: "type",
         description:
           "段位種別  \n`0` ~ `5`から指定します。  \n\n### **段位の種別**  \n\n`0`: 初級以下  \n`1`: 青段位  \n`2`: 赤段位  \n`3`: 人段位①（銀）  \n`4`: 人段位②（金）  \n`5`: 外伝",
+        snippet: [
+          { value: "0", detail: "初級以下" },
+          { value: "1", detail: "青段位" },
+          { value: "2", detail: "赤段位" },
+          { value: "3", detail: "人段位①（銀）" },
+          { value: "4", detail: "人段位②（金）" },
+          { value: "5", detail: "外伝" },
+        ],
       },
     ],
     section: "Root",
@@ -546,7 +616,9 @@ export const headers = new HeaderCollection({
     name: "BGA",
     detail: "背景アニメ",
     documentation: "動画ファイルのパス。",
-    parameter: [{ name: "filepath", description: "背景アニメの動画ファイルパス" }],
+    parameter: [
+      { name: "filepath", description: "背景アニメの動画ファイルパス", snippet: "Movie" },
+    ],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -556,7 +628,7 @@ export const headers = new HeaderCollection({
     name: "LYRICS",
     detail: "歌詞ファイル",
     documentation: "歌詞ファイルのパス。",
-    parameter: [{ name: "filepath", description: "歌詞ファイルのパス" }],
+    parameter: [{ name: "filepath", description: "歌詞ファイルのパス", snippet: "Lyrics" }],
     section: "Root",
     separator: "None",
     recommend: ["EXPLICIT"],
@@ -566,7 +638,13 @@ export const headers = new HeaderCollection({
     name: "EXPLICIT",
     detail: "歌詞の不適切表現",
     documentation: "歌詞に不適切な表現が含まれていることを示します。",
-    parameter: [{ name: "type", description: "`1`で不適切表現あり" }],
+    parameter: [
+      {
+        name: "type",
+        description: "`1`で不適切表現あり",
+        snippet: [{ value: "1", detail: "不適切表現あり" }],
+      },
+    ],
     section: "Root",
     separator: "None",
     recommend: [],
