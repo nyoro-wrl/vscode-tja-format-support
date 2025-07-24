@@ -37,6 +37,10 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
     const headerNodes = root.filter<HeaderNode>((x) => x instanceof HeaderNode);
 
     for (const headerNode of headerNodes) {
+      if (token.isCancellationRequested) {
+        return links;
+      }
+
       const headerName = headerNode.properties.name.toUpperCase();
 
       // ファイルパス指定ヘッダーかチェック

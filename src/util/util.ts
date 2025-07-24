@@ -1,4 +1,4 @@
-import { Position, TextDocument } from "vscode";
+import { Position, TextDocument, MarkdownString, CancellationToken } from "vscode";
 import { documents } from "../extension";
 import {
   ChartStateProperties,
@@ -8,19 +8,23 @@ import {
   BranchNode,
 } from "../types/node";
 import { ChartState } from "../types/state";
+import { ParameterDefinition } from "../types/header";
+import { Separator } from "../types/statement";
 import path = require("path");
 
 /**
  * 特定位置の譜面状態を取得
  * @param document
  * @param position
+ * @param token
  * @returns
  */
 export function getChartState(
   document: TextDocument,
-  position: Position
+  position: Position,
+  token?: CancellationToken
 ): ChartStateProperties | undefined {
-  const root = documents.parse(document);
+  const root = documents.parse(document, token);
   if (root === undefined) {
     return;
   }
@@ -208,3 +212,58 @@ Array.prototype.uniqueSorted = function <T>(order: "asc" | "desc" = "desc"): Arr
     }
   });
 };
+
+/**
+ * Separatorタイプから実際の区切り文字を取得
+ * @param separator 区切り文字タイプ
+ * @returns 実際の区切り文字（文字列）
+ */
+export function getSeparatorChar(separator: Separator): string {
+  switch (separator) {
+    case "Comma":
+      return ",";
+    case "Space":
+      return " ";
+    case "None":
+    case "Unknown":
+    default:
+      return ""; // 区切り文字が存在しない
+  }
+}
+
+/**
+ * 指定位置がコメント内かどうかを判定
+ * @param line 行のテキスト
+ * @param position カーソル位置
+ * @returns コメント内の場合true
+ */
+export function isInComment(line: string, position: Position): boolean {
+  // コメント開始位置を計算
+  const commentStart = line.indexOf("//");
+  return commentStart !== -1 && position.character >= commentStart;
+}
+
+/**
+ * パラメータ定義からsyntax文字列を生成
+ * @param name ヘッダー名
+ * @param parameters パラメータ定義配列
+ * @param separator 区切り文字タイプ
+ * @returns Markdown形式のsyntax文字列
+ */
+export function generateSyntax(
+  name: string,
+  parameters: readonly ParameterDefinition[],
+  separator: Separator = "Comma"
+): string {
+  const separatorChar = getSeparatorChar(separator);
+
+  // 区切り文字が存在しない場合は最初のパラメータのみ表示
+  if (separatorChar === "" && parameters.length > 0) {
+    const firstParam = parameters[0];
+    const paramPart = `<${firstParam[0]}>`;
+    return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
+  }
+
+  const paramPart = parameters.map(([paramName]) => `<${paramName}>`).join(separatorChar);
+  return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
+}

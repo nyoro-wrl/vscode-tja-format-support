@@ -11,9 +11,14 @@ import { IStatement, StatementCollection } from "./statement";
 type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
 
 /**
+ * パラメータ定義（[name, description]のタプル形式）
+ */
+export type ParameterDefinition = readonly [string, string];
+
+/**
  * ヘッダ
  */
-interface IHeader extends IStatement {
+export interface IHeader extends IStatement {
   /**
    * ヘッダの記載位置
    */
@@ -22,6 +27,10 @@ interface IHeader extends IStatement {
    * この後に書かれる可能性の高いヘッダ
    */
   readonly recommend: string[];
+  /**
+   * パラメータ定義の配列
+   */
+  readonly parameter: readonly ParameterDefinition[];
 }
 
 /**
@@ -61,6 +70,10 @@ interface IHeaderRecord extends Record<string, IHeader> {
   readonly bgoffset: IHeader;
   readonly dantick: IHeader;
   readonly dantickcolor: IHeader;
+  readonly maker: IHeader;
+  readonly bga: IHeader;
+  readonly lyrics: IHeader;
+  readonly explicit: IHeader;
 }
 
 export class HeaderCollection extends StatementCollection<IHeader> {

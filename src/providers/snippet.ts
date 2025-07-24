@@ -25,7 +25,7 @@ import {
 } from "../types/node";
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
-import { getChartState, isTmg } from "../util/util";
+import { getChartState, isTmg, generateSyntax } from "../util/util";
 
 /**
  * ヘッダの補完
@@ -77,6 +77,10 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       // 優先度の計算
       const sortText = new SortTextFactory();
       sortText.order4 += header.order;
+      if (header.order > 1) {
+        // 明確な目的がないと使わないヘッダは優先度を下げる
+        sortText.order3++;
+      }
       sortText.order5 += order;
       if (root === undefined) {
         sortText.order1++;
@@ -112,11 +116,16 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
 
       const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
       snippet.insertText = new SnippetString(header.snippet);
-      snippet.documentation = new MarkdownString().appendMarkdown(
-        header.syntax + header.documentation
-      );
+      // syntax自動生成
+      const syntax = generateSyntax(header.name, header.parameter, header.separator);
+      snippet.documentation = new MarkdownString().appendMarkdown(syntax + header.documentation);
       snippet.detail = header.detail;
       snippet.sortText = sortText.toString();
+      // ヘッダー補完後にシグネチャヘルプをトリガー
+      snippet.command = {
+        command: "editor.action.triggerParameterHints",
+        title: "Trigger Parameter Hints",
+      };
       snippets.push(snippet);
       order++;
     }
@@ -156,7 +165,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
     const branchNode = node?.findParent<BranchNode>((x) => x instanceof BranchNode);
 
     // 譜面状態を取得する
-    const chartState = getChartState(document, position) ?? new ChartState();
+    const chartState = getChartState(document, position, token) ?? new ChartState();
 
     // 現在が小節頭かどうか取得
     const beforeChartTokenNode = chartNode?.findLastRange(
@@ -283,9 +292,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       if (_isTmg) {
         snippet.insertText = toTmgCommandSnippetText(snippet.insertText);
       }
-      snippet.documentation = new MarkdownString().appendMarkdown(
-        command.syntax + command.documentation
-      );
+      snippet.documentation = new MarkdownString().appendMarkdown(command.documentation);
       snippet.detail = command.detail;
       snippet.sortText = sortText.toString();
       snippets.push(snippet);

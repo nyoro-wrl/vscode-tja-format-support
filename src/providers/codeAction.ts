@@ -15,23 +15,26 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
 
     // 風船音符の打数未定義の警告をチェック
     for (const diagnostic of context.diagnostics) {
+      if (token.isCancellationRequested) {
+        return actions;
+      }
       if (diagnostic.message.startsWith("打数が定義されていません。")) {
         const action = this.createBalloonParameterQuickFix(document, diagnostic, token);
         if (action) {
           actions.push(action);
         }
       } else if (diagnostic.message === "風船音符がありません。") {
-        const action = this.createUnusedBalloonParameterQuickFix(document, diagnostic, token);
+        const action = this.createUnusedBalloonParameterQuickFix(document, diagnostic);
         if (action) {
           actions.push(action);
         }
       } else if (diagnostic.message === "#END がありません。") {
-        const action = this.createEndCommandQuickFix(document, diagnostic, token);
+        const action = this.createEndCommandQuickFix(document, diagnostic);
         if (action) {
           actions.push(action);
         }
       } else if (diagnostic.code === "redundant-command") {
-        const action = this.createRedundantCommandQuickFix(document, diagnostic, token);
+        const action = this.createRedundantCommandQuickFix(document, diagnostic);
         if (action) {
           actions.push(action);
         }
@@ -117,8 +120,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
 
   private createUnusedBalloonParameterQuickFix(
     document: vscode.TextDocument,
-    diagnostic: vscode.Diagnostic,
-    token: vscode.CancellationToken
+    diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
     const action = new vscode.CodeAction("削除", vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];
@@ -134,8 +136,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
 
   private createEndCommandQuickFix(
     document: vscode.TextDocument,
-    diagnostic: vscode.Diagnostic,
-    token: vscode.CancellationToken
+    diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
     const action = new vscode.CodeAction("#END の作成", vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];
@@ -155,8 +156,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
 
   private createRedundantCommandQuickFix(
     document: vscode.TextDocument,
-    diagnostic: vscode.Diagnostic,
-    token: vscode.CancellationToken
+    diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
     const action = new vscode.CodeAction("不要な命令を削除", vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];

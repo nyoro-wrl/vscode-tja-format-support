@@ -1,5 +1,6 @@
 import { MarkdownString, SnippetString } from "vscode";
-import { HeaderCollection } from "../types/header";
+import { HeaderCollection, ParameterDefinition } from "../types/header";
+import { Separator } from "../types/statement";
 
 /**
  * ヘッダの仕様一覧
@@ -10,9 +11,9 @@ export const headers = new HeaderCollection({
     name: "TITLE",
     detail: "タイトル",
     regexp: /^TITLE([A-Z]{2})?$/,
-    syntax: new MarkdownString().appendCodeblock("TITLE:<string>").value,
     snippet: new SnippetString().appendText("TITLE:").value,
     documentation: new MarkdownString().appendMarkdown("曲のタイトル。").value,
+    parameter: [["string", "タイトル"]],
     section: "Root",
     separator: "None",
     recommend: ["SUBTITLE"],
@@ -22,15 +23,22 @@ export const headers = new HeaderCollection({
     name: "COURSE",
     detail: "難易度",
     regexp: /^COURSE$/,
-    syntax: new MarkdownString().appendCodeblock("COURSE:<course>").value,
     snippet: new SnippetString().appendText("COURSE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("譜面の難易度。  \n")
       .appendMarkdown(
         "`<course>`: `Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n"
       )
-      .appendMarkdown("`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。")
+      .appendMarkdown(
+        "`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。  \n"
+      )
       .appendMarkdown("`Dan`または`6`を入れると段位道場譜面として認識されます。").value,
+    parameter: [
+      [
+        "course",
+        "難易度  \n`Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。  \n`Dan`または`6`を入れると段位道場譜面として認識されます。",
+      ],
+    ],
     section: "Course",
     separator: "None",
     recommend: ["LEVEL"],
@@ -40,11 +48,9 @@ export const headers = new HeaderCollection({
     name: "LEVEL",
     detail: "レベル",
     regexp: /^LEVEL$/,
-    syntax: new MarkdownString().appendCodeblock("LEVEL:<int>").value,
     snippet: new SnippetString().appendText("LEVEL:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面のレベル。  \n")
-      .appendMarkdown("自然数で表記します。").value,
+    documentation: new MarkdownString().appendMarkdown("譜面のレベル。").value,
+    parameter: [["int", "レベル"]],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -54,9 +60,9 @@ export const headers = new HeaderCollection({
     name: "BPM",
     detail: "BPM",
     regexp: /^BPM$/,
-    syntax: new MarkdownString().appendCodeblock("BPM:<bpm>").value,
     snippet: new SnippetString().appendText("BPM:").value,
     documentation: new MarkdownString().appendMarkdown("曲のBPM。").value,
+    parameter: [["float", "BPM"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -66,11 +72,11 @@ export const headers = new HeaderCollection({
     name: "WAVE",
     detail: "音源ファイル",
     regexp: /^WAVE$/,
-    syntax: new MarkdownString().appendCodeblock("WAVE:<filepath>").value,
     snippet: new SnippetString().appendText("WAVE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("音源ファイルのパス。  \n")
       .appendMarkdown("殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。").value,
+    parameter: [["filepath", "音源ファイルパス"]],
     section: "Root",
     separator: "None",
     recommend: ["OFFSET"],
@@ -80,11 +86,11 @@ export const headers = new HeaderCollection({
     name: "OFFSET",
     detail: "音源ファイルの再生タイミング",
     regexp: /^OFFSET$/,
-    syntax: new MarkdownString().appendCodeblock("OFFSET:<decimal>").value,
-    snippet: new SnippetString().appendText("OFFSET:").value,
+    snippet: new SnippetString().appendText("OFFSET:").appendPlaceholder("0").value,
     documentation: new MarkdownString().appendMarkdown(
       "譜面の開始位置と音源ファイルの再生タイミングの差を秒数で指定します。"
     ).value,
+    parameter: [["second", "音源ファイルの再生タイミング"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -94,25 +100,24 @@ export const headers = new HeaderCollection({
     name: "BALLOON",
     detail: "風船打数",
     regexp: /^BALLOON$/,
-    syntax: new MarkdownString().appendCodeblock("BALLOON:[<int>...]").value,
     snippet: new SnippetString().appendText("BALLOON:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("風船音符の打数を`,`区切りで入力します。  \n")
-      .appendMarkdown("省略した場合は一律5打になります。").value,
+    documentation: new MarkdownString().appendMarkdown("風船音符の打数を`,`区切りで入力します。")
+      .value,
+    parameter: [["int...", "風船打数"]],
     section: "Course",
     separator: "Comma",
-    recommend: ["BALLOONNOR", "BALLOONEXP", "BALLOONMAS"],
-    order: 1,
+    recommend: [],
+    order: 0,
   },
   songvol: {
     name: "SONGVOL",
     detail: "音源ファイルの音量",
     regexp: /^SONGVOL$/,
-    syntax: new MarkdownString().appendCodeblock("SONGVOL:<percent>").value,
-    snippet: new SnippetString().appendText("SONGVOL:").value,
+    snippet: new SnippetString().appendText("SONGVOL:").appendPlaceholder("100").value,
     documentation: new MarkdownString()
       .appendMarkdown("音源ファイルの音量。  \n")
       .appendMarkdown("基準値は100。").value,
+    parameter: [["percent", "音源ファイルの音量（基準値: 100）"]],
     section: "Root",
     separator: "None",
     recommend: ["SEVOL"],
@@ -122,11 +127,11 @@ export const headers = new HeaderCollection({
     name: "SEVOL",
     detail: "効果音の音量",
     regexp: /^SEVOL$/,
-    syntax: new MarkdownString().appendCodeblock("SEVOL:<percent>").value,
-    snippet: new SnippetString().appendText("SEVOL:").value,
+    snippet: new SnippetString().appendText("SEVOL:").appendPlaceholder("100").value,
     documentation: new MarkdownString()
       .appendMarkdown("効果音の音量。  \n")
       .appendMarkdown("基準値は100。").value,
+    parameter: [["percent", "効果音の音量（基準値: 100）"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -134,13 +139,13 @@ export const headers = new HeaderCollection({
   },
   scoreinit: {
     name: "SCOREINIT",
-    detail: "初項",
+    detail: "配点初項",
     regexp: /^SCOREINIT$/,
-    syntax: new MarkdownString().appendCodeblock("SCOREINIT:<int>").value,
     snippet: new SnippetString().appendText("SCOREINIT:").value,
     documentation: new MarkdownString()
       .appendMarkdown("配点の初項。  \n")
       .appendMarkdown("10コンボ未満の時に小音符を良判定で叩いたときの得点を指定します。").value,
+    parameter: [["int", "配点初項（10コンボ未満時の小音符得点）"]],
     section: "Course",
     separator: "None",
     recommend: ["SCOREDIFF"],
@@ -148,13 +153,13 @@ export const headers = new HeaderCollection({
   },
   scorediff: {
     name: "SCOREDIFF",
-    detail: "公差",
+    detail: "配点公差",
     regexp: /^SCOREDIFF$/,
-    syntax: new MarkdownString().appendCodeblock("SCOREDIFF:<int>").value,
     snippet: new SnippetString().appendText("SCOREDIFF:").value,
     documentation: new MarkdownString()
       .appendMarkdown("配点の公差。  \n")
       .appendMarkdown("一定のコンボ数ごとに加算される一打あたりの点数を指定します。").value,
+    parameter: [["int", "配点公差（コンボ数ごとに加算される点数）"]],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -164,7 +169,6 @@ export const headers = new HeaderCollection({
     name: "STYLE",
     detail: "プレイ人数",
     regexp: /^STYLE$/,
-    syntax: new MarkdownString().appendCodeblock("STYLE:<style>").value,
     snippet: new SnippetString().appendText("STYLE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("プレイ人数を指定します。  \n")
@@ -172,6 +176,7 @@ export const headers = new HeaderCollection({
       .appendMarkdown(
         "`Single`または`1`は一人プレイ、`Double`または`2`は二人プレイの譜面であることを示します。"
       ).value,
+    parameter: [["style", "プレイ人数  \n`Single`,`Double`もしくは`1`,`2`の値を指定します。"]],
     section: "Style",
     separator: "None",
     recommend: [],
@@ -181,11 +186,11 @@ export const headers = new HeaderCollection({
     name: "LIFE",
     detail: "ライフ",
     regexp: /^LIFE$/,
-    syntax: new MarkdownString().appendCodeblock("LIFE:<int>").value,
     snippet: new SnippetString().appendText("LIFE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("ライフの数を指定します。  \n")
       .appendMarkdown("不可を出すたびにライフが減り、0になると強制的に演奏が中断されます。").value,
+    parameter: [["int", "ライフの数"]],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -195,11 +200,11 @@ export const headers = new HeaderCollection({
     name: "DEMOSTART",
     detail: "選曲画面のデモ再生位置",
     regexp: /^DEMOSTART$/,
-    syntax: new MarkdownString().appendCodeblock("DEMOSTART:<second>").value,
-    snippet: new SnippetString().appendText("DEMOSTART:").value,
+    snippet: new SnippetString().appendText("DEMOSTART:").appendPlaceholder("0").value,
     documentation: new MarkdownString().appendMarkdown(
       "選曲画面で流すデモの再生開始位置を秒で指定します。"
     ).value,
+    parameter: [["second", "選曲画面のデモ再生位置"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -209,7 +214,6 @@ export const headers = new HeaderCollection({
     name: "SIDE",
     detail: "表裏表示設定",
     regexp: /^SIDE$/,
-    syntax: new MarkdownString().appendCodeblock("SIDE:<side>").value,
     snippet: new SnippetString().appendText("SIDE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("曲選択画面での表示設定。  \n")
@@ -217,6 +221,12 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`Normal`か`1`を入力した場合、曲選択画面で表状態のときのみ曲が表示され、  \n")
       .appendMarkdown("`Ex`か`2`を入力した場合、曲選択画面で裏状態のときのみ曲が表示されます。  \n")
       .appendMarkdown("`Both`か`3`を入力した場合は常に表示されます（初期設定）。").value,
+    parameter: [
+      [
+        "side",
+        "表裏表示設定  \n`Normal`,`Ex`,`Both`もしくは`1` ~ `3`の値を指定します。  \n`Normal`か`1`を入力した場合、曲選択画面で表状態のときのみ曲が表示され、  \n`Ex`か`2`を入力した場合、曲選択画面で裏状態のときのみ曲が表示されます。  \n`Both`か`3`を入力した場合は常に表示されます（初期設定）。",
+      ],
+    ],
     section: "Root",
     separator: "None",
     recommend: ["SIDEREV"],
@@ -226,11 +236,11 @@ export const headers = new HeaderCollection({
     name: "SUBTITLE",
     detail: "サブタイトル",
     regexp: /^SUBTITLE$/,
-    syntax: new MarkdownString().appendCodeblock("SUBTITLE:[--]<string>").value,
     snippet: new SnippetString().appendText("SUBTITLE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("曲のサブタイトル。  \n")
       .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
+    parameter: [["string", "サブタイトル\n最初に`--`と入れるとプレイ中に表示されません"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -240,12 +250,12 @@ export const headers = new HeaderCollection({
     name: "SONG",
     detail: "コースの課題曲",
     regexp: /^SONG$/,
-    syntax: new MarkdownString().appendCodeblock("SONG:<filepath>").value,
     snippet: new SnippetString().appendText("SONG:").value,
     documentation: new MarkdownString()
       .appendMarkdown("コースに使用する譜面のファイルパス。  \n")
       .appendMarkdown("`.tjc`ファイル上で有効なヘッダです。  \n")
       .appendMarkdown("`<filepath>`: tjaファイルをルートディレクトリから指定します。").value,
+    parameter: [["filepath", "コースの課題曲"]],
     section: "Root",
     separator: "None",
     recommend: ["SONG"],
@@ -256,10 +266,10 @@ export const headers = new HeaderCollection({
     name: "SIDEREV",
     detail: "表裏の対応ファイル",
     regexp: /^SIDEREV$/,
-    syntax: new MarkdownString().appendCodeblock("SIDEREV:<filepath>").value,
     snippet: new SnippetString().appendText("SIDEREV:").value,
     documentation: new MarkdownString().appendMarkdown("表裏で対になる譜面ファイルを指定します。")
       .value,
+    parameter: [["filepath", "表裏の対応ファイル"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -269,26 +279,31 @@ export const headers = new HeaderCollection({
     name: "SCOREMODE",
     detail: "配点方式",
     regexp: /^SCOREMODE$/,
-    syntax: new MarkdownString().appendCodeblock("SCOREMODE:<mode>").value,
     snippet: new SnippetString().appendText("SCOREMODE:").value,
     documentation: new MarkdownString()
       .appendMarkdown("配点方式を指定します。  \n")
-      .appendMarkdown("`<mode>`: `0` ~ `2`の値を指定します。  \n")
-      .appendMarkdown("`0`でドンだフル、`1`でAC14、`2`で新筐体。").value,
+      .appendMarkdown("`<mode>`: `0` ~ `3`の値を指定します。  \n")
+      .appendMarkdown("`0`でドンだフル、`1`でAC14、`2`で新筐体、`3`で真打。").value,
+    parameter: [
+      [
+        "mode",
+        "配点方式  \n`0` ~ `3`の値を指定します。  \n`0`でドンだフル、`1`でAC14、`2`で新筐体、`3`で真打。",
+      ],
+    ],
     section: "Root",
     separator: "None",
     recommend: [],
-    order: 1,
+    order: 2,
   },
   total: {
     name: "TOTAL",
     detail: "ノルマゲージの重さ",
     regexp: /^TOTAL$/,
-    syntax: new MarkdownString().appendCodeblock("TOTAL:<total>").value,
     snippet: new SnippetString().appendText("TOTAL:").value,
     documentation: new MarkdownString()
       .appendMarkdown("ノルマゲージの増える量を指定します。  \n")
       .appendMarkdown("全良でゲージが満タンになる基準値を100とします。  \n").value,
+    parameter: [["percent", "ノルマゲージの重さ（全良で満タンの基準値: 100）"]],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -299,65 +314,51 @@ export const headers = new HeaderCollection({
     name: "BALLOONNOR",
     detail: "風船打数（普通）",
     regexp: /^BALLOONNOR$/,
-    syntax: new MarkdownString().appendCodeblock("BALLOONNOR:[<int>...]").value,
     snippet: new SnippetString().appendText("BALLOONNOR:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("普通譜面での風船音符の打数を`,`区切りで入力します。  \n")
-      .appendMarkdown("省略した場合は一律5打になります。").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "普通譜面での風船音符の打数を`,`区切りで入力します。"
+    ).value,
+    parameter: [["int...", "風船打数（普通）"]],
     section: "Course",
     separator: "Comma",
     recommend: ["BALLOONEXP", "BALLOONMAS"],
-    order: 1,
+    order: 2,
   },
   balloonexp: {
     name: "BALLOONEXP",
     detail: "風船打数（玄人）",
     regexp: /^BALLOONEXP$/,
-    syntax: new MarkdownString().appendCodeblock("BALLOONEXP:[<int>...]").value,
     snippet: new SnippetString().appendText("BALLOONEXP:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("玄人譜面での風船音符の打数を`,`区切りで入力します。  \n")
-      .appendMarkdown("省略した場合は一律5打になります。").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "玄人譜面での風船音符の打数を`,`区切りで入力します。"
+    ).value,
+    parameter: [["int...", "風船打数（玄人）"]],
     section: "Course",
     separator: "Comma",
     recommend: ["BALLOONMAS"],
-    order: 1,
+    order: 2,
   },
   balloonmas: {
     name: "BALLOONMAS",
     detail: "風船打数（達人）",
     regexp: /^BALLOONMAS$/,
-    syntax: new MarkdownString().appendCodeblock("BALLOONMAS:[<int>...]").value,
     snippet: new SnippetString().appendText("BALLOONMAS:").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("達人譜面での風船音符の打数を`,`区切りで入力します。  \n")
-      .appendMarkdown("省略した場合は一律5打になります。").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "達人譜面での風船音符の打数を`,`区切りで入力します。"
+    ).value,
+    parameter: [["int...", "風船打数（達人）"]],
     section: "Course",
     separator: "Comma",
     recommend: [],
-    order: 1,
+    order: 2,
   },
   genre: {
     name: "GENRE",
     detail: "ジャンル",
     regexp: /^GENRE$/,
-    syntax: new MarkdownString().appendCodeblock("GENRE:<genre>").value,
     snippet: new SnippetString().appendText("GENRE:").value,
     documentation: new MarkdownString().appendMarkdown("曲のジャンル。").value,
-    section: "Root",
-    separator: "None",
-    recommend: [],
-    order: 1,
-  },
-  movieoffset: {
-    name: "MOVIEOFFSET",
-    detail: "背景動画の再生タイミング",
-    regexp: /^MOVIEOFFSET$/,
-    syntax: new MarkdownString().appendCodeblock("MOVIEOFFSET:<second>").value,
-    snippet: new SnippetString().appendText("MOVIEOFFSET:").value,
-    documentation: new MarkdownString().appendMarkdown(
-      "音源ファイルの再生位置と背景動画ファイルの再生タイミングの差を秒数で指定します。"
-    ).value,
+    parameter: [["string", "ジャンル"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -367,34 +368,48 @@ export const headers = new HeaderCollection({
     name: "BGIMAGE",
     detail: "背景画像",
     regexp: /^BGIMAGE$/,
-    syntax: new MarkdownString().appendCodeblock("BGIMAGE:<filepath>").value,
     snippet: new SnippetString().appendText("BGIMAGE:").value,
     documentation: new MarkdownString().appendMarkdown("背景画像ファイルのパス。").value,
+    parameter: [["filepath", "背景画像ファイルのパス"]],
     section: "Root",
     separator: "None",
-    recommend: ["BGMOVIE", "BGOFFSET"],
+    recommend: ["BGOFFSET", "BGMOVIE"],
     order: 1,
   },
   bgmovie: {
     name: "BGMOVIE",
     detail: "背景動画",
     regexp: /^BGMOVIE$/,
-    syntax: new MarkdownString().appendCodeblock("BGMOVIE:<filepath>").value,
     snippet: new SnippetString().appendText("BGMOVIE:").value,
     documentation: new MarkdownString().appendMarkdown("背景動画ファイルのパス。").value,
+    parameter: [["filepath", "背景動画ファイルのパス"]],
     section: "Root",
     separator: "None",
     recommend: ["MOVIEOFFSET"],
+    order: 1,
+  },
+  movieoffset: {
+    name: "MOVIEOFFSET",
+    detail: "背景動画の再生タイミング",
+    regexp: /^MOVIEOFFSET$/,
+    snippet: new SnippetString().appendText("MOVIEOFFSET:").appendPlaceholder("0").value,
+    documentation: new MarkdownString().appendMarkdown(
+      "音源ファイルの再生位置と背景動画ファイルの再生タイミングの差を秒数で指定します。"
+    ).value,
+    parameter: [["second", "背景動画の再生タイミング"]],
+    section: "Root",
+    separator: "None",
+    recommend: ["BGOFFSET"],
     order: 1,
   },
   hiddenbranch: {
     name: "HIDDENBRANCH",
     detail: "譜面分岐を隠す",
     regexp: /^HIDDENBRANCH$/,
-    syntax: new MarkdownString().appendCodeblock("HIDDENBRANCH:1").value,
-    snippet: new SnippetString().appendText("HIDDENBRANCH:1").value,
+    snippet: new SnippetString().appendText("HIDDENBRANCH:").value,
     documentation: new MarkdownString().appendMarkdown("譜面分岐を分岐する瞬間まで隠します。")
       .value,
+    parameter: [["<type>", "`1`で分岐を隠す"]],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -404,39 +419,40 @@ export const headers = new HeaderCollection({
     name: "HEADSCROLL",
     detail: "初期スクロール速度",
     regexp: /^HEADSCROLL$/,
-    syntax: new MarkdownString().appendCodeblock("HEADSCROLL:<rate>").value,
     snippet: new SnippetString().appendText("HEADSCROLL:").value,
     documentation: new MarkdownString()
       .appendMarkdown("譜面開始前のスクロール速度。  \n")
-      .appendMarkdown("デフォルトは`1.00`です。").value,
+      .appendMarkdown("デフォルトは`1`です。").value,
+    parameter: [["float", "初期スクロール速度（基準値: 1）"]],
     section: "Course",
     separator: "None",
     recommend: [],
-    order: 2,
+    order: 1,
   },
   // TJAPlayer3
   gaugeincr: {
     name: "GAUGEINCR",
     detail: "魂ゲージの端数処理",
     regexp: /^GAUGEINCR$/,
-    syntax: new MarkdownString().appendCodeblock("GAUGEINCR:<type>").value,
     snippet: new SnippetString().appendText("GAUGEINCR:").value,
     documentation: new MarkdownString()
       .appendMarkdown("魂ゲージの端数処理を設定します。  \n")
       .appendMarkdown("`<type>`: `Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`から指定します。")
       .value,
+    parameter: [
+      ["type", "魂ゲージの端数処理  \n`Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`から指定します。"],
+    ],
     section: "Course",
     separator: "None",
     recommend: [],
-    order: 2,
+    order: 1,
   },
   // OpenTaiko
   exam: {
     name: "EXAM",
     detail: "課題曲の合格条件",
     regexp: /^EXAM[0-9]+$/,
-    syntax: new MarkdownString().appendCodeblock("EXAM1:<type>,<red>,<gold>,<range>").value,
-    snippet: new SnippetString().appendText("EXAM").appendPlaceholder("n").appendText(":").value,
+    snippet: new SnippetString().appendText("EXAM").appendPlaceholder("1").appendText(":").value,
     documentation: new MarkdownString()
       .appendMarkdown("課題曲の合格条件を指定します。  \n")
       .appendMarkdown(
@@ -457,20 +473,38 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`s`: スコア  \n")
       .appendMarkdown("`r`: 連打数  \n")
       .appendMarkdown("`h`: 叩けた数  \n")
-      .appendMarkdown("`c`: 最大コンボ数").value,
+      .appendMarkdown("`c`: 最大コンボ数  \n").value,
+    parameter: [
+      [
+        "type",
+        "条件の種類  \n### **条件の種類**  \n`g`: 魂ゲージ(%)  \n`jp`: 良の数  \n`jg`: 可の数  \n`jb`: 不可の数  \n`s`: スコア  \n`r`: 連打数  \n`h`: 叩けた数  \n`c`: 最大コンボ数",
+      ],
+      [
+        "red",
+        "赤合格の基準値  \n### **条件の種類**  \n`g`: 魂ゲージ(%)  \n`jp`: 良の数  \n`jg`: 可の数  \n`jb`: 不可の数  \n`s`: スコア  \n`r`: 連打数  \n`h`: 叩けた数  \n`c`: 最大コンボ数",
+      ],
+      [
+        "gold",
+        "金合格の基準値  \n### **条件の種類**  \n`g`: 魂ゲージ(%)  \n`jp`: 良の数  \n`jg`: 可の数  \n`jb`: 不可の数  \n`s`: スコア  \n`r`: 連打数  \n`h`: 叩けた数  \n`c`: 最大コンボ数",
+      ],
+      [
+        "range",
+        "`m`または`l`。`m`は基準値以上、`l`は基準値未満で合格を表します。  \n### **条件の種類**  \n`g`: 魂ゲージ(%)  \n`jp`: 良の数  \n`jg`: 可の数  \n`jb`: 不可の数  \n`s`: スコア  \n`r`: 連打数  \n`h`: 叩けた数  \n`c`: 最大コンボ数",
+      ],
+    ],
     section: "Root",
     separator: "Comma",
-    recommend: [],
+    recommend: ["EXAM"],
     order: 2,
   },
   preimage: {
     name: "PREIMAGE",
     detail: "選曲画面の画像",
     regexp: /^PREIMAGE$/,
-    syntax: new MarkdownString().appendCodeblock("PREIMAGE:<filepath>").value,
     snippet: new SnippetString().appendText("PREIMAGE:").value,
     documentation: new MarkdownString().appendMarkdown("選曲画面に表示する画像ファイルのパス。")
       .value,
+    parameter: [["filepath", "画像ファイルのパス"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -480,11 +514,11 @@ export const headers = new HeaderCollection({
     name: "BGOFFSET",
     detail: "背景画像の表示タイミング",
     regexp: /^BGOFFSET$/,
-    syntax: new MarkdownString().appendCodeblock("BGOFFSET:<second>").value,
-    snippet: new SnippetString().appendText("BGOFFSET:").value,
+    snippet: new SnippetString().appendText("BGOFFSET:").appendPlaceholder("0").value,
     documentation: new MarkdownString().appendMarkdown(
       "譜面の再生位置と背景画像ファイルの表示タイミングの差を秒数で指定します。"
     ).value,
+    parameter: [["second", "背景画像の表示タイミング"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -494,7 +528,6 @@ export const headers = new HeaderCollection({
     name: "DANTICK",
     detail: "段位種別",
     regexp: /^DANTICK$/,
-    syntax: new MarkdownString().appendCodeblock("DANTICK:<type>").value,
     snippet: new SnippetString().appendText("DANTICK:").value,
     documentation: new MarkdownString()
       .appendMarkdown("段位の種別を指定します。  \n")
@@ -506,6 +539,12 @@ export const headers = new HeaderCollection({
       .appendMarkdown("`3`: 人段位①（銀）  \n")
       .appendMarkdown("`4`: 人段位②（金）  \n")
       .appendMarkdown("`5`: 外伝").value,
+    parameter: [
+      [
+        "type",
+        "段位種別  \n`0` ~ `5`から指定します。  \n\n### **段位の種別**  \n\n`0`: 初級以下  \n`1`: 青段位  \n`2`: 赤段位  \n`3`: 人段位①（銀）  \n`4`: 人段位②（金）  \n`5`: 外伝",
+      ],
+    ],
     section: "Root",
     separator: "None",
     recommend: ["DANTICKCOLOR"],
@@ -515,11 +554,11 @@ export const headers = new HeaderCollection({
     name: "DANTICKCOLOR",
     detail: "段位の表示色",
     regexp: /^DANTICKCOLOR$/,
-    syntax: new MarkdownString().appendCodeblock("DANTICKCOLOR:#<color>").value,
-    snippet: new SnippetString().appendText("DANTICKCOLOR:#FFFFFF").value,
+    snippet: new SnippetString().appendText("DANTICKCOLOR:").appendPlaceholder("#FFFFFF").value,
     documentation: new MarkdownString().appendMarkdown(
       "段位の表示色をHTMLカラーコードで指定します。"
     ).value,
+    parameter: [["color", "段位の表示色"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -529,9 +568,9 @@ export const headers = new HeaderCollection({
     name: "MAKER",
     detail: "譜面制作者",
     regexp: /^MAKER$/,
-    syntax: new MarkdownString().appendCodeblock("MAKER:<string>").value,
     snippet: new SnippetString().appendText("MAKER:").value,
     documentation: new MarkdownString().appendMarkdown("譜面の制作者。").value,
+    parameter: [["string", "譜面制作者"]],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -541,38 +580,38 @@ export const headers = new HeaderCollection({
     name: "BGA",
     detail: "背景アニメ",
     regexp: /^BGA$/,
-    syntax: new MarkdownString().appendCodeblock("BGA:<filepath>").value,
     snippet: new SnippetString().appendText("BGA:").value,
     documentation: new MarkdownString().appendMarkdown("動画ファイルのパス。").value,
+    parameter: [["filepath", "背景アニメの動画ファイルパス"]],
     section: "Root",
     separator: "None",
     recommend: [],
-    order: 2,
+    order: 1,
   },
   lyrics: {
     name: "LYRICS",
     detail: "歌詞ファイル",
     regexp: /^LYRICS$/,
-    syntax: new MarkdownString().appendCodeblock("LYRICS:<filepath>").value,
     snippet: new SnippetString().appendText("LYRICS:").value,
     documentation: new MarkdownString().appendMarkdown("歌詞ファイルのパス。").value,
+    parameter: [["filepath", "歌詞ファイルのパス"]],
     section: "Root",
     separator: "None",
-    recommend: [],
-    order: 2,
+    recommend: ["EXPLICIT"],
+    order: 1,
   },
   explicit: {
     name: "EXPLICIT",
     detail: "歌詞の不適切表現",
     regexp: /^EXPLICIT$/,
-    syntax: new MarkdownString().appendCodeblock("EXPLICIT:1").value,
-    snippet: new SnippetString().appendText("EXPLICIT:1").value,
+    snippet: new SnippetString().appendText("EXPLICIT:").value,
     documentation: new MarkdownString().appendMarkdown(
       "歌詞に不適切な表現が含まれていることを示します。"
     ).value,
+    parameter: [["<type>", "`1`で不適切表現あり"]],
     section: "Root",
     separator: "None",
     recommend: [],
-    order: 2,
+    order: 1,
   },
 });

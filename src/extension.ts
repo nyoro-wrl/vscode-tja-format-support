@@ -93,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
     languages.registerCompletionItemProvider(selector, new NotesPaddingItemProvider()),
-    languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ","),
+    languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ",", ":"),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
     languages.registerRenameProvider(selector, new BalloonParameterRenameProvider()),

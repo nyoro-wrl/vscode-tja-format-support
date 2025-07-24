@@ -4,7 +4,7 @@ import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
 import { documents } from "../extension";
 import { HeaderNode, HeadersNode, NoteNode, ParameterNode, StyleNode } from "../types/node";
-
+import { generateSyntax } from "../util/util";
 /**
  * ヘッダのマウスホバーヒント
  */
@@ -23,7 +23,8 @@ export class HeaderHoverProvider implements vscode.HoverProvider {
     if (item === undefined) {
       return Promise.reject();
     }
-    const symbol = new MarkdownString(item.syntax);
+    const syntax = generateSyntax(item.name, item.parameter, item.separator);
+    const symbol = new MarkdownString(syntax);
     const documentation = new MarkdownString(item.documentation);
     return new Hover([symbol, documentation], wordRange);
   }
@@ -47,7 +48,7 @@ export class CommandHoverProvider implements vscode.HoverProvider {
     if (item === undefined) {
       return Promise.reject();
     }
-    const symbol = new MarkdownString(item.syntax);
+    const symbol = new MarkdownString(item.syntax || "");
     const documentation = new MarkdownString(item.documentation);
     return new Hover([symbol, documentation], wordRange);
   }

@@ -22,10 +22,6 @@ export interface IStatement {
    */
   readonly regexp: RegExp;
   /**
-   * 構文テキスト
-   */
-  readonly syntax: string;
-  /**
    * 補完テキスト
    */
   readonly snippet: string;

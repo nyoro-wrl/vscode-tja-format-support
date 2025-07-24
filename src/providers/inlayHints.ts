@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { documents } from "../extension";
-import { MeasureNode, ChartTokenNode, ChartNode } from "../types/node";
+import { MeasureNode, RootNode } from "../types/node";
 
 /**
  * 小節カウント表示のInlayHintsProvider
@@ -134,10 +134,10 @@ export class MeasureCountInlayHintsProvider implements vscode.InlayHintsProvider
   /**
    * 指定行の小節番号をASTから取得
    */
-  private getMeasureNumberAtLine(root: any, lineNumber: number): number | undefined {
+  private getMeasureNumberAtLine(root: RootNode, lineNumber: number): number | undefined {
     // 指定した行を含むMeasureNodeを検索
-    const measureNode = root.find(
-      (x: any) =>
+    const measureNode = root.find<MeasureNode>(
+      (x) =>
         x instanceof MeasureNode &&
         x.range.start.line <= lineNumber &&
         lineNumber <= x.range.end.line
