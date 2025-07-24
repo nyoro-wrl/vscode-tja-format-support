@@ -111,6 +111,89 @@ interface NoteProperties extends ChartStateProperties {
   note: Note;
 }
 
+export interface FindParentOptions {
+  /**
+   * 自身を検索対象に含むかどうか
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FindOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FilterOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 条件が一致しても再帰を続ける
+   */
+  continue?: boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FildLastRangeOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 条件が一致しても再帰を続ける
+   */
+  continue?: boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FindDepthOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 条件が一致しても再帰を続ける
+   */
+  continue?: boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
 /**
  * ノード
  */
@@ -130,14 +213,12 @@ export abstract class Node {
   /**
    * 親ノードを再帰的に検索し、最初に一致したNodeを返す
    * @param predicate 一致する条件
-   * @param includeSelf 自身を検索対象に含む
-   * @param token キャンセル可能なトークン
+   * @param options 検索設定
    * @returns
    */
   public findParent<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    includeSelf: boolean = true,
-    token?: CancellationToken
+    { includeSelf = true, token }: FindParentOptions = {}
   ): T | undefined {
     if (token?.isCancellationRequested) {
       return;
@@ -146,7 +227,7 @@ export abstract class Node {
       return this as unknown as T;
     }
     if (this.parent !== undefined) {
-      const result = this.parent.findParent<T>(predicate, undefined, token);
+      const result = this.parent.findParent<T>(predicate, { token });
       if (result !== undefined) {
         return result;
       }
@@ -189,16 +270,12 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、最初に一致したNodeを返す
    * @param predicate 一致する条件
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
-   * @param token キャンセル可能なトークン
+   * @param options 検索設定
    * @returns
    */
   public find<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true,
-    token?: CancellationToken
+    { return: ignorePredicate, includeSelf = true, token }: FindOptions = {}
   ): T | undefined {
     if (token?.isCancellationRequested) {
       return;
@@ -214,7 +291,7 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
         return;
       }
       if (child instanceof ParentNode) {
-        const result = child.find<T>(predicate, undefined, undefined, token);
+        const result = child.find<T>(predicate, { token });
         if (result !== undefined) {
           return result;
         }
@@ -227,18 +304,17 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、一致した全てのNodeを返す
    * @param predicate 一致する条件
-   * @param _continue 条件が一致しても再帰を続ける
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
-   * @param token キャンセル可能なトークン
+   * @param options 検索設定
    * @returns
    */
   public filter<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    _continue: boolean = false,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true,
-    token?: CancellationToken
+    {
+      return: ignorePredicate,
+      continue: _continue = false,
+      includeSelf = true,
+      token,
+    }: FilterOptions = {}
   ): T[] {
     const results: T[] = [];
     if (token?.isCancellationRequested) {
@@ -258,7 +334,11 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
         return results;
       }
       if (child instanceof ParentNode) {
-        const result = child.filter<T>(predicate, _continue, ignorePredicate, undefined, token);
+        const result = child.filter<T>(predicate, {
+          return: ignorePredicate,
+          continue: _continue,
+          token,
+        });
         results.push(...result);
       } else if (predicate(child)) {
         results.push(child as unknown as T);
@@ -270,20 +350,24 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、範囲末尾が最も後ろにあるNodeを返す
    * @param predicate 一致する条件
-   * @param _continue 条件が一致しても再帰を続ける
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
-   * @param token キャンセル可能なトークン
+   * @param options 検索設定
    * @returns
    */
   public findLastRange<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    _continue: boolean = false,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true,
-    token?: CancellationToken
+    {
+      return: ignorePredicate,
+      continue: _continue = false,
+      includeSelf = true,
+      token,
+    }: FildLastRangeOptions = {}
   ): T | undefined {
-    const nodes: T[] = this.filter<T>(predicate, _continue, ignorePredicate, includeSelf, token);
+    const nodes: T[] = this.filter<T>(predicate, {
+      return: ignorePredicate,
+      continue: _continue,
+      includeSelf,
+      token,
+    });
     let result: T | undefined;
     for (const node of nodes) {
       if (token?.isCancellationRequested) {
@@ -304,20 +388,24 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、最も範囲の狭いNodeを返す
    * @param predicate 一致する条件
-   * @param _continue 条件が一致しても再帰を続ける
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
-   * @param token キャンセル可能なトークン
+   * @param options 検索設定
    * @returns
    */
   public findDepth<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    _continue: boolean = false,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true,
-    token?: CancellationToken
+    {
+      return: ignorePredicate,
+      continue: _continue = false,
+      includeSelf = true,
+      token,
+    }: FindDepthOptions = {}
   ): T | undefined {
-    const nodes: T[] = this.filter<T>(predicate, _continue, ignorePredicate, includeSelf, token);
+    const nodes: T[] = this.filter<T>(predicate, {
+      continue: _continue,
+      return: ignorePredicate,
+      includeSelf,
+      token,
+    });
     let result: { node: T; line: number; length: number | undefined } | undefined;
     for (const node of nodes) {
       if (token?.isCancellationRequested) {

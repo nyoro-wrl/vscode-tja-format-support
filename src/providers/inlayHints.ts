@@ -146,9 +146,7 @@ export class MeasureCountInlayHintsProvider implements vscode.InlayHintsProvider
         x instanceof MeasureNode &&
         x.range.start.line <= lineNumber &&
         lineNumber <= x.range.end.line,
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     return measureNode?.properties?.measure;

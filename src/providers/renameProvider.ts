@@ -193,9 +193,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
           headers.items.balloonnor.regexp.test(x.properties.name) ||
           headers.items.balloonexp.regexp.test(x.properties.name) ||
           headers.items.balloonmas.regexp.test(x.properties.name)),
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (!balloonHeader) {
@@ -204,9 +202,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
 
     const parameterNode = balloonHeader.find<ParameterNode>(
       (x) => x instanceof ParameterNode && x.range.contains(position),
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (!parameterNode) {
@@ -233,10 +229,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined,
-      undefined,
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -262,11 +255,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       return undefined;
     }
 
-    const style = balloonNote.findParent<StyleNode>(
-      (x) => x instanceof StyleNode,
-      undefined,
-      token
-    );
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (!style) {
       return undefined;
     }
@@ -283,9 +272,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
             headers.items.balloonexp.regexp.test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Master" &&
             headers.items.balloonmas.regexp.test(x.properties.name))),
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (!balloonHeader) {
@@ -296,9 +283,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
     const balloonParameter = balloonHeader.find<ParameterNode>(
       (x) =>
         x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId,
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (!balloonParameter || balloonParameter.value.trim() === "") {
@@ -326,10 +311,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined,
-      undefined,
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -354,11 +336,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       return undefined;
     }
 
-    const style = balloonNote.findParent<StyleNode>(
-      (x) => x instanceof StyleNode,
-      undefined,
-      token
-    );
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (!style) {
       return undefined;
     }
@@ -375,9 +353,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
             headers.items.balloonexp.regexp.test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Master" &&
             headers.items.balloonmas.regexp.test(x.properties.name))),
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (!balloonHeader) {
@@ -390,9 +366,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         x instanceof ParameterNode &&
         x.properties.index === balloonNote.properties.note.balloonId &&
         x.value.trim() !== "",
-      undefined,
-      undefined,
-      token
+      { token }
     );
     if (existingParameter) {
       return undefined; // Parameter already exists with a value
@@ -400,10 +374,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
 
     const balloonParameters = balloonHeader.filter<ParameterNode>(
       (x) => x instanceof ParameterNode,
-      undefined,
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     return {
@@ -430,10 +401,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined,
-      undefined,
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -458,11 +426,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       return undefined;
     }
 
-    const style = balloonNote.findParent<StyleNode>(
-      (x) => x instanceof StyleNode,
-      undefined,
-      token
-    );
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (!style) {
       return undefined;
     }
@@ -479,9 +443,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
             headers.items.balloonexp.regexp.test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Master" &&
             headers.items.balloonmas.regexp.test(x.properties.name))),
-      undefined,
-      undefined,
-      token
+      { token }
     );
 
     if (balloonHeader) {
@@ -489,12 +451,9 @@ export class BalloonParameterRenameProvider implements RenameProvider {
     }
 
     // Find where to insert the header - after the last header in the style
-    const styleHeaders = style.find<StyleHeadersNode>(
-      (x) => x instanceof StyleHeadersNode,
-      undefined,
-      undefined,
-      token
-    );
+    const styleHeaders = style.find<StyleHeadersNode>((x) => x instanceof StyleHeadersNode, {
+      token,
+    });
     let insertPosition: Position;
 
     if (styleHeaders && styleHeaders.children.length > 0) {
@@ -540,9 +499,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
     if (balloonHeaderResult) {
       const parameterNode = root.find<ParameterNode>(
         (x) => x instanceof ParameterNode && x.range.contains(position),
-        undefined,
-        undefined,
-        token
+        { token }
       );
       return {
         range: balloonHeaderResult.range,
@@ -559,10 +516,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
           x instanceof NoteNode &&
           x.range.contains(position) &&
           x.properties.note.balloonId !== undefined,
-        undefined,
-        undefined,
-        undefined,
-        token
+        { token }
       );
 
       if (candidateNotes.length === 0) {
@@ -583,11 +537,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         }
       }
 
-      const style = balloonNote?.findParent<StyleNode>(
-        (x) => x instanceof StyleNode,
-        undefined,
-        token
-      );
+      const style = balloonNote?.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
       if (!style || !balloonNote || balloonNote.properties.note.balloonId === undefined) {
         throw new Error("風船音符の打数パラメータではありません");
       }
@@ -603,9 +553,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
               headers.items.balloonexp.regexp.test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
               headers.items.balloonmas.regexp.test(x.properties.name))),
-        undefined,
-        undefined,
-        token
+        { token }
       );
 
       if (!balloonHeader) {
@@ -617,9 +565,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         (x) =>
           x instanceof ParameterNode &&
           x.properties.index === balloonNote.properties.note.balloonId,
-        undefined,
-        undefined,
-        token
+        { token }
       );
       if (!balloonParameter) {
         throw new Error("風船音符のパラメータが見つかりません");

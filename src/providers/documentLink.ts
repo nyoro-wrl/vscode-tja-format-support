@@ -34,13 +34,7 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
     }
 
     // ファイルパス指定ヘッダーを検索
-    const headerNodes = root.filter<HeaderNode>(
-      (x) => x instanceof HeaderNode,
-      undefined,
-      undefined,
-      undefined,
-      token
-    );
+    const headerNodes = root.filter<HeaderNode>((x) => x instanceof HeaderNode, { token });
 
     for (const headerNode of headerNodes) {
       if (token.isCancellationRequested) {
@@ -55,12 +49,9 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
       }
 
       // パラメータ（ファイルパス）を取得
-      const parameterNode = headerNode.find<ParameterNode>(
-        (x) => x instanceof ParameterNode,
-        undefined,
-        undefined,
-        token
-      );
+      const parameterNode = headerNode.find<ParameterNode>((x) => x instanceof ParameterNode, {
+        token,
+      });
       if (!parameterNode || !parameterNode.value.trim()) {
         continue;
       }

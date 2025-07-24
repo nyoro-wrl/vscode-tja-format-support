@@ -194,9 +194,7 @@ export class Parser {
           // BALLOON: header has parameters but no balloon notes in chart - warn on parameters
           const headerNode = styleNode.find<HeaderNode>(
             (x) => x instanceof HeaderNode && x.properties.name === header.name,
-            undefined,
-            undefined,
-            this.parseCancel
+            { token: this.parseCancel }
           );
           if (headerNode) {
             const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
@@ -217,9 +215,7 @@ export class Parser {
           // Find the range of unused parameters
           const headerNode = styleNode.find<HeaderNode>(
             (x) => x instanceof HeaderNode && x.properties.name === header.name,
-            undefined,
-            undefined,
-            this.parseCancel
+            { token: this.parseCancel }
           );
           if (headerNode) {
             const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
@@ -558,13 +554,9 @@ export class Parser {
    */
   private getActualMeasureCount(parent: ChartNode | SongNode): number {
     // 親ノードから実際のMeasureNodeの数を数える
-    const measureNodes = parent.filter(
-      (x) => x instanceof MeasureNode,
-      undefined,
-      undefined,
-      undefined,
-      this.parseCancel
-    );
+    const measureNodes = parent.filter((x) => x instanceof MeasureNode, {
+      token: this.parseCancel,
+    });
     return measureNodes.length;
   }
 
@@ -725,11 +717,9 @@ export class Parser {
         }
       } else if (/[79]/.test(token.value)) {
         if (this.chartState.isDummyNote === false) {
-          const isBranchBalloon = parent.findParent<StyleNode>(
-            (x) => x instanceof StyleNode,
-            undefined,
-            this.parseCancel
-          )?.properties.isBranchBalloon;
+          const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
+            token: this.parseCancel,
+          })?.properties.isBranchBalloon;
           if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
             this.nowBalloonId = ++this.balloonId;
           } else {
@@ -752,11 +742,9 @@ export class Parser {
     const node = new NoteNode(parent, token, this.chartState, this.nowBalloonId);
     parent.push(node);
     if (this.nowBalloonId !== undefined && /[79]/.test(token.value)) {
-      const styleNode = parent.findParent<StyleNode>(
-        (x) => x instanceof StyleNode,
-        undefined,
-        this.parseCancel
-      );
+      const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
+        token: this.parseCancel,
+      });
       if (styleNode !== undefined) {
         const isBranchBalloon = styleNode?.properties.isBranchBalloon;
         let headerRegExp: RegExp;
@@ -827,13 +815,11 @@ export class Parser {
    * @returns
    */
   private parseFindLastOrPushCourse(parent: RootNode, token: Token): CourseNode {
-    let findNode = parent.findLastRange<CourseNode>(
-      (x) => x instanceof CourseNode,
-      false,
-      (x) => x instanceof HeadersNode,
-      undefined,
-      this.parseCancel
-    );
+    let findNode = parent.findLastRange<CourseNode>((x) => x instanceof CourseNode, {
+      return: (x) => x instanceof HeadersNode,
+      continue: false,
+      token: this.parseCancel,
+    });
     if (findNode === undefined) {
       // コースの作成
       let node = new CourseNode(parent, token.range);
@@ -887,13 +873,10 @@ export class Parser {
    */
   private validateChateEnd(parent: ChartNode): void {
     if (this.chartState.rollState !== "None") {
-      const lastMeasure = parent.findLastRange(
-        (x) => x instanceof MeasureNode,
-        false,
-        undefined,
-        undefined,
-        this.parseCancel
-      );
+      const lastMeasure = parent.findLastRange((x) => x instanceof MeasureNode, {
+        continue: false,
+        token: this.parseCancel,
+      });
       if (lastMeasure !== undefined) {
         const text =
           this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
@@ -914,13 +897,10 @@ export class Parser {
    * @param parent
    */
   private validateMeasureEnd(parent: MeasureNode): void {
-    const node = parent.findDepth(
-      (x) => x instanceof NoteNode,
-      false,
-      undefined,
-      undefined,
-      this.parseCancel
-    );
+    const node = parent.findDepth((x) => x instanceof NoteNode, {
+      continue: false,
+      token: this.parseCancel,
+    });
     if (node !== undefined) {
       this.addDiagnostic(
         "Unedited",
@@ -1223,7 +1203,7 @@ export class Parser {
             } else if (section === "Branch") {
               if (
                 info !== commands.items.branchstart &&
-                parent.findParent((x) => x instanceof BranchNode, undefined, this.parseCancel) ===
+                parent.findParent((x) => x instanceof BranchNode, { token: this.parseCancel }) ===
                   undefined
               ) {
                 const node = this.parseCommand(parent, token, separator);

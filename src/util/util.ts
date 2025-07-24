@@ -29,23 +29,14 @@ export function getChartState(
     return;
   }
   let chartState: ChartStateProperties = new ChartState();
-  const nowNode = root.findDepth(
-    (x) => x.range.contains(position),
-    true,
-    undefined,
-    undefined,
-    token
-  );
+  const nowNode = root.findDepth((x) => x.range.contains(position), { continue: true, token });
   if (nowNode === undefined) {
     return;
   }
-  const isBranchNode =
-    nowNode.findParent((x) => x instanceof BranchNode, undefined, token) !== undefined;
+  const isBranchNode = nowNode.findParent((x) => x instanceof BranchNode, { token }) !== undefined;
   const chartNode = root.find<ChartNode>(
     (x) => x instanceof ChartNode && x.range.contains(position),
-    undefined,
-    undefined,
-    token
+    { token }
   );
   if (chartNode !== undefined) {
     const beforeChartStateNode = chartNode.findLastRange<
@@ -57,10 +48,7 @@ export function getChartState(
           (!isBranchNode && x instanceof BranchNode)) &&
         (x.range.start.line < position.line ||
           (x.range.start.line === position.line && x.range.start.character < position.character)),
-      true,
-      undefined,
-      undefined,
-      token
+      { continue: true, token }
     );
     if (beforeChartStateNode === undefined) {
       return;

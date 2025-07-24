@@ -71,9 +71,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
           x instanceof NoteNode &&
           x.range.contains(exactPosition) &&
           x.properties.note.balloonId === balloonId,
-        undefined,
-        undefined,
-        token
+        { token }
       );
 
       if (!balloonNote) {
@@ -83,9 +81,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
             x instanceof NoteNode &&
             x.range.contains(exactPosition) &&
             x.properties.note.balloonId !== undefined,
-          undefined,
-          undefined,
-          token
+          { token }
         );
       }
     } else {
@@ -95,9 +91,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
           x instanceof NoteNode &&
           x.range.contains(diagnostic.range.start) &&
           x.properties.note.balloonId !== undefined,
-        undefined,
-        undefined,
-        token
+        { token }
       );
     }
 

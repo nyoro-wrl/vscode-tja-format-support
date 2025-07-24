@@ -23,10 +23,7 @@ export class DantickColorDocumentColorProvider implements vscode.DocumentColorPr
 
     const dantickcolorHeaders = root.filter<HeaderNode>(
       (x) => x instanceof HeaderNode && headers.items.dantickcolor.regexp.test(x.properties.name),
-      false,
-      (x) => x instanceof ChartNode,
-      undefined,
-      token
+      { return: (x) => x instanceof ChartNode, continue: false, token }
     );
     for (const dantickcolorHeader of dantickcolorHeaders) {
       if (token.isCancellationRequested) {
@@ -85,10 +82,7 @@ export class ColorCommandDocumentColorProvider implements vscode.DocumentColorPr
 
     const colorHeaders = root.filter<CommandNode>(
       (x) => x instanceof CommandNode && commands.items.color.regexp.test(x.properties.name),
-      false,
-      (x) => x instanceof HeadersNode,
-      undefined,
-      token
+      { return: (x) => x instanceof HeadersNode, continue: false, token }
     );
     for (const colorHeader of colorHeaders) {
       if (token.isCancellationRequested) {

@@ -77,17 +77,15 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
         x instanceof NoteNode &&
         x.range.contains(position) &&
         x.properties.note.balloonId !== undefined,
-      (x) => x instanceof HeadersNode,
-      undefined,
-      token
+      { return: (x) => x instanceof HeadersNode, token }
     );
     const balloonId = balloonNote?.properties.note.balloonId;
-    const style = balloonNote?.findParent((x) => x instanceof StyleNode, undefined, token);
+    const style = balloonNote?.findParent((x) => x instanceof StyleNode, { token });
     if (balloonNote === undefined || balloonId === undefined || style === undefined) {
       return Promise.reject();
     }
     const balloonHeader = balloonNote
-      .findParent<StyleNode>((x) => x instanceof StyleNode, undefined, token)
+      .findParent<StyleNode>((x) => x instanceof StyleNode, { token })
       ?.find<HeaderNode>(
         (x) =>
           x instanceof HeaderNode &&
@@ -99,9 +97,7 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
               headers.items.balloonexp.regexp.test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
               headers.items.balloonmas.regexp.test(x.properties.name))),
-        undefined,
-        undefined,
-        token
+        { token }
       );
     if (balloonHeader === undefined) {
       return Promise.reject();
@@ -109,9 +105,7 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
     // Find parameter by balloonId using the parameter's index property
     const balloonParameter = balloonHeader.find<ParameterNode>(
       (x) => x instanceof ParameterNode && x.properties.index === balloonId,
-      undefined,
-      undefined,
-      token
+      { token }
     );
     if (!balloonParameter) {
       return Promise.reject();
