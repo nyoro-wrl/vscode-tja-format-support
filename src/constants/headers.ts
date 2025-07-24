@@ -10,7 +10,7 @@ export const headers = new HeaderCollection({
     name: "TITLE",
     detail: "タイトル",
     regexp: /^TITLE([A-Z]{2})?$/,
-    snippet: new SnippetString().appendText("TITLE:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("曲のタイトル。").value,
     parameter: [{ name: "string", description: "タイトル" }],
     section: "Root",
@@ -22,7 +22,7 @@ export const headers = new HeaderCollection({
     name: "COURSE",
     detail: "難易度",
     regexp: /^COURSE$/,
-    snippet: new SnippetString().appendText("COURSE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("譜面の難易度。  \n")
       .appendMarkdown(
@@ -48,7 +48,7 @@ export const headers = new HeaderCollection({
     name: "LEVEL",
     detail: "レベル",
     regexp: /^LEVEL$/,
-    snippet: new SnippetString().appendText("LEVEL:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("譜面のレベル。").value,
     parameter: [{ name: "int", description: "レベル" }],
     section: "Course",
@@ -60,7 +60,7 @@ export const headers = new HeaderCollection({
     name: "BPM",
     detail: "BPM",
     regexp: /^BPM$/,
-    snippet: new SnippetString().appendText("BPM:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("曲のBPM。").value,
     parameter: [{ name: "float", description: "BPM" }],
     section: "Root",
@@ -72,7 +72,7 @@ export const headers = new HeaderCollection({
     name: "WAVE",
     detail: "音源ファイル",
     regexp: /^WAVE$/,
-    snippet: new SnippetString().appendText("WAVE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("音源ファイルのパス。  \n")
       .appendMarkdown("殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。").value,
@@ -86,7 +86,7 @@ export const headers = new HeaderCollection({
     name: "OFFSET",
     detail: "音源ファイルの再生タイミング",
     regexp: /^OFFSET$/,
-    snippet: new SnippetString().appendText("OFFSET:").appendPlaceholder("0").value,
+    snippet: new SnippetString().appendText("OFFSET:").appendPlaceholder("0"),
     documentation: new MarkdownString().appendMarkdown(
       "譜面の開始位置と音源ファイルの再生タイミングの差を秒数で指定します。"
     ).value,
@@ -100,7 +100,7 @@ export const headers = new HeaderCollection({
     name: "BALLOON",
     detail: "風船打数",
     regexp: /^BALLOON$/,
-    snippet: new SnippetString().appendText("BALLOON:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("風船音符の打数を`,`区切りで入力します。")
       .value,
     parameter: [{ name: "int...", description: "風船打数" }],
@@ -113,7 +113,7 @@ export const headers = new HeaderCollection({
     name: "SONGVOL",
     detail: "音源ファイルの音量",
     regexp: /^SONGVOL$/,
-    snippet: new SnippetString().appendText("SONGVOL:").appendPlaceholder("100").value,
+    snippet: new SnippetString().appendText("SONGVOL:").appendPlaceholder("100"),
     documentation: new MarkdownString()
       .appendMarkdown("音源ファイルの音量。  \n")
       .appendMarkdown("基準値は100。").value,
@@ -127,7 +127,7 @@ export const headers = new HeaderCollection({
     name: "SEVOL",
     detail: "効果音の音量",
     regexp: /^SEVOL$/,
-    snippet: new SnippetString().appendText("SEVOL:").appendPlaceholder("100").value,
+    snippet: new SnippetString().appendText("SEVOL:").appendPlaceholder("100"),
     documentation: new MarkdownString()
       .appendMarkdown("効果音の音量。  \n")
       .appendMarkdown("基準値は100。").value,
@@ -141,7 +141,7 @@ export const headers = new HeaderCollection({
     name: "SCOREINIT",
     detail: "配点初項",
     regexp: /^SCOREINIT$/,
-    snippet: new SnippetString().appendText("SCOREINIT:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("配点の初項。  \n")
       .appendMarkdown("10コンボ未満の時に小音符を良判定で叩いたときの得点を指定します。").value,
@@ -155,7 +155,7 @@ export const headers = new HeaderCollection({
     name: "SCOREDIFF",
     detail: "配点公差",
     regexp: /^SCOREDIFF$/,
-    snippet: new SnippetString().appendText("SCOREDIFF:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("配点の公差。  \n")
       .appendMarkdown("一定のコンボ数ごとに加算される一打あたりの点数を指定します。").value,
@@ -169,7 +169,7 @@ export const headers = new HeaderCollection({
     name: "STYLE",
     detail: "プレイ人数",
     regexp: /^STYLE$/,
-    snippet: new SnippetString().appendText("STYLE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("プレイ人数を指定します。  \n")
       .appendMarkdown("`<style>`: `Single`,`Double`もしくは`1`,`2`の値を指定します。  \n")
@@ -191,7 +191,7 @@ export const headers = new HeaderCollection({
     name: "LIFE",
     detail: "ライフ",
     regexp: /^LIFE$/,
-    snippet: new SnippetString().appendText("LIFE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("ライフの数を指定します。  \n")
       .appendMarkdown("不可を出すたびにライフが減り、0になると強制的に演奏が中断されます。").value,
@@ -205,7 +205,7 @@ export const headers = new HeaderCollection({
     name: "DEMOSTART",
     detail: "選曲画面のデモ再生位置",
     regexp: /^DEMOSTART$/,
-    snippet: new SnippetString().appendText("DEMOSTART:").appendPlaceholder("0").value,
+    snippet: new SnippetString().appendText("DEMOSTART:").appendPlaceholder("0"),
     documentation: new MarkdownString().appendMarkdown(
       "選曲画面で流すデモの再生開始位置を秒で指定します。"
     ).value,
@@ -219,7 +219,7 @@ export const headers = new HeaderCollection({
     name: "SIDE",
     detail: "表裏表示設定",
     regexp: /^SIDE$/,
-    snippet: new SnippetString().appendText("SIDE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("曲選択画面での表示設定。  \n")
       .appendMarkdown("`<side>`: `Normal`,`Ex`,`Both`もしくは`1` ~ `3`の値を指定します。  \n")
@@ -242,7 +242,7 @@ export const headers = new HeaderCollection({
     name: "SUBTITLE",
     detail: "サブタイトル",
     regexp: /^SUBTITLE$/,
-    snippet: new SnippetString().appendText("SUBTITLE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("曲のサブタイトル。  \n")
       .appendMarkdown("最初に`--`と入れるとプレイ中に表示されなくなります。").value,
@@ -258,7 +258,7 @@ export const headers = new HeaderCollection({
     name: "SONG",
     detail: "コースの課題曲",
     regexp: /^SONG$/,
-    snippet: new SnippetString().appendText("SONG:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("コースに使用する譜面のファイルパス。  \n")
       .appendMarkdown("`.tjc`ファイル上で有効なヘッダです。  \n")
@@ -274,7 +274,7 @@ export const headers = new HeaderCollection({
     name: "SIDEREV",
     detail: "表裏の対応ファイル",
     regexp: /^SIDEREV$/,
-    snippet: new SnippetString().appendText("SIDEREV:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("表裏で対になる譜面ファイルを指定します。")
       .value,
     parameter: [{ name: "filepath", description: "表裏の対応ファイル" }],
@@ -287,7 +287,7 @@ export const headers = new HeaderCollection({
     name: "SCOREMODE",
     detail: "配点方式",
     regexp: /^SCOREMODE$/,
-    snippet: new SnippetString().appendText("SCOREMODE:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("配点方式を指定します。  \n")
       .appendMarkdown("`<mode>`: `0` ~ `3`の値を指定します。  \n")
@@ -308,7 +308,7 @@ export const headers = new HeaderCollection({
     name: "TOTAL",
     detail: "ノルマゲージの重さ",
     regexp: /^TOTAL$/,
-    snippet: new SnippetString().appendText("TOTAL:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("ノルマゲージの増える量を指定します。  \n")
       .appendMarkdown("全良でゲージが満タンになる基準値を100とします。  \n").value,
@@ -325,7 +325,7 @@ export const headers = new HeaderCollection({
     name: "BALLOONNOR",
     detail: "風船打数（普通）",
     regexp: /^BALLOONNOR$/,
-    snippet: new SnippetString().appendText("BALLOONNOR:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown(
       "普通譜面での風船音符の打数を`,`区切りで入力します。"
     ).value,
@@ -339,7 +339,7 @@ export const headers = new HeaderCollection({
     name: "BALLOONEXP",
     detail: "風船打数（玄人）",
     regexp: /^BALLOONEXP$/,
-    snippet: new SnippetString().appendText("BALLOONEXP:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown(
       "玄人譜面での風船音符の打数を`,`区切りで入力します。"
     ).value,
@@ -353,7 +353,7 @@ export const headers = new HeaderCollection({
     name: "BALLOONMAS",
     detail: "風船打数（達人）",
     regexp: /^BALLOONMAS$/,
-    snippet: new SnippetString().appendText("BALLOONMAS:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown(
       "達人譜面での風船音符の打数を`,`区切りで入力します。"
     ).value,
@@ -367,7 +367,7 @@ export const headers = new HeaderCollection({
     name: "GENRE",
     detail: "ジャンル",
     regexp: /^GENRE$/,
-    snippet: new SnippetString().appendText("GENRE:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("曲のジャンル。").value,
     parameter: [{ name: "string", description: "ジャンル" }],
     section: "Root",
@@ -379,7 +379,7 @@ export const headers = new HeaderCollection({
     name: "BGIMAGE",
     detail: "背景画像",
     regexp: /^BGIMAGE$/,
-    snippet: new SnippetString().appendText("BGIMAGE:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("背景画像ファイルのパス。").value,
     parameter: [{ name: "filepath", description: "背景画像ファイルのパス" }],
     section: "Root",
@@ -391,7 +391,7 @@ export const headers = new HeaderCollection({
     name: "BGMOVIE",
     detail: "背景動画",
     regexp: /^BGMOVIE$/,
-    snippet: new SnippetString().appendText("BGMOVIE:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("背景動画ファイルのパス。").value,
     parameter: [{ name: "filepath", description: "背景動画ファイルのパス" }],
     section: "Root",
@@ -403,7 +403,7 @@ export const headers = new HeaderCollection({
     name: "MOVIEOFFSET",
     detail: "背景動画の再生タイミング",
     regexp: /^MOVIEOFFSET$/,
-    snippet: new SnippetString().appendText("MOVIEOFFSET:").appendPlaceholder("0").value,
+    snippet: new SnippetString().appendText("MOVIEOFFSET:").appendPlaceholder("0"),
     documentation: new MarkdownString().appendMarkdown(
       "音源ファイルの再生位置と背景動画ファイルの再生タイミングの差を秒数で指定します。"
     ).value,
@@ -417,7 +417,7 @@ export const headers = new HeaderCollection({
     name: "HIDDENBRANCH",
     detail: "譜面分岐を隠す",
     regexp: /^HIDDENBRANCH$/,
-    snippet: new SnippetString().appendText("HIDDENBRANCH:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("譜面分岐を分岐する瞬間まで隠します。")
       .value,
     parameter: [{ name: "<type>", description: "`1`で分岐を隠す" }],
@@ -430,7 +430,7 @@ export const headers = new HeaderCollection({
     name: "HEADSCROLL",
     detail: "初期スクロール速度",
     regexp: /^HEADSCROLL$/,
-    snippet: new SnippetString().appendText("HEADSCROLL:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("譜面開始前のスクロール速度。  \n")
       .appendMarkdown("デフォルトは`1`です。").value,
@@ -445,7 +445,7 @@ export const headers = new HeaderCollection({
     name: "GAUGEINCR",
     detail: "魂ゲージの端数処理",
     regexp: /^GAUGEINCR$/,
-    snippet: new SnippetString().appendText("GAUGEINCR:").value,
+    snippet: undefined,
     documentation: new MarkdownString()
       .appendMarkdown("魂ゲージの端数処理を設定します。  \n")
       .appendMarkdown("`<type>`: `Normal`,`Floor`,`Round`,`Notfix`,`Ceiling`から指定します。")
@@ -467,7 +467,7 @@ export const headers = new HeaderCollection({
     name: "EXAM",
     detail: "課題曲の合格条件",
     regexp: /^EXAM[0-9]+$/,
-    snippet: new SnippetString().appendText("EXAM").appendPlaceholder("1").appendText(":").value,
+    snippet: new SnippetString().appendText("EXAM").appendPlaceholder("1").appendText(":"),
     documentation: new MarkdownString()
       .appendMarkdown("課題曲の合格条件を指定します。  \n")
       .appendMarkdown(
@@ -520,7 +520,7 @@ export const headers = new HeaderCollection({
     name: "PREIMAGE",
     detail: "選曲画面の画像",
     regexp: /^PREIMAGE$/,
-    snippet: new SnippetString().appendText("PREIMAGE:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("選曲画面に表示する画像ファイルのパス。")
       .value,
     parameter: [{ name: "filepath", description: "画像ファイルのパス" }],
@@ -533,7 +533,7 @@ export const headers = new HeaderCollection({
     name: "BGOFFSET",
     detail: "背景画像の表示タイミング",
     regexp: /^BGOFFSET$/,
-    snippet: new SnippetString().appendText("BGOFFSET:").appendPlaceholder("0").value,
+    snippet: new SnippetString().appendText("BGOFFSET:").appendPlaceholder("0"),
     documentation: new MarkdownString().appendMarkdown(
       "譜面の再生位置と背景画像ファイルの表示タイミングの差を秒数で指定します。"
     ).value,
@@ -547,7 +547,7 @@ export const headers = new HeaderCollection({
     name: "DANTICK",
     detail: "段位種別",
     regexp: /^DANTICK$/,
-    snippet: new SnippetString().appendText("DANTICK:").value,
+    snippet: new SnippetString().appendText("DANTICK:"),
     documentation: new MarkdownString()
       .appendMarkdown("段位の種別を指定します。  \n")
       .appendMarkdown("`<type>`: 段位の種別を`0` ~ `5`から指定します。\n\n")
@@ -574,7 +574,7 @@ export const headers = new HeaderCollection({
     name: "DANTICKCOLOR",
     detail: "段位の表示色",
     regexp: /^DANTICKCOLOR$/,
-    snippet: new SnippetString().appendText("DANTICKCOLOR:").appendPlaceholder("#FFFFFF").value,
+    snippet: new SnippetString().appendText("DANTICKCOLOR:").appendPlaceholder("#FFFFFF"),
     documentation: new MarkdownString().appendMarkdown(
       "段位の表示色をHTMLカラーコードで指定します。"
     ).value,
@@ -588,7 +588,7 @@ export const headers = new HeaderCollection({
     name: "MAKER",
     detail: "譜面制作者",
     regexp: /^MAKER$/,
-    snippet: new SnippetString().appendText("MAKER:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("譜面の制作者。").value,
     parameter: [{ name: "string", description: "譜面制作者" }],
     section: "Root",
@@ -600,7 +600,7 @@ export const headers = new HeaderCollection({
     name: "BGA",
     detail: "背景アニメ",
     regexp: /^BGA$/,
-    snippet: new SnippetString().appendText("BGA:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("動画ファイルのパス。").value,
     parameter: [{ name: "filepath", description: "背景アニメの動画ファイルパス" }],
     section: "Root",
@@ -612,7 +612,7 @@ export const headers = new HeaderCollection({
     name: "LYRICS",
     detail: "歌詞ファイル",
     regexp: /^LYRICS$/,
-    snippet: new SnippetString().appendText("LYRICS:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown("歌詞ファイルのパス。").value,
     parameter: [{ name: "filepath", description: "歌詞ファイルのパス" }],
     section: "Root",
@@ -624,7 +624,7 @@ export const headers = new HeaderCollection({
     name: "EXPLICIT",
     detail: "歌詞の不適切表現",
     regexp: /^EXPLICIT$/,
-    snippet: new SnippetString().appendText("EXPLICIT:").value,
+    snippet: undefined,
     documentation: new MarkdownString().appendMarkdown(
       "歌詞に不適切な表現が含まれていることを示します。"
     ).value,

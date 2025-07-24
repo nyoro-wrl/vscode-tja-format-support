@@ -1,3 +1,4 @@
+import { SnippetString } from "vscode";
 import { Collection, ICollection } from "./collection";
 
 /**
@@ -24,7 +25,7 @@ export interface IStatement {
   /**
    * 補完テキスト
    */
-  readonly snippet: string;
+  readonly snippet: SnippetString | undefined;
   /**
    * 解説テキスト
    */

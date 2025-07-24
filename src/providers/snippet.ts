@@ -118,7 +118,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       }
 
       const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
-      snippet.insertText = new SnippetString(header.snippet);
+      snippet.insertText = header.snippet ?? new SnippetString(header.name + ":");
       // syntax自動生成
       const syntax = generateSyntax(header.name, header.parameter, header.separator);
       snippet.documentation = new MarkdownString().appendMarkdown(syntax + header.documentation);
