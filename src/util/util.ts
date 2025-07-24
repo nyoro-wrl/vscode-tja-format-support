@@ -8,8 +8,7 @@ import {
   BranchNode,
 } from "../types/node";
 import { ChartState } from "../types/state";
-import { StatementParameter } from "../types/header";
-import { Separator } from "../types/statement";
+import { Separator, StatementParameter } from "../types/statement";
 import path = require("path");
 
 /**

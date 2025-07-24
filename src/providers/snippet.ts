@@ -28,8 +28,8 @@ import {
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
 import { getChartState, isTmg, generateSyntax, getSeparatorChar, isInComment } from "../util/util";
-import { getRegExp } from "../types/statement";
-import { IHeader, FilePathType } from "../types/header";
+import { FilePathType, getRegExp } from "../types/statement";
+import { IHeader } from "../types/header";
 
 /**
  * FilePathTypeに対応するファイル拡張子マッピング
@@ -44,6 +44,8 @@ const FILE_EXTENSIONS: Record<FilePathType, readonly string[]> = {
   Movie: [".mp4", ".avi", ".mov", ".wmv", ".webm"],
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Lyrics: [".txt", ".lrc"],
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  File: [],
 } as const;
 
 /**

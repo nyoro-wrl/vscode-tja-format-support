@@ -1,4 +1,4 @@
-import { IStatement, StatementCollection } from "./statement";
+import { IStatement, StatementCollection, StatementParameter } from "./statement";
 
 /**
  * ヘッダの記載位置
@@ -9,22 +9,6 @@ import { IStatement, StatementCollection } from "./statement";
  *     "Unknown" // 不明
  */
 type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
-
-export type FilePathType = "Audio" | "tja" | "Image" | "Movie" | "Lyrics";
-
-/**
- * パラメータ定義
- */
-export type StatementParameter = {
-  name: string;
-  description: string;
-  snippet?: readonly SnippetParameter[] | FilePathType;
-};
-
-export type SnippetParameter = {
-  value: string;
-  detail: string;
-};
 
 /**
  * ヘッダ
@@ -38,10 +22,6 @@ export interface IHeader extends IStatement {
    * この後に書かれる可能性の高いヘッダ
    */
   readonly recommend: readonly string[];
-  /**
-   * パラメータ定義の配列
-   */
-  readonly parameter: readonly StatementParameter[];
 }
 
 /**

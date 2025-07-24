@@ -6,6 +6,22 @@ import { Collection, ICollection } from "./collection";
  */
 export type Separator = "Comma" | "Space" | "None" | "Unknown";
 
+export type FilePathType = "Audio" | "tja" | "Image" | "Movie" | "Lyrics" | "File";
+
+export type SnippetParameter = {
+  value: string;
+  detail: string;
+};
+
+/**
+ * パラメータ定義
+ */
+export type StatementParameter = {
+  name: string;
+  description: string;
+  snippet?: readonly SnippetParameter[] | FilePathType;
+};
+
 /**
  * 文（ヘッダ･命令）
  */
@@ -22,6 +38,10 @@ export interface IStatement {
    * 解説テキスト
    */
   readonly documentation: string;
+  /**
+   * パラメータ定義の配列
+   */
+  readonly parameter: readonly StatementParameter[];
   /**
    * パラメーターの区切り文字
    */
