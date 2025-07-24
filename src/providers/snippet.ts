@@ -26,6 +26,7 @@ import {
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
 import { getChartState, isTmg, generateSyntax } from "../util/util";
+import { getRegExp } from "../types/statement";
 
 /**
  * ヘッダの補完
@@ -90,7 +91,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       }
       if (node instanceof HeadersNode) {
         for (const containHeader of node.properties.headers) {
-          if (header.regexp.test(containHeader.name)) {
+          if (getRegExp(header).test(containHeader.name)) {
             // 既存のヘッダの場合は優先度を下げる
             sortText.order2++;
           }
@@ -292,7 +293,9 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       }
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
-      snippet.insertText = new SnippetString((containSharp ? "" : "#") + command.snippet);
+      snippet.insertText = new SnippetString(
+        (containSharp ? "" : "#") + (command.snippet?.value ?? command.name)
+      );
       if (_isTmg) {
         snippet.insertText = toTmgCommandSnippetText(snippet.insertText);
       }

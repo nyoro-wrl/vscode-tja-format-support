@@ -5,6 +5,8 @@ import { headers } from "../constants/headers";
 import { documents } from "../extension";
 import { HeaderNode, HeadersNode, NoteNode, ParameterNode, StyleNode } from "../types/node";
 import { generateSyntax } from "../util/util";
+import { getRegExp } from "../types/statement";
+
 /**
  * ヘッダのマウスホバーヒント
  */
@@ -90,13 +92,13 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
         (x) =>
           x instanceof HeaderNode &&
           ((balloonNote.properties.branchState === "None" &&
-            headers.items.balloon.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloon).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Normal" &&
-              headers.items.balloonnor.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Expert" &&
-              headers.items.balloonexp.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
-              headers.items.balloonmas.regexp.test(x.properties.name))),
+              getRegExp(headers.items.balloonmas).test(x.properties.name))),
         { token }
       );
     if (balloonHeader === undefined) {

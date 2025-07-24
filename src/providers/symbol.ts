@@ -16,6 +16,7 @@ import {
   BranchSectionNode,
   SongNode,
 } from "../types/node";
+import { getRegExp } from "../types/statement";
 
 /**
  * 構成要素のシンボル表示
@@ -47,7 +48,8 @@ function toSymbols(
 
   if (node instanceof RootHeadersNode) {
     const title =
-      node.properties.headers.find((x) => headers.items.title.regexp.test(x.name))?.parameter ?? "";
+      node.properties.headers.find((x) => getRegExp(headers.items.title).test(x.name))?.parameter ??
+      "";
     symbol = new DocumentSymbol("TITLE: " + title, "", SymbolKind.Enum, node.range, node.range);
   } else if (node instanceof CourseNode) {
     symbol = new DocumentSymbol(

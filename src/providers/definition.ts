@@ -10,6 +10,7 @@ import {
   CommandNode,
   ChartNode,
 } from "../types/node";
+import { getRegExp } from "../types/statement";
 
 /**
  * 風船打数から風船音符にジャンプ（雑実装）
@@ -32,10 +33,10 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
       (x) =>
         x instanceof HeaderNode &&
         x.range.contains(position) &&
-        (headers.items.balloon.regexp.test(x.properties.name) ||
-          headers.items.balloonnor.regexp.test(x.properties.name) ||
-          headers.items.balloonexp.regexp.test(x.properties.name) ||
-          headers.items.balloonmas.regexp.test(x.properties.name)),
+        (getRegExp(headers.items.balloon).test(x.properties.name) ||
+          getRegExp(headers.items.balloonnor).test(x.properties.name) ||
+          getRegExp(headers.items.balloonexp).test(x.properties.name) ||
+          getRegExp(headers.items.balloonmas).test(x.properties.name)),
       { return: (x) => x instanceof ChartNode, token }
     );
     if (balloonHeader === undefined) {
@@ -59,13 +60,13 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
         x.properties.note.balloonId !== undefined &&
         x.properties.note.balloonId === balloonId &&
         ((x.properties.branchState === "None" &&
-          headers.items.balloon.regexp.test(balloonHeader.properties.name)) ||
+          getRegExp(headers.items.balloon).test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Normal" &&
-            headers.items.balloonnor.regexp.test(balloonHeader.properties.name)) ||
+            getRegExp(headers.items.balloonnor).test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Expert" &&
-            headers.items.balloonexp.regexp.test(balloonHeader.properties.name)) ||
+            getRegExp(headers.items.balloonexp).test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Master" &&
-            headers.items.balloonmas.regexp.test(balloonHeader.properties.name))),
+            getRegExp(headers.items.balloonmas).test(balloonHeader.properties.name))),
       { return: (x) => x instanceof HeadersNode || x instanceof CommandNode, token }
     );
     if (balloonNotes === undefined) {
@@ -138,13 +139,13 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
         (x) =>
           x instanceof HeaderNode &&
           ((balloonNote.properties.branchState === "None" &&
-            headers.items.balloon.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloon).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Normal" &&
-              headers.items.balloonnor.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Expert" &&
-              headers.items.balloonexp.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
-              headers.items.balloonmas.regexp.test(x.properties.name))),
+              getRegExp(headers.items.balloonmas).test(x.properties.name))),
         { token }
       );
     if (balloonHeader === undefined) {

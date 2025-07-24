@@ -31,7 +31,7 @@ import {
 } from "./types/node";
 import { ChartState } from "./types/state";
 import { DiagnosticResult } from "./providers/diagnostics";
-import { Separator } from "./types/statement";
+import { getRegExp, Separator } from "./types/statement";
 import { CommandSection, ICommand } from "./types/command";
 import { isTmg } from "./util/util";
 
@@ -162,24 +162,26 @@ export class Parser {
   private checkUnusedBalloonParameters(styleNode: StyleNode): void {
     const balloonHeaders = [
       {
-        header: styleNode.properties.headers.find((x) => headers.items.balloon.regexp.test(x.name)),
+        header: styleNode.properties.headers.find((x) =>
+          getRegExp(headers.items.balloon).test(x.name)
+        ),
         maxId: this.balloonId,
       },
       {
         header: styleNode.properties.headers.find((x) =>
-          headers.items.balloonnor.regexp.test(x.name)
+          getRegExp(headers.items.balloonnor).test(x.name)
         ),
         maxId: this.norBalloonId,
       },
       {
         header: styleNode.properties.headers.find((x) =>
-          headers.items.balloonexp.regexp.test(x.name)
+          getRegExp(headers.items.balloonexp).test(x.name)
         ),
         maxId: this.expBalloonId,
       },
       {
         header: styleNode.properties.headers.find((x) =>
-          headers.items.balloonmas.regexp.test(x.name)
+          getRegExp(headers.items.balloonmas).test(x.name)
         ),
         maxId: this.masBalloonId,
       },
@@ -470,7 +472,7 @@ export class Parser {
       }
     }
     const name = parent.properties.name;
-    if (parent instanceof HeaderNode && headers.items.bpm.regexp.test(name)) {
+    if (parent instanceof HeaderNode && getRegExp(headers.items.bpm).test(name)) {
       const rawValue =
         rawParameter.children[0] !== undefined ? Number(rawParameter.children[0].value) : undefined;
       const value = Number.isNaN(rawValue) ? undefined : rawValue;
@@ -749,13 +751,13 @@ export class Parser {
         const isBranchBalloon = styleNode?.properties.isBranchBalloon;
         let headerRegExp: RegExp;
         if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
-          headerRegExp = headers.items.balloon.regexp;
+          headerRegExp = getRegExp(headers.items.balloon);
         } else if (this.chartState.branchState === "Normal") {
-          headerRegExp = headers.items.balloonnor.regexp;
+          headerRegExp = getRegExp(headers.items.balloonnor);
         } else if (this.chartState.branchState === "Expert") {
-          headerRegExp = headers.items.balloonexp.regexp;
+          headerRegExp = getRegExp(headers.items.balloonexp);
         } else {
-          headerRegExp = headers.items.balloonmas.regexp;
+          headerRegExp = getRegExp(headers.items.balloonmas);
         }
         const balloonHeader = styleNode.properties.headers.find((x) => headerRegExp.test(x.name));
         const wordRange = this.document.getWordRangeAtPosition(

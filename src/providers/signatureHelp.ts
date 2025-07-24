@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { headers } from "../constants/headers";
 import { getSeparatorChar, isInComment } from "../util/util";
-import { IHeader } from "../types/header";
 import {
   MarkdownString,
   ParameterInformation,
@@ -9,6 +8,7 @@ import {
   SignatureHelpProvider,
   SignatureInformation,
 } from "vscode";
+import { IHeader } from "../types/header";
 
 export class CommandSignatureHelpProvider implements SignatureHelpProvider {
   async provideSignatureHelp(

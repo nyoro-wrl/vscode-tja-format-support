@@ -9,15 +9,11 @@ export const commands = new CommandCollection({
   start: {
     name: "START",
     detail: "開始",
-    regexp: /^START$/,
     syntax: new MarkdownString().appendCodeblock("#START" + " [<player>]").value,
-    snippet: new SnippetString().appendText("START").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面データの記述を開始します。  \n")
-      .appendMarkdown("`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。  \n\n")
-      .appendMarkdown(
-        "`<player>`に`P1`や`P2`を指定することで、譜面をプレイヤー別に記述することができます。"
-      ).value,
+    documentation:
+      "譜面データの記述を開始します。  \n" +
+      "`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。  \n\n" +
+      "`<player>`に`P1`や`P2`を指定することで、譜面をプレイヤー別に記述することができます。",
     separator: "None",
     section: "Start",
     category: "Base",
@@ -26,12 +22,10 @@ export const commands = new CommandCollection({
   end: {
     name: "END",
     detail: "終了",
-    regexp: /^END$/,
     syntax: new MarkdownString().appendCodeblock("#END").value,
-    snippet: new SnippetString().appendText("END").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面データの記述を終了します。  \n")
-      .appendMarkdown("`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。").value,
+    documentation:
+      "譜面データの記述を終了します。  \n" +
+      "`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。",
     separator: "None",
     section: "End",
     category: "Base",
@@ -40,22 +34,19 @@ export const commands = new CommandCollection({
   bpmchange: {
     name: "BPMCHANGE",
     detail: "BPM変更",
-    regexp: /^BPMCHANGE$/,
     syntax: new MarkdownString().appendCodeblock("#BPMCHANGE" + " <bpm>").value,
-    snippet: new SnippetString().appendText("BPMCHANGE ").value,
-    documentation: new MarkdownString().appendMarkdown("BPMを変更します。").value,
+    documentation: "BPMを変更します。",
     separator: "None",
     section: "Inner",
     category: "Base",
     order: 0,
+    snippet: new SnippetString().appendText("BPMCHANGE "),
   },
   gogostart: {
     name: "GOGOSTART",
     detail: "ゴーゴー開始",
-    regexp: /^GOGOSTART$/,
     syntax: new MarkdownString().appendCodeblock("#GOGOSTART").value,
-    snippet: new SnippetString().appendText("GOGOSTART").value,
-    documentation: new MarkdownString().appendMarkdown("ゴーゴータイムを開始します。").value,
+    documentation: "ゴーゴータイムを開始します。",
     separator: "None",
     section: "Inner",
     category: "Base",
@@ -64,10 +55,8 @@ export const commands = new CommandCollection({
   gogoend: {
     name: "GOGOEND",
     detail: "ゴーゴー終了",
-    regexp: /^GOGOEND$/,
     syntax: new MarkdownString().appendCodeblock("#GOGOEND").value,
-    snippet: new SnippetString().appendText("GOGOEND").value,
-    documentation: new MarkdownString().appendMarkdown("ゴーゴータイムを終了します。").value,
+    documentation: "ゴーゴータイムを終了します。",
     separator: "None",
     section: "Inner",
     category: "Base",
@@ -76,54 +65,46 @@ export const commands = new CommandCollection({
   measure: {
     name: "MEASURE",
     detail: "拍子変更",
-    regexp: /^MEASURE$/,
     syntax: new MarkdownString().appendCodeblock("#MEASURE" + " <numer>/<denom>").value,
-    snippet: new SnippetString().appendText("MEASURE ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("拍子を変更します。  \n")
-      .appendMarkdown("`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。").value,
+    documentation: "拍子を変更します。  \n" + "`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。",
     separator: "None",
     section: "MeasureHead",
     category: "Base",
     order: 0,
+    snippet: new SnippetString().appendText("MEASURE "),
   },
   scroll: {
     name: "SCROLL",
     detail: "スクロール速度変更",
-    regexp: /^SCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#SCROLL" + " <rate>").value,
-    snippet: new SnippetString().appendText("SCROLL ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面のスクロール速度を`<rate>`倍に変更します。  \n")
-      .appendMarkdown("デフォルトは`1.00`です。").value,
+    documentation:
+      "譜面のスクロール速度を`<rate>`倍に変更します。  \n" + "デフォルトは`1.00`です。",
     separator: "None",
     section: "Inner",
     category: "Base",
     order: 0,
+    snippet: new SnippetString().appendText("SCROLL "),
   },
   delay: {
     name: "DELAY",
     detail: "譜面遅延（停止）",
-    regexp: /^DELAY$/,
     syntax: new MarkdownString().appendCodeblock("#DELAY" + " <second>").value,
-    snippet: new SnippetString().appendText("DELAY ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面が流れてくるタイミングを`<second>`秒遅らせます。  \n")
-      .appendMarkdown("`#BMSCROLL`,`#HBSCROLL`適用下では譜面停止扱いになります。").value,
+    documentation:
+      "譜面が流れてくるタイミングを`<second>`秒遅らせます。  \n" +
+      "`#BMSCROLL`,`#HBSCROLL`適用下では譜面停止扱いになります。",
     separator: "None",
     section: "Inner",
     category: "Base",
     order: 1,
+    snippet: new SnippetString().appendText("DELAY "),
   },
   section: {
     name: "SECTION",
     detail: "分岐判定リセット",
-    regexp: /^SECTION$/,
     syntax: new MarkdownString().appendCodeblock("#SECTION").value,
-    snippet: new SnippetString().appendText("SECTION").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面分岐の判定に使う連打数、精度をリセットします。  \n")
-      .appendMarkdown("分岐したい箇所の一小節以上前に置いてください。").value,
+    documentation:
+      "譜面分岐の判定に使う連打数、精度をリセットします。  \n" +
+      "分岐したい箇所の一小節以上前に置いてください。",
     separator: "None",
     section: "MeasureHead",
     category: "Base",
@@ -132,34 +113,27 @@ export const commands = new CommandCollection({
   branchstart: {
     name: "BRANCHSTART",
     detail: "分岐開始",
-    regexp: /^BRANCHSTART$/,
     syntax: new MarkdownString().appendCodeblock("#BRANCHSTART" + " <type>, <expart>, <master>")
       .value,
-    snippet: new SnippetString().appendText("BRANCHSTART ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面分岐を開始します。  \n\n")
-      .appendMarkdown(
-        "`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n"
-      )
-      .appendMarkdown("`<expart>`: この数値以上で玄人譜面に分岐します。  \n")
-      .appendMarkdown("`<master>`: この数値以上で達人譜面に分岐します。  \n\n")
-      .appendMarkdown("分岐判定は一小節前に行われます。  \n")
-      .appendMarkdown("一小節前から連打が始まる場合、その連打もカウントします。  \n\n")
-      .appendMarkdown("分岐後は普通譜面`#N`、玄人譜面`#E`、達人譜面`#M`で記述します。").value,
+    documentation:
+      "譜面分岐を開始します。  \n\n" +
+      "`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n" +
+      "`<expart>`: この数値以上で玄人譜面に分岐します。  \n" +
+      "`<master>`: この数値以上で達人譜面に分岐します。  \n\n" +
+      "分岐判定は一小節前に行われます。  \n" +
+      "一小節前から連打が始まる場合、その連打もカウントします。  \n\n" +
+      "分岐後は普通譜面`#N`、玄人譜面`#E`、達人譜面`#M`で記述します。",
     separator: "Comma",
     section: "Branch",
     category: "Base",
     order: 2,
+    snippet: new SnippetString().appendText("BRANCHSTART "),
   },
   branchend: {
     name: "BRANCHEND",
     detail: "分岐終了",
-    regexp: /^BRANCHEND$/,
     syntax: new MarkdownString().appendCodeblock("#BRANCHEND").value,
-    snippet: new SnippetString().appendText("BRANCHEND").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面分岐を終了します。  \n")
-      .appendMarkdown("以降は全ての分岐で共通の譜面が流れます。").value,
+    documentation: "譜面分岐を終了します。  \n" + "以降は全ての分岐で共通の譜面が流れます。",
     separator: "None",
     section: "Branch",
     category: "Base",
@@ -168,10 +142,8 @@ export const commands = new CommandCollection({
   n: {
     name: "N",
     detail: "普通譜面",
-    regexp: /^N$/,
     syntax: new MarkdownString().appendCodeblock("#N").value,
-    snippet: new SnippetString().appendText("N").value,
-    documentation: new MarkdownString().appendMarkdown("普通譜面を記述します。").value,
+    documentation: "普通譜面を記述します。",
     separator: "None",
     section: "Branch",
     category: "Base",
@@ -180,10 +152,8 @@ export const commands = new CommandCollection({
   e: {
     name: "E",
     detail: "玄人譜面",
-    regexp: /^E$/,
     syntax: new MarkdownString().appendCodeblock("#E").value,
-    snippet: new SnippetString().appendText("E").value,
-    documentation: new MarkdownString().appendMarkdown("玄人譜面を記述します。").value,
+    documentation: "玄人譜面を記述します。",
     separator: "None",
     section: "Branch",
     category: "Base",
@@ -192,10 +162,8 @@ export const commands = new CommandCollection({
   m: {
     name: "M",
     detail: "達人譜面",
-    regexp: /^M$/,
     syntax: new MarkdownString().appendCodeblock("#M").value,
-    snippet: new SnippetString().appendText("M").value,
-    documentation: new MarkdownString().appendMarkdown("達人譜面を記述します。").value,
+    documentation: "達人譜面を記述します。",
     separator: "None",
     section: "Branch",
     category: "Base",
@@ -204,13 +172,10 @@ export const commands = new CommandCollection({
   levelhold: {
     name: "LEVELHOLD",
     detail: "分岐固定",
-    regexp: /^LEVELHOLD$/,
     syntax: new MarkdownString().appendCodeblock("#LEVELHOLD").value,
-    snippet: new SnippetString().appendText("LEVELHOLD").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("現在の譜面分岐を固定します。  \n")
-      .appendMarkdown("この命令がある小節に到達した場合、以後も譜面分岐が行われなくなります。")
-      .value,
+    documentation:
+      "現在の譜面分岐を固定します。  \n" +
+      "この命令がある小節に到達した場合、以後も譜面分岐が行われなくなります。",
     separator: "None",
     section: "MeasureHead",
     category: "Base",
@@ -219,12 +184,9 @@ export const commands = new CommandCollection({
   bmscroll: {
     name: "BMSCROLL",
     detail: "スクロール方式変更",
-    regexp: /^BMSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#BMSCROLL").value,
-    snippet: new SnippetString().appendText("BMSCROLL").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面のスクロールがBMS形式になります。  \n")
-      .appendMarkdown("`#START`より前に記述してください。").value,
+    documentation:
+      "譜面のスクロールがBMS形式になります。  \n" + "`#START`より前に記述してください。",
     separator: "None",
     section: "Outer",
     category: "Base",
@@ -233,12 +195,10 @@ export const commands = new CommandCollection({
   hbscroll: {
     name: "HBSCROLL",
     detail: "スクロール方式変更",
-    regexp: /^HBSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#HBSCROLL").value,
-    snippet: new SnippetString().appendText("HBSCROLL").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面のスクロールが`#BMSCROLL`に`#SCROLL`の効果を含めた形式になります。  \n")
-      .appendMarkdown("`#START`より前に記述してください。").value,
+    documentation:
+      "譜面のスクロールが`#BMSCROLL`に`#SCROLL`の効果を含めた形式になります。  \n" +
+      "`#START`より前に記述してください。",
     separator: "None",
     section: "Outer",
     category: "Base",
@@ -247,10 +207,8 @@ export const commands = new CommandCollection({
   barlineoff: {
     name: "BARLINEOFF",
     detail: "小節線非表示",
-    regexp: /^BARLINEOFF$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINEOFF").value,
-    snippet: new SnippetString().appendText("BARLINEOFF").value,
-    documentation: new MarkdownString().appendMarkdown("小節線を非表示にします。").value,
+    documentation: "小節線を非表示にします。",
     separator: "None",
     section: "MeasureHead",
     category: "Base",
@@ -259,10 +217,8 @@ export const commands = new CommandCollection({
   barlineon: {
     name: "BARLINEON",
     detail: "小節線表示",
-    regexp: /^BARLINEON$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINEON").value,
-    snippet: new SnippetString().appendText("BARLINEON").value,
-    documentation: new MarkdownString().appendMarkdown("小節線を表示します。").value,
+    documentation: "小節線を表示します。",
     separator: "None",
     section: "MeasureHead",
     category: "Base",
@@ -272,128 +228,118 @@ export const commands = new CommandCollection({
   lyric: {
     name: "LYRIC",
     detail: "歌詞表示",
-    regexp: /^LYRIC$/,
     syntax: new MarkdownString().appendCodeblock("#LYRIC" + " <string>").value,
-    snippet: new SnippetString().appendText("LYRIC ").value,
-    documentation: new MarkdownString().appendMarkdown("歌詞を表示します。").value,
+    documentation: "歌詞を表示します。",
     separator: "None",
     section: "Inner",
     category: "TJAP",
     order: 2,
+    snippet: new SnippetString().appendText("LYRIC "),
   },
   sudden: {
     name: "SUDDEN",
     detail: "音符の出現",
-    regexp: /^SUDDEN$/,
     syntax: new MarkdownString().appendCodeblock("#SUDDEN" + " <sudden> <move>").value,
-    snippet: new SnippetString().appendText("SUDDEN ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("音符の出現タイミングと動作タイミングを変更します。  \n")
-      .appendMarkdown("`<sudden>`秒前に出現し、`<move>`秒前に動き出します。  \n")
-      .appendMarkdown(
-        "`<sudden>`に`0`を指定すると通常の動作に戻ります（このとき`<move>`にも仮の値を指定する必要があります）。"
-      ).value,
+    documentation:
+      "音符の出現タイミングと動作タイミングを変更します。  \n" +
+      "`<sudden>`秒前に出現し、`<move>`秒前に動き出します。  \n" +
+      "`<sudden>`に`0`を指定すると通常の動作に戻ります（このとき`<move>`にも仮の値を指定する必要があります）。",
     separator: "Space",
     section: "Inner",
     category: "TJAP",
     order: 1,
+    snippet: new SnippetString().appendText("SUDDEN "),
   },
   direction: {
     name: "DIRECTION",
     detail: "スクロールの向き変更",
-    regexp: /^DIRECTION$/,
     syntax: new MarkdownString().appendCodeblock("#DIRECTION" + " <direction>").value,
-    snippet: new SnippetString().appendText("DIRECTION ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("譜面の流れる方向を指定します。  \n\n")
-      .appendMarkdown("`0`: ←（通常）  \n")
-      .appendMarkdown("`1`: ↓  \n")
-      .appendMarkdown("`2`: ↑  \n")
-      .appendMarkdown("`3`: ↙  \n")
-      .appendMarkdown("`4`: ↖  \n")
-      .appendMarkdown("`5`: →  \n")
-      .appendMarkdown("`6`: ↘  \n")
-      .appendMarkdown("`7`: ↗").value,
+    documentation:
+      "譜面の流れる方向を指定します。  \n\n" +
+      "`0`: ←（通常）  \n" +
+      "`1`: ↓  \n" +
+      "`2`: ↑  \n" +
+      "`3`: ↙  \n" +
+      "`4`: ↖  \n" +
+      "`5`: →  \n" +
+      "`6`: ↘  \n" +
+      "`7`: ↗",
     separator: "None",
     section: "Inner",
     category: "TJAP",
     order: 1,
+    snippet: new SnippetString().appendText("DIRECTION "),
   },
   // TJAPlayer3
   jposscroll: {
     name: "JPOSSCROLL",
     detail: "判定枠移動",
-    regexp: /^JPOSSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#JPOSSCROLL" + " <second> <distance> <direction>")
       .value,
-    snippet: new SnippetString().appendText("JPOSSCROLL ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("判定枠を左右に移動します。  \n\n")
-      .appendMarkdown("`<second>`: 移動にかかる秒数。  \n")
-      .appendMarkdown("`<distance>`: 移動距離をpxで指定します。  \n")
-      .appendMarkdown("`<direction>`: 移動方向を`0`か`1`で指定します。`0`で左、`1`で右。").value,
+    documentation:
+      "判定枠を左右に移動します。  \n\n" +
+      "`<second>`: 移動にかかる秒数。  \n" +
+      "`<distance>`: 移動距離をpxで指定します。  \n" +
+      "`<direction>`: 移動方向を`0`か`1`で指定します。`0`で左、`1`で右。",
     separator: "Space",
     section: "Inner",
     category: "TJAP",
     order: 1,
+    snippet: new SnippetString().appendText("JPOSSCROLL "),
   },
   nextsong: {
     name: "NEXTSONG",
     detail: "段位道場の課題曲",
-    regexp: /^NEXTSONG$/,
     syntax: new MarkdownString().appendCodeblock(
       "#NEXTSONG" + " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
     ).value,
-    snippet: new SnippetString().appendText("NEXTSONG ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("課題曲を指定します。  \n\n")
-      .appendMarkdown("`<title>`: タイトル  \n")
-      .appendMarkdown("`<subtitle>`: サブタイトル  \n")
-      .appendMarkdown("`<genre>`: ジャンル  \n")
-      .appendMarkdown("`<wave>`: 音源ファイル  \n")
-      .appendMarkdown("`<scoreinit>`: 初項  \n")
-      .appendMarkdown("`<scorediff>`: 公差  \n")
-      .appendMarkdown("`<level>`: レベル  \n")
-      .appendMarkdown("`<course>`: 難易度  \n").value,
+    documentation:
+      "課題曲を指定します。  \n\n" +
+      "`<title>`: タイトル  \n" +
+      "`<subtitle>`: サブタイトル  \n" +
+      "`<genre>`: ジャンル  \n" +
+      "`<wave>`: 音源ファイル  \n" +
+      "`<scoreinit>`: 初項  \n" +
+      "`<scorediff>`: 公差  \n" +
+      "`<level>`: レベル  \n" +
+      "`<course>`: 難易度",
     separator: "Comma",
     section: "Song",
     category: "TJAP",
     order: 2,
+    snippet: new SnippetString().appendText("NEXTSONG "),
   },
   senotechange: {
     name: "SENOTECHANGE",
     detail: "音符文字の変更",
-    regexp: /^SENOTECHANGE$/,
     syntax: new MarkdownString().appendCodeblock("#SENOTECHANGE" + " <type>").value,
-    snippet: new SnippetString().appendText("SENOTECHANGE ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("音符文字を変更します。  \n")
-      .appendMarkdown("`<type>`: `1` ~ `12`で指定します。  \n\n")
-      .appendMarkdown("### **種類**  \n")
-      .appendMarkdown("`1`: ドン  \n")
-      .appendMarkdown("`2`: ド  \n")
-      .appendMarkdown("`3`: コ  \n")
-      .appendMarkdown("`4`: カッ  \n")
-      .appendMarkdown("`5`: カ  \n")
-      .appendMarkdown("`6`: ドン(大)  \n")
-      .appendMarkdown("`7`: カッ(大)  \n")
-      .appendMarkdown("`8`: 連打  \n")
-      .appendMarkdown("`9`: ー  \n")
-      .appendMarkdown("`10`: ーっ!!  \n")
-      .appendMarkdown("`11`: 連打(大)  \n")
-      .appendMarkdown("`12`: ふうせん").value,
+    documentation:
+      "音符文字を変更します。  \n" +
+      "`<type>`: `1` ~ `12`で指定します。  \n\n" +
+      "### **種類**  \n" +
+      "`1`: ドン  \n" +
+      "`2`: ド  \n" +
+      "`3`: コ  \n" +
+      "`4`: カッ  \n" +
+      "`5`: カ  \n" +
+      "`6`: ドン(大)  \n" +
+      "`7`: カッ(大)  \n" +
+      "`8`: 連打  \n" +
+      "`9`: ー  \n" +
+      "`10`: ーっ!!  \n" +
+      "`11`: 連打(大)  \n" +
+      "`12`: ふうせん",
     separator: "None",
     section: "Inner",
     category: "TJAP",
     order: 2,
+    snippet: new SnippetString().appendText("SENOTECHANGE "),
   },
   // TaikoManyGimmicks
   judgedelay: {
     name: "JUDGEDELAY",
     detail: "判定位置の移動",
-    regexp: /^JUDGEDELAY$/,
     syntax: new MarkdownString().appendCodeblock("#JUDGEDELAY" + " <type> [...]").value,
-    snippet: new SnippetString().appendText("JUDGEDELAY ").value,
     documentation: new MarkdownString()
       .appendMarkdown("判定位置を判定枠からずらします。  \n")
       .appendMarkdown("譜面の流れる位置は判定位置に準拠します。  \n\n")
@@ -412,14 +358,13 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("JUDGEDELAY "),
   },
   dummystart: {
     name: "DUMMYSTART",
     detail: "ダミー開始",
-    regexp: /^DUMMYSTART$/,
     syntax: new MarkdownString().appendCodeblock("#DUMMYSTART").value,
-    snippet: new SnippetString().appendText("DUMMYSTART").value,
-    documentation: new MarkdownString().appendMarkdown("音符をダミーノーツにします。").value,
+    documentation: "音符をダミーノーツにします。",
     separator: "None",
     section: "Inner",
     category: "TMG",
@@ -428,10 +373,8 @@ export const commands = new CommandCollection({
   dummyend: {
     name: "DUMMYEND",
     detail: "ダミー終了",
-    regexp: /^DUMMYEND$/,
     syntax: new MarkdownString().appendCodeblock("#DUMMYEND").value,
-    snippet: new SnippetString().appendText("DUMMYEND").value,
-    documentation: new MarkdownString().appendMarkdown("音符を普通のノーツに戻します。").value,
+    documentation: "音符を普通のノーツに戻します。",
     separator: "None",
     section: "Inner",
     category: "TMG",
@@ -440,9 +383,7 @@ export const commands = new CommandCollection({
   notespawn: {
     name: "NOTESPAWN",
     detail: "譜面の出現",
-    regexp: /^NOTESPAWN$/,
     syntax: new MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]").value,
-    snippet: new SnippetString().appendText("NOTESPAWN ").value,
     documentation: new MarkdownString()
       .appendMarkdown("譜面の出現･隠蔽タイミングを指定します。  \n\n")
       .appendMarkdown(
@@ -458,57 +399,52 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("NOTESPAWN "),
   },
   size: {
     name: "SIZE",
     detail: "音符サイズ変更",
-    regexp: /^SIZE$/,
     syntax: new MarkdownString().appendCodeblock("#SIZE" + " <rate>").value,
-    snippet: new SnippetString().appendText("SIZE ").value,
-    documentation: new MarkdownString().appendMarkdown("音符のサイズを`<rate>`倍にします。").value,
+    documentation: "音符のサイズを`<rate>`倍にします。",
     separator: "None",
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("SIZE "),
   },
   color: {
     name: "COLOR",
     detail: "音符の色彩変更",
-    regexp: /^COLOR$/,
     syntax: new MarkdownString().appendCodeblock("#COLOR" + " <red> <green> <blue>").value,
-    snippet: new SnippetString().appendText("COLOR 255 255 255").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("音符の色彩を変更します。  \n")
-      .appendMarkdown("255を基準値とします。  \n\n")
-      .appendMarkdown("`<red>`: 赤色  \n")
-      .appendMarkdown("`<green>`: 緑色  \n")
-      .appendMarkdown("`<blue>`: 青色  \n").value,
+    documentation:
+      "音符の色彩を変更します。  \n" +
+      "255を基準値とします。  \n\n" +
+      "`<red>`: 赤色  \n" +
+      "`<green>`: 緑色  \n" +
+      "`<blue>`: 青色  \n",
     separator: "Space",
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("COLOR 255 255 255"),
   },
   angle: {
     name: "ANGLE",
     detail: "音符の向き変更",
-    regexp: /^ANGLE$/,
     syntax: new MarkdownString().appendCodeblock("#ANGLE" + " <angle>").value,
-    snippet: new SnippetString().appendText("ANGLE ").value,
-    documentation: new MarkdownString().appendMarkdown("音符の向きを`<angle>`度回転させます。")
-      .value,
+    documentation: "音符の向きを`<angle>`度回転させます。",
     separator: "None",
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("ANGLE "),
   },
   gradation: {
     name: "GRADATION",
     detail: "命令の時間的変化",
-    regexp: /^GRADATION$/,
     syntax: new MarkdownString().appendCodeblock(
       "#GRADATION" + " <type> [<second> <type1> <type2>]"
     ).value,
-    snippet: new SnippetString().appendText("GRADATION ").value,
     documentation: new MarkdownString()
       .appendMarkdown("他の命令の即時的な効果を時間的に変化させます。  \n\n")
       .appendMarkdown(
@@ -555,30 +491,27 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("GRADATION "),
   },
   barlinesize: {
     name: "BARLINESIZE",
     detail: "小節線サイズ変更",
-    regexp: /^BARLINESIZE$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINESIZE" + " <width> <height>").value,
-    snippet: new SnippetString().appendText("BARLINESIZE ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("小節線のサイズを変更します。  \n\n")
-      .appendMarkdown("`<width>`: 横幅をpxで指定します。  \n")
-      .appendMarkdown("`<height>`: 縦幅をpxで指定します。").value,
+    documentation:
+      "小節線のサイズを変更します。  \n\n" +
+      "`<width>`: 横幅をpxで指定します。  \n" +
+      "`<height>`: 縦幅をpxで指定します。",
     separator: "Space",
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("BARLINESIZE "),
   },
   resetcommand: {
     name: "RESETCOMMAND",
     detail: "命令のリセット",
-    regexp: /^RESETCOMMAND$/,
     syntax: new MarkdownString().appendCodeblock("#RESETCOMMAND").value,
-    snippet: new SnippetString().appendText("RESETCOMMAND").value,
-    documentation: new MarkdownString().appendMarkdown("全ての命令の効果を初期値に戻します。")
-      .value,
+    documentation: "全ての命令の効果を初期値に戻します。",
     separator: "None",
     section: "Inner",
     category: "TMG",
@@ -587,54 +520,45 @@ export const commands = new CommandCollection({
   alpha: {
     name: "ALPHA",
     detail: "音符の透明度変更",
-    regexp: /^ALPHA$/,
     syntax: new MarkdownString().appendCodeblock("#ALPHA" + " <alpha>").value,
-    snippet: new SnippetString().appendText("ALPHA ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("音符の透明度を変更します。  \n")
-      .appendMarkdown("255を基準値とします。  \n\n")
-      .appendMarkdown("`<alpha>`: 透明度").value,
+    documentation:
+      "音符の透明度を変更します。  \n" + "255を基準値とします。  \n\n" + "`<alpha>`: 透明度",
     separator: "Space",
     section: "Inner",
     category: "TMG",
     order: 1,
+    snippet: new SnippetString().appendText("ALPHA "),
   },
   hispeed: {
     name: "HISPEED",
     detail: "疑似速度変更",
-    regexp: /^HISPEED$/,
     syntax: new MarkdownString().appendCodeblock("#HISPEED" + " <rate>").value,
-    snippet: new SnippetString().appendText("HISPEED ").value,
-    documentation: new MarkdownString()
-      .appendMarkdown("`#BMSCROLL`中にBPMを変更したときのようにスクロール速度を変更します。  \n")
-      .appendMarkdown("デフォルトは`1.00`です。").value,
+    documentation:
+      "`#BMSCROLL`中にBPMを変更したときのようにスクロール速度を変更します。  \n" +
+      "デフォルトは`1.00`です。",
     separator: "None",
     section: "Inner",
     category: "TMG",
     order: 2,
+    snippet: new SnippetString().appendText("HISPEED "),
   },
   include: {
     name: "INCLUDE",
     detail: "定義の読み込み",
-    regexp: /^INCLUDE$/,
     syntax: new MarkdownString().appendCodeblock("#INCLUDE" + " <filepath>").value,
-    snippet: new SnippetString().appendText("INCLUDE ").value,
-    documentation: new MarkdownString().appendMarkdown("ファイルからヘッダーや命令を読み込みます。")
-      .value,
+    documentation: "ファイルからヘッダーや命令を読み込みます。",
     separator: "None",
     section: "Unknown",
     category: "TMG",
     order: 2,
+    snippet: new SnippetString().appendText("INCLUDE "),
   },
   // OpenTaiko
   nmscroll: {
     name: "NMSCROLL",
     detail: "スクロール方式変更",
-    regexp: /^NMSCROLL$/,
     syntax: new MarkdownString().appendCodeblock("#NMSCROLL").value,
-    snippet: new SnippetString().appendText("NMSCROLL").value,
-    documentation: new MarkdownString().appendMarkdown("譜面のスクロールをデフォルトに戻します。")
-      .value,
+    documentation: "譜面のスクロールをデフォルトに戻します。",
     separator: "None",
     section: "Unknown",
     category: "OpTk",
@@ -643,10 +567,8 @@ export const commands = new CommandCollection({
   barline: {
     name: "BARLINE",
     detail: "偽の小節線",
-    regexp: /^BARLINE$/,
     syntax: new MarkdownString().appendCodeblock("#BARLINE").value,
-    snippet: new SnippetString().appendText("BARLINE").value,
-    documentation: new MarkdownString().appendMarkdown("偽の小節線を表示します。").value,
+    documentation: "偽の小節線を表示します。",
     separator: "None",
     section: "Inner",
     category: "OpTk",
@@ -655,25 +577,23 @@ export const commands = new CommandCollection({
   bgaon: {
     name: "BGAON",
     detail: "BGAの再生",
-    regexp: /^BGAON$/,
     syntax: new MarkdownString().appendCodeblock("#BGAON <index> <offset>").value,
-    snippet: new SnippetString().appendText("BGAON ").value,
-    documentation: new MarkdownString().appendMarkdown("BGAを再生します。").value,
+    documentation: "BGAを再生します。",
     separator: "Space",
     section: "Inner",
     category: "OpTk",
     order: 2,
+    snippet: new SnippetString().appendText("BGAON "),
   },
   bgaoff: {
     name: "BGAOFF",
     detail: "BGAの停止",
-    regexp: /^BGAOFF$/,
     syntax: new MarkdownString().appendCodeblock("#BGAOFF <index>").value,
-    snippet: new SnippetString().appendText("BGAON ").value,
-    documentation: new MarkdownString().appendMarkdown("BGAを停止します。").value,
+    documentation: "BGAを停止します。",
     separator: "None",
     section: "Inner",
     category: "OpTk",
     order: 2,
+    snippet: new SnippetString().appendText("BGAOFF "),
   },
 });

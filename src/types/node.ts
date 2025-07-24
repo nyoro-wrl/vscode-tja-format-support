@@ -4,7 +4,7 @@ import { headers } from "../constants/headers";
 import { Token } from "../lexer";
 import { Note } from "./note";
 import { BranchState, ChartState, RollState, TriBoolean } from "./state";
-import { Separator } from "./statement";
+import { getRegExp, Separator } from "./statement";
 
 interface HeadersProperties {
   readonly headers: StatementProperties[];
@@ -617,7 +617,7 @@ export class CourseNode extends ParentNode<StyleNode> {
     );
     if (courseHeaders !== undefined) {
       const courseHeader = courseHeaders.properties.headers.find((x) =>
-        headers.items.course.regexp.test(x.name)
+        getRegExp(headers.items.course).test(x.name)
       );
       if (courseHeader !== undefined) {
         this.properties.course = courseHeader.parameter;
@@ -648,16 +648,16 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
     if (node instanceof StyleHeadersNode) {
       this.properties.headers.push(...node.properties.headers);
       const styleHeader = node.properties.headers.find((x) =>
-        headers.items.style.regexp.test(x.name)
+        getRegExp(headers.items.style).test(x.name)
       );
       if (styleHeader !== undefined) {
         this.properties.style = styleHeader.parameter;
       }
       this.properties.isBranchBalloon = node.properties.headers.some(
         (x) =>
-          headers.items.balloonnor.regexp.test(x.name) ||
-          headers.items.balloonexp.regexp.test(x.name) ||
-          headers.items.balloonmas.regexp.test(x.name)
+          getRegExp(headers.items.balloonnor).test(x.name) ||
+          getRegExp(headers.items.balloonexp).test(x.name) ||
+          getRegExp(headers.items.balloonmas).test(x.name)
       );
     }
   }
@@ -756,12 +756,12 @@ export class ChartStateCommandNode extends CommandNode {
     super._pushStatement(node);
 
     if (node instanceof ParametersNode) {
-      if (commands.items.bpmchange.regexp.test(this.properties.name)) {
+      if (getRegExp(commands.items.bpmchange).test(this.properties.name)) {
         const rawValue =
           node.children[0] !== undefined ? Number(node.children[0].value) : undefined;
         const value = Number.isNaN(rawValue) ? undefined : rawValue;
         this.properties.chartState.bpm = value;
-      } else if (commands.items.scroll.regexp.test(this.properties.name)) {
+      } else if (getRegExp(commands.items.scroll).test(this.properties.name)) {
         const rawValue =
           node.children[0] !== undefined ? Number(node.children[0].value) : undefined;
         const value = Number.isNaN(rawValue) ? undefined : rawValue;
@@ -808,12 +808,12 @@ export class ChartNode extends ParentNode<
     if (node instanceof CommandNode) {
       if (
         this.properties.start === undefined &&
-        commands.items.start.regexp.test(node.properties.name)
+        getRegExp(commands.items.start).test(node.properties.name)
       ) {
         this.properties.start = node.properties;
       } else if (
         this.properties.end === undefined &&
-        commands.items.end.regexp.test(node.properties.name)
+        getRegExp(commands.items.end).test(node.properties.name)
       ) {
         this.properties.end = node.properties;
       }
@@ -884,7 +884,7 @@ export class SongNode extends ParentNode<
     if (node instanceof CommandNode) {
       if (
         this.properties.nextsong === undefined &&
-        commands.items.nextsong.regexp.test(node.properties.name)
+        getRegExp(commands.items.nextsong).test(node.properties.name)
       ) {
         this.properties.nextsong = node.properties;
       }

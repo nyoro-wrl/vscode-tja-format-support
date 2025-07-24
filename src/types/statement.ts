@@ -19,14 +19,6 @@ export interface IStatement {
    */
   readonly detail: string;
   /**
-   * 一致する正規表現
-   */
-  readonly regexp: RegExp;
-  /**
-   * 補完テキスト
-   */
-  readonly snippet: SnippetString | undefined;
-  /**
    * 解説テキスト
    */
   readonly documentation: string;
@@ -42,6 +34,14 @@ export interface IStatement {
    *     2 // 明確な目的がないと使わない
    */
   readonly order: number;
+  /**
+   * 一致する正規表現
+   */
+  readonly regexp?: RegExp;
+  /**
+   * 補完テキスト
+   */
+  readonly snippet?: SnippetString;
 }
 
 interface IStatementCollection<T extends IStatement> extends ICollection<T> {
@@ -62,9 +62,13 @@ export class StatementCollection<T extends IStatement>
    */
   get(string: string): T | undefined {
     for (const statement of this) {
-      if (statement.regexp.test(string)) {
+      if (getRegExp(statement).test(string)) {
         return statement;
       }
     }
   }
+}
+
+export function getRegExp(header: IStatement): RegExp {
+  return header.regexp || new RegExp(`^${header.name}$`);
 }
