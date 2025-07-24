@@ -107,7 +107,7 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
         const signature = new SignatureInformation(`${baseName}<n>:${paramNames}`);
 
         const numberParameter = new ParameterInformation(
-          `<n>`,
+          [4, 7],
           new MarkdownString(this.getNumberParameterDescription(baseName))
         );
         signature.parameters = [numberParameter];
