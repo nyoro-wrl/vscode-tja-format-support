@@ -32,7 +32,9 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
           x instanceof BranchNode ||
           x instanceof BranchSectionNode,
         true,
-        (x) => x instanceof MeasureNode || x instanceof BranchSectionNode
+        (x) => x instanceof MeasureNode || x instanceof BranchSectionNode,
+        undefined,
+        token
       )
     );
     for (const node of nodes) {

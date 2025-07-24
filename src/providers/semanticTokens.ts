@@ -45,7 +45,9 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
           x.value === "0") ||
           x.properties.rollState !== "None"),
       false,
-      (x) => x instanceof HeadersNode
+      (x) => x instanceof HeadersNode,
+      undefined,
+      token
     );
     for (const note of notes) {
       if (token?.isCancellationRequested) {
@@ -77,7 +79,9 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
       const measureEnds = root.filter(
         (x) => x instanceof MeasureEndNode && x.properties.isGogotime === true,
         false,
-        (x) => x instanceof HeadersNode
+        (x) => x instanceof HeadersNode,
+        undefined,
+        token
       );
       for (const measureEnd of measureEnds) {
         tokensBuilder.push(measureEnd.range, "gogoMeasureEnd");

@@ -193,7 +193,10 @@ export class Parser {
         if (maxId === -1 && hasNonEmptyParameters) {
           // BALLOON: header has parameters but no balloon notes in chart - warn on parameters
           const headerNode = styleNode.find<HeaderNode>(
-            (x) => x instanceof HeaderNode && x.properties.name === header.name
+            (x) => x instanceof HeaderNode && x.properties.name === header.name,
+            undefined,
+            undefined,
+            this.parseCancel
           );
           if (headerNode) {
             const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
@@ -213,7 +216,10 @@ export class Parser {
         } else if (maxId > -1 && header.parameters.length > maxId + 1) {
           // Find the range of unused parameters
           const headerNode = styleNode.find<HeaderNode>(
-            (x) => x instanceof HeaderNode && x.properties.name === header.name
+            (x) => x instanceof HeaderNode && x.properties.name === header.name,
+            undefined,
+            undefined,
+            this.parseCancel
           );
           if (headerNode) {
             const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
@@ -331,32 +337,68 @@ export class Parser {
   ): void {
     if (command === commands.items.barlineoff) {
       if (this.chartState.showBarline === false) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.showBarline = false;
     } else if (command === commands.items.barlineon) {
       if (this.chartState.showBarline === true) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.showBarline = true;
     } else if (command === commands.items.gogostart) {
       if (this.chartState.isGogotime === true) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isGogotime = true;
     } else if (command === commands.items.gogoend) {
       if (this.chartState.isGogotime === false) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isGogotime = false;
     } else if (command === commands.items.dummystart) {
       if (this.chartState.isDummyNote === true) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isDummyNote = true;
     } else if (command === commands.items.dummyend) {
       if (this.chartState.isDummyNote === false) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isDummyNote = false;
     } else if (
@@ -516,7 +558,13 @@ export class Parser {
    */
   private getActualMeasureCount(parent: ChartNode | SongNode): number {
     // 親ノードから実際のMeasureNodeの数を数える
-    const measureNodes = parent.filter((x) => x instanceof MeasureNode);
+    const measureNodes = parent.filter(
+      (x) => x instanceof MeasureNode,
+      undefined,
+      undefined,
+      undefined,
+      this.parseCancel
+    );
     return measureNodes.length;
   }
 
@@ -677,8 +725,11 @@ export class Parser {
         }
       } else if (/[79]/.test(token.value)) {
         if (this.chartState.isDummyNote === false) {
-          const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode)
-            ?.properties.isBranchBalloon;
+          const isBranchBalloon = parent.findParent<StyleNode>(
+            (x) => x instanceof StyleNode,
+            undefined,
+            this.parseCancel
+          )?.properties.isBranchBalloon;
           if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
             this.nowBalloonId = ++this.balloonId;
           } else {
@@ -701,7 +752,11 @@ export class Parser {
     const node = new NoteNode(parent, token, this.chartState, this.nowBalloonId);
     parent.push(node);
     if (this.nowBalloonId !== undefined && /[79]/.test(token.value)) {
-      const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode);
+      const styleNode = parent.findParent<StyleNode>(
+        (x) => x instanceof StyleNode,
+        undefined,
+        this.parseCancel
+      );
       if (styleNode !== undefined) {
         const isBranchBalloon = styleNode?.properties.isBranchBalloon;
         let headerRegExp: RegExp;
@@ -775,7 +830,9 @@ export class Parser {
     let findNode = parent.findLastRange<CourseNode>(
       (x) => x instanceof CourseNode,
       false,
-      (x) => x instanceof HeadersNode
+      (x) => x instanceof HeadersNode,
+      undefined,
+      this.parseCancel
     );
     if (findNode === undefined) {
       // コースの作成
@@ -830,7 +887,13 @@ export class Parser {
    */
   private validateChateEnd(parent: ChartNode): void {
     if (this.chartState.rollState !== "None") {
-      const lastMeasure = parent.findLastRange((x) => x instanceof MeasureNode, false);
+      const lastMeasure = parent.findLastRange(
+        (x) => x instanceof MeasureNode,
+        false,
+        undefined,
+        undefined,
+        this.parseCancel
+      );
       if (lastMeasure !== undefined) {
         const text =
           this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
@@ -851,7 +914,13 @@ export class Parser {
    * @param parent
    */
   private validateMeasureEnd(parent: MeasureNode): void {
-    const node = parent.findDepth((x) => x instanceof NoteNode, false);
+    const node = parent.findDepth(
+      (x) => x instanceof NoteNode,
+      false,
+      undefined,
+      undefined,
+      this.parseCancel
+    );
     if (node !== undefined) {
       this.addDiagnostic(
         "Unedited",
@@ -1154,7 +1223,8 @@ export class Parser {
             } else if (section === "Branch") {
               if (
                 info !== commands.items.branchstart &&
-                parent.findParent((x) => x instanceof BranchNode) === undefined
+                parent.findParent((x) => x instanceof BranchNode, undefined, this.parseCancel) ===
+                  undefined
               ) {
                 const node = this.parseCommand(parent, token, separator);
                 this.addDiagnostic("Realtime", node.range, "#BRANCHSTART がありません。");

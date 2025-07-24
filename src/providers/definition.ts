@@ -36,19 +36,28 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
           headers.items.balloonnor.regexp.test(x.properties.name) ||
           headers.items.balloonexp.regexp.test(x.properties.name) ||
           headers.items.balloonmas.regexp.test(x.properties.name)),
-      (x) => x instanceof ChartNode
+      (x) => x instanceof ChartNode,
+      undefined,
+      token
     );
     if (balloonHeader === undefined) {
       return Promise.reject();
     }
     const parameterNode = balloonHeader.find<ParameterNode>(
-      (x) => x instanceof ParameterNode && x.range.contains(position)
+      (x) => x instanceof ParameterNode && x.range.contains(position),
+      undefined,
+      undefined,
+      token
     );
     if (parameterNode === undefined) {
       return Promise.reject();
     }
     const balloonId = parameterNode.properties.index;
-    const styleNode = balloonHeader.findParent<StyleNode>((x) => x instanceof StyleNode);
+    const styleNode = balloonHeader.findParent<StyleNode>(
+      (x) => x instanceof StyleNode,
+      undefined,
+      token
+    );
     if (styleNode === undefined) {
       return Promise.reject();
     }
@@ -65,7 +74,9 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
             headers.items.balloonexp.regexp.test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Master" &&
             headers.items.balloonmas.regexp.test(balloonHeader.properties.name))),
-      (x) => x instanceof HeadersNode || x instanceof CommandNode
+      (x) => x instanceof HeadersNode || x instanceof CommandNode,
+      undefined,
+      token
     );
     if (balloonNotes === undefined) {
       return Promise.reject();
@@ -102,7 +113,11 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined
+        x.properties.note.balloonId !== undefined,
+      undefined,
+      undefined,
+      undefined,
+      token
     );
 
     if (candidateNotes.length === 0) {
@@ -122,7 +137,7 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
         }
       }
     }
-    const style = balloonNote?.findParent((x) => x instanceof StyleNode);
+    const style = balloonNote?.findParent((x) => x instanceof StyleNode, undefined, token);
     if (
       balloonNote === undefined ||
       balloonNote.properties.note.balloonId === undefined ||
@@ -131,7 +146,7 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
       return Promise.reject();
     }
     const balloonHeader = balloonNote
-      .findParent<StyleNode>((x) => x instanceof StyleNode)
+      .findParent<StyleNode>((x) => x instanceof StyleNode, undefined, token)
       ?.find<HeaderNode>(
         (x) =>
           x instanceof HeaderNode &&
@@ -142,7 +157,10 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
             (balloonNote.properties.branchState === "Expert" &&
               headers.items.balloonexp.regexp.test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
-              headers.items.balloonmas.regexp.test(x.properties.name)))
+              headers.items.balloonmas.regexp.test(x.properties.name))),
+        undefined,
+        undefined,
+        token
       );
     if (balloonHeader === undefined) {
       return Promise.reject();
@@ -150,7 +168,11 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
 
     // Find parameter by balloonId using the parameter's index property
     const balloonParameter = balloonHeader.find<ParameterNode>(
-      (x) => x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+      (x) =>
+        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId,
+      undefined,
+      undefined,
+      token
     );
     if (!balloonParameter) {
       return Promise.reject();

@@ -47,19 +47,33 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
     }
 
     const root = documents.parse(document, token);
-    const node = root?.findDepth((x) => x.range.contains(position), true) ?? root;
-    if (root !== undefined && node?.findParent((x) => x instanceof ChartNode)) {
+    const node =
+      root?.findDepth((x) => x.range.contains(position), true, undefined, undefined, token) ?? root;
+    if (root !== undefined && node?.findParent((x) => x instanceof ChartNode, undefined, token)) {
       return snippets;
     }
     const chartAfter =
-      root?.find((x) => x instanceof ChartNode && x.range.start.line < position.line) !== undefined;
+      root?.find(
+        (x) => x instanceof ChartNode && x.range.start.line < position.line,
+        undefined,
+        undefined,
+        token
+      ) !== undefined;
 
     // 直前のヘッダを調べて関連性の高いヘッダを取得
     const recommend: string[] = [];
-    const headersNode = node?.findParent<HeadersNode>((x) => x instanceof HeadersNode);
+    const headersNode = node?.findParent<HeadersNode>(
+      (x) => x instanceof HeadersNode,
+      undefined,
+      token
+    );
     if (headersNode !== undefined) {
       const previewHeader = headersNode.findDepth<HeaderNode>(
-        (x) => x instanceof HeaderNode && x.range.end.line < position.line
+        (x) => x instanceof HeaderNode && x.range.end.line < position.line,
+        undefined,
+        undefined,
+        undefined,
+        token
       );
       if (previewHeader !== undefined) {
         const previewHeaderInfo = headers.get(previewHeader.properties.name);
@@ -156,20 +170,34 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
     }
 
     const root = documents.parse(document, token);
-    const node = root?.findDepth((x) => x.range.contains(position), true);
+    const node = root?.findDepth(
+      (x) => x.range.contains(position),
+      true,
+      undefined,
+      undefined,
+      token
+    );
     if (root !== undefined && node === undefined) {
       return snippets;
     }
 
-    const chartNode = node?.findParent<ChartNode>((x) => x instanceof ChartNode);
-    const branchNode = node?.findParent<BranchNode>((x) => x instanceof BranchNode);
+    const chartNode = node?.findParent<ChartNode>((x) => x instanceof ChartNode, undefined, token);
+    const branchNode = node?.findParent<BranchNode>(
+      (x) => x instanceof BranchNode,
+      undefined,
+      token
+    );
 
     // 譜面状態を取得する
     const chartState = getChartState(document, position, token) ?? new ChartState();
 
     // 現在が小節頭かどうか取得
     const beforeChartTokenNode = chartNode?.findLastRange(
-      (x) => x instanceof ChartTokenNode && x.range.start.line < position.line
+      (x) => x instanceof ChartTokenNode && x.range.start.line < position.line,
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     const measureHead =
       beforeChartTokenNode === undefined || beforeChartTokenNode instanceof MeasureEndNode;
@@ -244,7 +272,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       sortText.order4 += command.order;
       sortText.order5 += order;
       if (root !== undefined && node !== undefined) {
-        if (!node.findParent((x) => x instanceof ChartNode)) {
+        if (!node.findParent((x) => x instanceof ChartNode, undefined, token)) {
           // ヘッダを優先したいため優先度を下げる
           sortText.order1++;
         }
@@ -261,7 +289,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
             command === commands.items.e ||
             command === commands.items.m) &&
           branchNode !== undefined &&
-          !node.findParent((x) => x instanceof BranchSectionNode)
+          !node.findParent((x) => x instanceof BranchSectionNode, undefined, token)
         ) {
           sortText.order1--;
         }
@@ -301,13 +329,17 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
     if (node !== undefined) {
       // 未定義の命令を補完に載せる
-      const chart = node.findParent<ChartNode>((x) => x instanceof ChartNode);
+      const chart = node.findParent<ChartNode>((x) => x instanceof ChartNode, undefined, token);
       const unknownCommands =
         chart?.filter<CommandNode>(
           (x) =>
             x instanceof CommandNode &&
             commands.get(x.properties.name) === undefined &&
-            x.range.contains(position) === false
+            x.range.contains(position) === false,
+          undefined,
+          undefined,
+          undefined,
+          token
         ) ?? [];
       for (const unknownCommand of unknownCommands) {
         if (token.isCancellationRequested) {
@@ -316,7 +348,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
         // 優先度の計算
         const sortText = new SortTextFactory();
         sortText.order3++;
-        if (!node.findParent((x) => x instanceof ChartNode)) {
+        if (!node.findParent((x) => x instanceof ChartNode, undefined, token)) {
           // ヘッダを優先したいため優先度を下げる
           sortText.order1++;
         }
@@ -359,16 +391,32 @@ export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
 
     const root = documents.parse(document, token);
     const chartNode = root?.findDepth<ChartNode>(
-      (x) => x instanceof ChartNode && x.range.contains(position)
+      (x) => x instanceof ChartNode && x.range.contains(position),
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     const branchNode = root?.findDepth(
-      (x) => x instanceof BranchNode && x.range.contains(position)
+      (x) => x instanceof BranchNode && x.range.contains(position),
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     const branchSectionNode = root?.findDepth<BranchSectionNode>(
-      (x) => x instanceof BranchSectionNode && x.range.contains(position)
+      (x) => x instanceof BranchSectionNode && x.range.contains(position),
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     const commandNode = root?.findDepth<CommandNode>(
-      (x) => x instanceof CommandNode && x.range.contains(position)
+      (x) => x instanceof CommandNode && x.range.contains(position),
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     if (
       root !== undefined &&
@@ -380,17 +428,29 @@ export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
     }
     // 直前の行を取得する
     const previewLine = chartNode?.findLastRange<NoteNode>(
-      (x) => x instanceof NoteNode && x.range.start.line < position.line
+      (x) => x instanceof NoteNode && x.range.start.line < position.line,
+      undefined,
+      undefined,
+      undefined,
+      token
     )?.range.start.line;
     const previewLineNotes = chartNode?.filter<NoteNode>(
-      (x) => x instanceof NoteNode && x.range.start.line === previewLine
+      (x) => x instanceof NoteNode && x.range.start.line === previewLine,
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     if (previewLineNotes === undefined) {
       return snippets;
     }
     // 現在の行を取得する
     const currentLineNotes = chartNode?.filter<NoteNode>(
-      (x) => x instanceof NoteNode && x.range.start.line === position.line
+      (x) => x instanceof NoteNode && x.range.start.line === position.line,
+      undefined,
+      undefined,
+      undefined,
+      token
     );
     if (currentLineNotes === undefined) {
       return snippets;
