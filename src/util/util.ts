@@ -250,20 +250,36 @@ export function isInComment(line: string, position: Position): boolean {
  * @param separator 区切り文字タイプ
  * @returns Markdown形式のsyntax文字列
  */
-export function generateSyntax(
+export function generateHeaderSyntax(
   name: string,
   parameters: readonly StatementParameter[],
-  separator: Separator = "Comma"
+  separator: Separator
 ): string {
   const separatorChar = getSeparatorChar(separator);
-
-  // 区切り文字が存在しない場合は最初のパラメータのみ表示
-  if (separatorChar === "" && parameters.length > 0) {
-    const firstParam = parameters[0];
-    const paramPart = `<${firstParam.name}>`;
-    return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
-  }
-
-  const paramPart = parameters.map((x) => `<${x.name}>`).join(separatorChar);
+  const paramPart = parameters
+    .map((x) => (x.isOptional === true ? `(${x.name})` : `<${x.name}>`))
+    .join(separatorChar);
   return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
+}
+
+/**
+ * パラメータ定義からsyntax文字列を生成
+ * @param name ヘッダー名
+ * @param parameters パラメータ定義配列
+ * @param separator 区切り文字タイプ
+ * @returns Markdown形式のsyntax文字列
+ */
+export function generateCommandSyntax(
+  name: string,
+  parameters: readonly StatementParameter[],
+  separator: Separator
+): string {
+  const separatorChar = getSeparatorChar(separator);
+  if (parameters.length === 0) {
+    return new MarkdownString().appendCodeblock(`#${name}`).value;
+  }
+  const paramPart = parameters
+    .map((x) => (x.isOptional === true ? `(${x.name})` : `<${x.name}>`))
+    .join(separatorChar);
+  return new MarkdownString().appendCodeblock(`#${name} ${paramPart}`).value;
 }

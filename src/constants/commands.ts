@@ -9,7 +9,6 @@ export const commands = new CommandCollection({
   start: {
     name: "START",
     detail: "開始",
-    syntax: new MarkdownString().appendCodeblock("#START" + " [<player>]").value,
     documentation:
       "譜面データの記述を開始します。  \n" +
       "`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。  \n\n" +
@@ -33,7 +32,6 @@ export const commands = new CommandCollection({
   end: {
     name: "END",
     detail: "終了",
-    syntax: new MarkdownString().appendCodeblock("#END").value,
     documentation:
       "譜面データの記述を終了します。  \n" +
       "`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。",
@@ -46,7 +44,6 @@ export const commands = new CommandCollection({
   bpmchange: {
     name: "BPMCHANGE",
     detail: "BPM変更",
-    syntax: new MarkdownString().appendCodeblock("#BPMCHANGE" + " <bpm>").value,
     documentation: "BPMを変更します。",
     parameter: [{ name: "bpm", description: "BPM" }],
     separator: "None",
@@ -58,7 +55,6 @@ export const commands = new CommandCollection({
   gogostart: {
     name: "GOGOSTART",
     detail: "ゴーゴー開始",
-    syntax: new MarkdownString().appendCodeblock("#GOGOSTART").value,
     documentation: "ゴーゴータイムを開始します。",
     parameter: [],
     separator: "None",
@@ -69,7 +65,6 @@ export const commands = new CommandCollection({
   gogoend: {
     name: "GOGOEND",
     detail: "ゴーゴー終了",
-    syntax: new MarkdownString().appendCodeblock("#GOGOEND").value,
     documentation: "ゴーゴータイムを終了します。",
     parameter: [],
     separator: "None",
@@ -80,7 +75,6 @@ export const commands = new CommandCollection({
   measure: {
     name: "MEASURE",
     detail: "拍子変更",
-    syntax: new MarkdownString().appendCodeblock("#MEASURE" + " <measure>").value,
     documentation: "拍子を変更します。  \n" + "`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。",
     parameter: [
       {
@@ -97,7 +91,6 @@ export const commands = new CommandCollection({
   scroll: {
     name: "SCROLL",
     detail: "スクロール速度変更",
-    syntax: new MarkdownString().appendCodeblock("#SCROLL" + " <rate>").value,
     documentation: "譜面のスクロール速度を`<rate>`倍に変更します。  \n" + "デフォルトは`1`です。",
     parameter: [{ name: "rate", description: "スクロール速度（基準値: 1）" }],
     separator: "None",
@@ -109,7 +102,6 @@ export const commands = new CommandCollection({
   delay: {
     name: "DELAY",
     detail: "譜面遅延（停止）",
-    syntax: new MarkdownString().appendCodeblock("#DELAY" + " <second>").value,
     documentation:
       "譜面が流れてくるタイミングを`<second>`秒遅らせます。  \n" +
       "`#BMSCROLL`,`#HBSCROLL`適用下では譜面停止扱いになります。",
@@ -123,7 +115,6 @@ export const commands = new CommandCollection({
   section: {
     name: "SECTION",
     detail: "分岐判定リセット",
-    syntax: new MarkdownString().appendCodeblock("#SECTION").value,
     documentation:
       "譜面分岐の判定に使う連打数、精度をリセットします。  \n" +
       "分岐したい箇所の一小節以上前に置いてください。",
@@ -136,8 +127,6 @@ export const commands = new CommandCollection({
   branchstart: {
     name: "BRANCHSTART",
     detail: "分岐開始",
-    syntax: new MarkdownString().appendCodeblock("#BRANCHSTART" + " <type>, <expart>, <master>")
-      .value,
     documentation:
       "譜面分岐を開始します。  \n\n" +
       "`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n" +
@@ -174,7 +163,6 @@ export const commands = new CommandCollection({
   branchend: {
     name: "BRANCHEND",
     detail: "分岐終了",
-    syntax: new MarkdownString().appendCodeblock("#BRANCHEND").value,
     documentation: "譜面分岐を終了します。  \n" + "以降は全ての分岐で共通の譜面が流れます。",
     parameter: [],
     separator: "None",
@@ -185,7 +173,6 @@ export const commands = new CommandCollection({
   n: {
     name: "N",
     detail: "普通譜面",
-    syntax: new MarkdownString().appendCodeblock("#N").value,
     documentation: "普通譜面を記述します。",
     parameter: [],
     separator: "None",
@@ -196,7 +183,6 @@ export const commands = new CommandCollection({
   e: {
     name: "E",
     detail: "玄人譜面",
-    syntax: new MarkdownString().appendCodeblock("#E").value,
     documentation: "玄人譜面を記述します。",
     parameter: [],
     separator: "None",
@@ -207,7 +193,6 @@ export const commands = new CommandCollection({
   m: {
     name: "M",
     detail: "達人譜面",
-    syntax: new MarkdownString().appendCodeblock("#M").value,
     documentation: "達人譜面を記述します。",
     parameter: [],
     separator: "None",
@@ -218,7 +203,6 @@ export const commands = new CommandCollection({
   levelhold: {
     name: "LEVELHOLD",
     detail: "分岐固定",
-    syntax: new MarkdownString().appendCodeblock("#LEVELHOLD").value,
     documentation:
       "現在の譜面分岐を固定します。  \n" +
       "この命令がある小節に到達した場合、以後も譜面分岐が行われなくなります。",
@@ -231,7 +215,6 @@ export const commands = new CommandCollection({
   bmscroll: {
     name: "BMSCROLL",
     detail: "スクロール方式変更",
-    syntax: new MarkdownString().appendCodeblock("#BMSCROLL").value,
     documentation:
       "譜面のスクロールがBMS形式になります。  \n" + "`#START`より前に記述してください。",
     parameter: [],
@@ -243,7 +226,6 @@ export const commands = new CommandCollection({
   hbscroll: {
     name: "HBSCROLL",
     detail: "スクロール方式変更",
-    syntax: new MarkdownString().appendCodeblock("#HBSCROLL").value,
     documentation:
       "譜面のスクロールが`#BMSCROLL`に`#SCROLL`の効果を含めた形式になります。  \n" +
       "`#START`より前に記述してください。",
@@ -256,7 +238,6 @@ export const commands = new CommandCollection({
   barlineoff: {
     name: "BARLINEOFF",
     detail: "小節線非表示",
-    syntax: new MarkdownString().appendCodeblock("#BARLINEOFF").value,
     documentation: "小節線を非表示にします。",
     parameter: [],
     separator: "None",
@@ -267,7 +248,6 @@ export const commands = new CommandCollection({
   barlineon: {
     name: "BARLINEON",
     detail: "小節線表示",
-    syntax: new MarkdownString().appendCodeblock("#BARLINEON").value,
     documentation: "小節線を表示します。",
     parameter: [],
     separator: "None",
@@ -279,7 +259,6 @@ export const commands = new CommandCollection({
   lyric: {
     name: "LYRIC",
     detail: "歌詞表示",
-    syntax: new MarkdownString().appendCodeblock("#LYRIC" + " <string>").value,
     documentation: "歌詞を表示します。",
     parameter: [{ name: "string", description: "歌詞" }],
     separator: "None",
@@ -291,7 +270,6 @@ export const commands = new CommandCollection({
   sudden: {
     name: "SUDDEN",
     detail: "音符の出現",
-    syntax: new MarkdownString().appendCodeblock("#SUDDEN" + " <sudden> <move>").value,
     documentation:
       "音符の出現タイミングと動作タイミングを変更します。  \n" +
       "`<sudden>`秒前に出現し、`<move>`秒前に動き出します。  \n" +
@@ -309,7 +287,6 @@ export const commands = new CommandCollection({
   direction: {
     name: "DIRECTION",
     detail: "スクロール方向変更",
-    syntax: new MarkdownString().appendCodeblock("#DIRECTION" + " <direction>").value,
     documentation:
       "譜面の流れる方向を指定します。  \n\n" +
       "`0`: ←（通常）  \n" +
@@ -346,8 +323,6 @@ export const commands = new CommandCollection({
   jposscroll: {
     name: "JPOSSCROLL",
     detail: "判定枠移動",
-    syntax: new MarkdownString().appendCodeblock("#JPOSSCROLL" + " <second> <px> <direction>")
-      .value,
     documentation:
       "判定枠を左右に移動します。  \n\n" +
       "`<second>`: 移動にかかる秒数。  \n" +
@@ -380,9 +355,6 @@ export const commands = new CommandCollection({
   nextsong: {
     name: "NEXTSONG",
     detail: "段位道場の課題曲",
-    syntax: new MarkdownString().appendCodeblock(
-      "#NEXTSONG" + " <title>,<subtitle>,<genre>,<wave>,[<scoreinit>,<scorediff>,<level>,<course>]"
-    ).value,
     documentation:
       "課題曲を指定します。  \n\n" +
       "`<title>`: タイトル  \n" +
@@ -428,7 +400,6 @@ export const commands = new CommandCollection({
   senotechange: {
     name: "SENOTECHANGE",
     detail: "音符文字の変更",
-    syntax: new MarkdownString().appendCodeblock("#SENOTECHANGE" + " <type>").value,
     documentation:
       "音符文字を変更します。  \n" +
       "`<type>`: `1` ~ `12`で指定します。  \n\n" +
@@ -475,7 +446,6 @@ export const commands = new CommandCollection({
   judgedelay: {
     name: "JUDGEDELAY",
     detail: "判定位置の移動",
-    syntax: new MarkdownString().appendCodeblock("#JUDGEDELAY" + " <type> [<x> <y> <z>]").value,
     documentation: new MarkdownString()
       .appendMarkdown("判定位置を判定枠からずらします。  \n")
       .appendMarkdown("譜面の流れる位置は判定位置に準拠します。  \n\n")
@@ -528,7 +498,6 @@ export const commands = new CommandCollection({
   dummystart: {
     name: "DUMMYSTART",
     detail: "ダミー開始",
-    syntax: new MarkdownString().appendCodeblock("#DUMMYSTART").value,
     documentation: "音符をダミーノーツにします。",
     parameter: [],
     separator: "None",
@@ -539,7 +508,6 @@ export const commands = new CommandCollection({
   dummyend: {
     name: "DUMMYEND",
     detail: "ダミー終了",
-    syntax: new MarkdownString().appendCodeblock("#DUMMYEND").value,
     documentation: "音符を普通のノーツに戻します。",
     parameter: [],
     separator: "None",
@@ -550,7 +518,6 @@ export const commands = new CommandCollection({
   notespawn: {
     name: "NOTESPAWN",
     detail: "譜面の出現",
-    syntax: new MarkdownString().appendCodeblock("#NOTESPAWN" + " <type> [<second>]").value,
     documentation: new MarkdownString()
       .appendMarkdown("譜面の出現･隠蔽タイミングを指定します。  \n\n")
       .appendMarkdown(
@@ -587,7 +554,6 @@ export const commands = new CommandCollection({
   size: {
     name: "SIZE",
     detail: "音符サイズ変更",
-    syntax: new MarkdownString().appendCodeblock("#SIZE" + " <rate>").value,
     documentation: "音符のサイズを`<rate>`倍にします。",
     parameter: [{ name: "rate", description: "音符のサイズ（基準値: 1)" }],
     separator: "None",
@@ -599,7 +565,6 @@ export const commands = new CommandCollection({
   color: {
     name: "COLOR",
     detail: "音符の色彩変更",
-    syntax: new MarkdownString().appendCodeblock("#COLOR" + " <r> <g> <b>").value,
     documentation:
       "音符の色彩を変更します。  \n" +
       "255を基準値とします。  \n\n" +
@@ -620,7 +585,6 @@ export const commands = new CommandCollection({
   angle: {
     name: "ANGLE",
     detail: "音符の向き変更",
-    syntax: new MarkdownString().appendCodeblock("#ANGLE" + " <angle>").value,
     documentation: "音符の向きを`<angle>`度回転させます。",
     parameter: [{ name: "angle", description: "音符の向き（基準値: 0）" }],
     separator: "None",
@@ -632,9 +596,6 @@ export const commands = new CommandCollection({
   gradation: {
     name: "GRADATION",
     detail: "命令の時間的変化",
-    syntax: new MarkdownString().appendCodeblock(
-      "#GRADATION" + " <phase> [<second> <type> <curve>]"
-    ).value,
     documentation: new MarkdownString()
       .appendMarkdown("他の命令の即時的な効果を時間的に変化させます。  \n\n")
       .appendMarkdown(
@@ -746,7 +707,6 @@ export const commands = new CommandCollection({
   barlinesize: {
     name: "BARLINESIZE",
     detail: "小節線サイズ変更",
-    syntax: new MarkdownString().appendCodeblock("#BARLINESIZE" + " <width> <height>").value,
     documentation:
       "小節線のサイズを変更します。  \n\n" +
       "`<width>`: 横幅をpxで指定します。  \n" +
@@ -764,7 +724,6 @@ export const commands = new CommandCollection({
   resetcommand: {
     name: "RESETCOMMAND",
     detail: "命令のリセット",
-    syntax: new MarkdownString().appendCodeblock("#RESETCOMMAND").value,
     documentation: "全ての命令の効果を初期値に戻します。",
     parameter: [],
     separator: "None",
@@ -775,7 +734,6 @@ export const commands = new CommandCollection({
   alpha: {
     name: "ALPHA",
     detail: "音符の透明度変更",
-    syntax: new MarkdownString().appendCodeblock("#ALPHA" + " <alpha>").value,
     documentation:
       "音符の透明度を変更します。  \n" + "255を基準値とします。  \n\n" + "`<alpha>`: 透明度",
     parameter: [{ name: "alpha", description: "音符の透明度（基準値: 255）" }],
@@ -788,7 +746,6 @@ export const commands = new CommandCollection({
   hispeed: {
     name: "HISPEED",
     detail: "疑似速度変更",
-    syntax: new MarkdownString().appendCodeblock("#HISPEED" + " <rate>").value,
     documentation:
       "`#BMSCROLL`中にBPMを変更したときのようにスクロール速度を変更します。  \n" +
       "デフォルトは`1`です。",
@@ -802,7 +759,6 @@ export const commands = new CommandCollection({
   include: {
     name: "INCLUDE",
     detail: "定義の読み込み",
-    syntax: new MarkdownString().appendCodeblock("#INCLUDE" + " <filepath>").value,
     documentation: "ファイルからヘッダーや命令を読み込みます。",
     parameter: [{ name: "filepath", description: "定義ファイル", snippet: "File" }],
     separator: "None",
@@ -815,7 +771,6 @@ export const commands = new CommandCollection({
   nmscroll: {
     name: "NMSCROLL",
     detail: "スクロール方式変更",
-    syntax: new MarkdownString().appendCodeblock("#NMSCROLL").value,
     documentation: "譜面のスクロールをデフォルトに戻します。",
     parameter: [],
     separator: "None",
@@ -826,7 +781,6 @@ export const commands = new CommandCollection({
   barline: {
     name: "BARLINE",
     detail: "偽の小節線",
-    syntax: new MarkdownString().appendCodeblock("#BARLINE").value,
     documentation: "偽の小節線を表示します。",
     parameter: [],
     separator: "None",
@@ -837,7 +791,6 @@ export const commands = new CommandCollection({
   bgaon: {
     name: "BGAON",
     detail: "BGAの再生",
-    syntax: new MarkdownString().appendCodeblock("#BGAON <index> <offset>").value,
     documentation: "BGAを再生します。",
     parameter: [
       { name: "index", description: "" },
@@ -852,7 +805,6 @@ export const commands = new CommandCollection({
   bgaoff: {
     name: "BGAOFF",
     detail: "BGAの停止",
-    syntax: new MarkdownString().appendCodeblock("#BGAOFF <index>").value,
     documentation: "BGAを停止します。",
     parameter: [{ name: "index", description: "" }],
     separator: "None",

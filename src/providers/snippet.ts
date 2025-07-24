@@ -27,7 +27,13 @@ import {
 } from "../types/node";
 import { SortTextFactory } from "../types/sortTextFactory";
 import { ChartState } from "../types/state";
-import { getChartState, isTmg, generateSyntax, getSeparatorChar, isInComment } from "../util/util";
+import {
+  getChartState,
+  isTmg,
+  generateHeaderSyntax,
+  getSeparatorChar,
+  isInComment,
+} from "../util/util";
 import { FilePathType, getRegExp } from "../types/statement";
 import { IHeader } from "../types/header";
 
@@ -186,7 +192,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
       snippet.insertText = header.snippet ?? new SnippetString(header.name + ":");
       // syntax自動生成
-      const syntax = generateSyntax(header.name, header.parameter, header.separator);
+      const syntax = generateHeaderSyntax(header.name, header.parameter, header.separator);
       snippet.documentation = new MarkdownString().appendMarkdown(syntax + header.documentation);
       snippet.detail = header.detail;
       snippet.sortText = sortText.toString();

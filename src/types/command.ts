@@ -37,10 +37,6 @@ export type CommandCategory = "Base" | "TJAP" | "TMG" | "OpTk";
  */
 export interface ICommand extends IStatement {
   /**
-   * 構文テキスト
-   */
-  readonly syntax: string;
-  /**
    * 命令の記載位置
    */
   readonly section: CommandSection;
