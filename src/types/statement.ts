@@ -20,6 +20,7 @@ export type StatementParameter = {
   name: string;
   description: string;
   snippet?: readonly SnippetParameter[] | FilePathType;
+  isOptional?: true;
 };
 
 /**
