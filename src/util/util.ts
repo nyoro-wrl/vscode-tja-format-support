@@ -257,7 +257,7 @@ export function generateHeaderSyntax(
 ): string {
   const separatorChar = getSeparatorChar(separator);
   const paramPart = parameters
-    .map((x) => (x.isOptional === true ? `(${x.name})` : `<${x.name}>`))
+    .map((x) => (x.isOptional === true ? `{${x.name}}` : `<${x.name}>`))
     .join(separatorChar);
   return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
 }
@@ -279,7 +279,7 @@ export function generateCommandSyntax(
     return new MarkdownString().appendCodeblock(`#${name}`).value;
   }
   const paramPart = parameters
-    .map((x) => (x.isOptional === true ? `(${x.name})` : `<${x.name}>`))
+    .map((x) => (x.isOptional === true ? `{${x.name}}` : `<${x.name}>`))
     .join(separatorChar);
   return new MarkdownString().appendCodeblock(`#${name} ${paramPart}`).value;
 }

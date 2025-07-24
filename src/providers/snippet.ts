@@ -33,6 +33,7 @@ import {
   generateHeaderSyntax,
   getSeparatorChar,
   isInComment,
+  generateCommandSyntax,
 } from "../util/util";
 import { FilePathType, getRegExp } from "../types/statement";
 import { IHeader } from "../types/header";
@@ -370,7 +371,8 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       if (_isTmg) {
         snippet.insertText = toTmgCommandSnippetText(snippet.insertText);
       }
-      snippet.documentation = new MarkdownString().appendMarkdown(command.documentation);
+      const syntax = generateCommandSyntax(command.name, command.parameter, command.separator);
+      snippet.documentation = new MarkdownString().appendMarkdown(syntax + command.documentation);
       snippet.detail = command.detail;
       snippet.sortText = sortText.toString();
       snippets.push(snippet);
