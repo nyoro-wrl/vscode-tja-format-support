@@ -101,9 +101,7 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
       if (isInNumberPart && number) {
         // 数字部分での表示 - examNumberパラメータを使用
         const separatorChar = getSeparatorChar(headerInfo.separator);
-        const paramNames = headerInfo.parameter
-          .map(([name]: readonly [string, string]) => `<${name}>`)
-          .join(separatorChar);
+        const paramNames = headerInfo.parameter.map((x) => `<${x.name}>`).join(separatorChar);
         const signature = new SignatureInformation(`${baseName}<n>:${paramNames}`);
 
         const numberParameter = new ParameterInformation(
@@ -121,9 +119,7 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
         // パラメータ部分での表示 - headers定義を使用
         const displayName = fullHeaderName;
         const separatorChar = getSeparatorChar(headerInfo.separator);
-        const paramNames = headerInfo.parameter
-          .map(([name]: readonly [string, string]) => `<${name}>`)
-          .join(separatorChar);
+        const paramNames = headerInfo.parameter.map((x) => `<${x.name}>`).join(separatorChar);
 
         // 区切り文字の位置から現在のパラメータインデックスを計算
         const beforeCurrentPos = line.substring(0, position.character);
@@ -147,8 +143,7 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
 
         // headers定義からパラメータ情報を作成
         const parameters = headerInfo.parameter.map(
-          ([name, description]: readonly [string, string]) =>
-            new ParameterInformation(`<${name}>`, new MarkdownString(description))
+          (x) => new ParameterInformation(`<${x.name}>`, new MarkdownString(x.description))
         );
 
         signature.parameters = parameters;
@@ -166,15 +161,12 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
       // 通常のヘッダー
       const displayName = headerMatch[1];
       const separatorChar = getSeparatorChar(headerInfo.separator);
-      const paramNames = headerInfo.parameter
-        .map(([name]: readonly [string, string]) => `<${name}>`)
-        .join(separatorChar);
+      const paramNames = headerInfo.parameter.map((x) => `<${x.name}>`).join(separatorChar);
       const signature = new SignatureInformation(`${displayName}:${paramNames}`);
 
       // パラメータ情報を作成
       const parameters = headerInfo.parameter.map(
-        ([name, description]: readonly [string, string]) =>
-          new ParameterInformation(`<${name}>`, new MarkdownString(description))
+        (x) => new ParameterInformation(`<${x.name}>`, new MarkdownString(x.description))
       );
       signature.parameters = parameters;
 

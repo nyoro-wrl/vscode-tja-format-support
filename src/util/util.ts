@@ -8,7 +8,7 @@ import {
   BranchNode,
 } from "../types/node";
 import { ChartState } from "../types/state";
-import { ParameterDefinition } from "../types/header";
+import { StatementParameter } from "../types/header";
 import { Separator } from "../types/statement";
 import path = require("path");
 
@@ -253,7 +253,7 @@ export function isInComment(line: string, position: Position): boolean {
  */
 export function generateSyntax(
   name: string,
-  parameters: readonly ParameterDefinition[],
+  parameters: readonly StatementParameter[],
   separator: Separator = "Comma"
 ): string {
   const separatorChar = getSeparatorChar(separator);
@@ -261,10 +261,10 @@ export function generateSyntax(
   // 区切り文字が存在しない場合は最初のパラメータのみ表示
   if (separatorChar === "" && parameters.length > 0) {
     const firstParam = parameters[0];
-    const paramPart = `<${firstParam[0]}>`;
+    const paramPart = `<${firstParam.name}>`;
     return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
   }
 
-  const paramPart = parameters.map(([paramName]) => `<${paramName}>`).join(separatorChar);
+  const paramPart = parameters.map((x) => `<${x.name}>`).join(separatorChar);
   return new MarkdownString().appendCodeblock(`${name}:${paramPart}`).value;
 }

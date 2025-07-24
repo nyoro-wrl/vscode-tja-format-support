@@ -11,9 +11,12 @@ import { IStatement, StatementCollection } from "./statement";
 type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
 
 /**
- * パラメータ定義（[name, description]のタプル形式）
+ * パラメータ定義
  */
-export type ParameterDefinition = readonly [string, string];
+export type StatementParameter = {
+  name: string;
+  description?: string;
+};
 
 /**
  * ヘッダ
@@ -30,7 +33,7 @@ export interface IHeader extends IStatement {
   /**
    * パラメータ定義の配列
    */
-  readonly parameter: readonly ParameterDefinition[];
+  readonly parameter: readonly StatementParameter[];
 }
 
 /**
