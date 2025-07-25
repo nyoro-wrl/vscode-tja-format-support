@@ -40,17 +40,21 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     let headerInfo: IHeader | undefined = undefined;
 
     // 通常のヘッダー処理を優先
-    const beforeCursor = line.substring(0, position.character);
-    const headerMatch = beforeCursor.match(/([A-Z]+[0-9]*):(.*)$/);
-    if (headerMatch) {
-      headerName = headerMatch[1];
-      headerInfo = headers.get(headerName);
+    let headerMatch: RegExpMatchArray | null = null;
+    const headerLineMatch = line.match(/^\s*([A-Z0-9]+):(.*?)\s*$/);
+    if (headerLineMatch) {
+      const beforeCursor = line.substring(0, position.character);
+      headerMatch = beforeCursor.match(/([A-Z0-9]+):(.*)$/);
+      if (headerMatch) {
+        headerName = headerMatch[1];
+        headerInfo = headers.get(headerName);
+      }
     }
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
     // 通常のマッチが失敗した場合のみ実行
     if (!headerInfo) {
-      const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
+      const specialMatch = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
       if (specialMatch) {
         const baseName = specialMatch[1];
         const number = specialMatch[2];
@@ -96,10 +100,10 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     }
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
-    const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
-    if (specialMatch && headerInfo && headerInfo.parameter.length > 1) {
-      const baseName = specialMatch[1];
-      const number = specialMatch[2];
+    const specialMatchForDisplay = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
+    if (specialMatchForDisplay && headerInfo && headerInfo.parameter.length > 1) {
+      const baseName = specialMatchForDisplay[1];
+      const number = specialMatchForDisplay[2];
       const fullHeaderName = baseName + number;
 
       const colonPosition = line.indexOf(":");
@@ -209,7 +213,7 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     // ヘッダー名に応じた数字パラメータの説明を返す
     switch (baseName) {
       case headers.items.exam.name:
-        return "1以上の整数を指定します。ヘッダを呼ぶごとに数を増やします。";
+        return "1以上の整数を指定します。ヘッダーを呼ぶごとに数を増やします。";
       default:
         return "数字を指定します。";
     }
@@ -261,11 +265,11 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     // トリガー文字の検証
     if (context.triggerCharacter && !context.isRetrigger) {
       const isValidTrigger = this.validateCommandTrigger(
-        line, 
-        position, 
-        context.triggerCharacter, 
-        commandInfo, 
-        commandName, 
+        line,
+        position,
+        context.triggerCharacter,
+        commandInfo,
+        commandName,
         _isTmg
       );
       if (!isValidTrigger) {
@@ -277,10 +281,24 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
 
     if (_isTmg) {
       // TMG形式の処理
-      return this.handleTmgCommandSignature(line, position, commandInfo, commandName, commandMatch, separatorChar);
+      return this.handleTmgCommandSignature(
+        line,
+        position,
+        commandInfo,
+        commandName,
+        commandMatch,
+        separatorChar
+      );
     } else {
       // 通常形式の処理
-      return this.handleNormalCommandSignature(line, position, commandInfo, commandName, commandMatch, separatorChar);
+      return this.handleNormalCommandSignature(
+        line,
+        position,
+        commandInfo,
+        commandName,
+        commandMatch,
+        separatorChar
+      );
     }
   }
 
@@ -328,7 +346,12 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
           // スペース区切りでない場合、コマンド名直後のスペースのみ許可
           return position.character === commandEndPos + 1;
         }
-      } else if (separatorChar && separatorChar !== "" && separatorChar !== " " && triggerChar === separatorChar) {
+      } else if (
+        separatorChar &&
+        separatorChar !== "" &&
+        separatorChar !== " " &&
+        triggerChar === separatorChar
+      ) {
         // スペース以外の区切り文字でトリガーされた場合、パラメータ部分であることを確認
         // スペースをスキップしてパラメータ開始位置を取得
         let parameterStartPos = commandEndPos;
@@ -362,7 +385,7 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
 
     // パラメータ部分を取得
     const parameterPart = commandMatch[4] || "";
-    
+
     // スペースを飛ばしてパラメータ開始位置を取得
     let parameterStartPos = commandEndPos;
     while (parameterStartPos < line.length && line[parameterStartPos] === " ") {
@@ -377,7 +400,10 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     if (separatorChar === "" || separatorChar === "None") {
       // 区切り文字が存在しない場合（スペース区切り）
       // スペースで分割してパラメータ数を数える
-      const params = parameterBeforePos.trim().split(/\s+/).filter(p => p.length > 0);
+      const params = parameterBeforePos
+        .trim()
+        .split(/\s+/)
+        .filter((p) => p.length > 0);
       currentParamIndex = params.length > 0 ? params.length - 1 : 0;
       if (currentParamIndex >= commandInfo.parameter.length) {
         currentParamIndex = -1;
@@ -427,14 +453,14 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     // 括弧内にカーソルがあるかチェック
     const openParenPos = line.indexOf("(");
     const closeParenPos = line.lastIndexOf(")");
-    
+
     if (openParenPos === -1 || position.character <= openParenPos) {
       return null;
     }
 
     // 括弧内のパラメータ部分を取得
     const parameterPart = commandMatch[3] || "";
-    
+
     // 現在のパラメータインデックスを計算
     let currentParamIndex = 0;
     const beforeCurrentPos = line.substring(0, position.character);

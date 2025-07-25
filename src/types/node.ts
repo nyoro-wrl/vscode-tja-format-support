@@ -450,7 +450,7 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
 }
 
 /**
- * ヘッダの集合ノード
+ * ヘッダーの集合ノード
  */
 export abstract class HeadersNode extends ParentNode<HeaderNode> {
   properties: HeadersProperties = { headers: [] };
@@ -467,7 +467,7 @@ export abstract class HeadersNode extends ParentNode<HeaderNode> {
 }
 
 /**
- * 式（ヘッダ･命令）ノード
+ * 式（ヘッダー･命令）ノード
  */
 export abstract class StatementNode extends ParentNode<StatementNameNode | ParametersNode> {
   properties: StatementProperties;
@@ -572,7 +572,7 @@ export class RootNode extends ParentNode<RootHeadersNode | CourseNode> {
 }
 
 /**
- * 共通ヘッダの集合ノード
+ * 共通ヘッダーの集合ノード
  */
 export class RootHeadersNode extends HeadersNode {
   readonly parent: RootNode;
@@ -664,7 +664,7 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
 }
 
 /**
- * プレイスタイル別ヘッダの集合ノード
+ * プレイスタイル別ヘッダーの集合ノード
  */
 export class StyleHeadersNode extends HeadersNode {
   readonly parent: StyleNode;
@@ -684,7 +684,7 @@ export class StyleHeadersNode extends HeadersNode {
 }
 
 /**
- * ヘッダノード
+ * ヘッダーノード
  */
 export class HeaderNode extends StatementNode {
   readonly parent: HeadersNode;
@@ -986,7 +986,7 @@ export class MeasureNode extends ParentNode<
 }
 
 /**
- * 式（ヘッダ･命令）のパラメータの集合ノード
+ * 式（ヘッダー･命令）のパラメータの集合ノード
  */
 export class ParametersNode extends ParentNode<ParameterNode | DelimiterNode> {
   readonly parent: StatementNode;
@@ -1084,7 +1084,7 @@ export class BranchNode extends ParentNode<BranchSectionNode | CommandNode> {
 }
 
 /**
- * 式（ヘッダ･命令）の名前ノード
+ * 式（ヘッダー･命令）の名前ノード
  */
 export class StatementNameNode extends LeafNode {
   readonly parent: StatementNode;
@@ -1096,7 +1096,7 @@ export class StatementNameNode extends LeafNode {
 }
 
 /**
- * 式（ヘッダ･命令）のパラメータノード
+ * 式（ヘッダー･命令）のパラメータノード
  */
 export class ParameterNode extends LeafNode {
   readonly parent: ParametersNode;

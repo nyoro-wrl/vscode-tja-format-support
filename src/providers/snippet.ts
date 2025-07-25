@@ -209,7 +209,7 @@ function calculateCommandParameterReplaceRange(
 }
 
 /**
- * ヘッダの補完
+ * ヘッダーの補完
  */
 export class HeaderCompletionItemProvider implements vscode.CompletionItemProvider {
   async provideCompletionItems(
@@ -246,7 +246,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       root?.find((x) => x instanceof ChartNode && x.range.start.line < position.line, { token }) !==
       undefined;
 
-    // 直前のヘッダを調べて関連性の高いヘッダを取得
+    // 直前のヘッダーを調べて関連性の高いヘッダーを取得
     const recommend: string[] = [];
     const headersNode = node?.findParent<HeadersNode>((x) => x instanceof HeadersNode, { token });
     if (headersNode !== undefined) {
@@ -271,7 +271,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       const sortText = new SortTextFactory();
       sortText.order4 += header.order;
       if (header.order > 1) {
-        // 明確な目的がないと使わないヘッダは優先度を下げる
+        // 明確な目的がないと使わないヘッダーは優先度を下げる
         sortText.order3++;
       }
       sortText.order5 += order;
@@ -281,7 +281,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       if (node instanceof HeadersNode) {
         for (const containHeader of node.properties.headers) {
           if (getRegExp(header).test(containHeader.name)) {
-            // 既存のヘッダの場合は優先度を下げる
+            // 既存のヘッダーの場合は優先度を下げる
             sortText.order2++;
           }
         }
@@ -295,7 +295,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
         sortText.order3++;
       }
       if (chartAfter && (header.section === "Course" || header.section === "Style")) {
-        // 譜面後はコースヘッダの優先度を上げる
+        // 譜面後はコースヘッダーの優先度を上げる
         sortText.order2--;
       }
       if (chartAfter && header === headers.items.course) {
@@ -303,15 +303,15 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
         sortText.order3--;
       }
       if (recommend.includes(header.name)) {
-        // 直前のヘッダと関連性が高い場合は優先度を上げる
+        // 直前のヘッダーと関連性が高い場合は優先度を上げる
         sortText.order1--;
       }
 
       const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
-      const [isMatch, matchRate] = nearyMatch(word, header.name);
+      const [isMatch, matchScore] = nearyMatch(word, header.name);
       if (isMatch) {
         snippet.filterText = word;
-        sortText.order2 += matchRate;
+        sortText.order2 += matchScore;
       } else {
         continue;
       }
@@ -446,7 +446,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       sortText.order5 += order;
       if (root !== undefined && node !== undefined) {
         if (!node.findParent((x) => x instanceof ChartNode, { token })) {
-          // ヘッダを優先したいため優先度を下げる
+          // ヘッダーを優先したいため優先度を下げる
           sortText.order1++;
         }
         if (
@@ -489,10 +489,10 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       }
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
-      const [isMatch, matchRate] = nearyMatch(searchQuery, command.name);
+      const [isMatch, matchScore] = nearyMatch(searchQuery, command.name);
       if (isMatch) {
         snippet.filterText = searchQuery;
-        sortText.order1 += matchRate;
+        sortText.order1 += matchScore;
       } else {
         continue;
       }
@@ -559,16 +559,16 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
         const sortText = new SortTextFactory();
         sortText.order3++;
         if (!node.findParent((x) => x instanceof ChartNode, { token })) {
-          // ヘッダを優先したいため優先度を下げる
+          // ヘッダーを優先したいため優先度を下げる
           sortText.order1++;
         }
 
         const name = unknownCommand.properties.name;
         const snippet = new CompletionItem("#" + name, CompletionItemKind.Function);
-        const [isMatch, matchRate] = nearyMatch(searchQuery, name);
+        const [isMatch, matchScore] = nearyMatch(searchQuery, name);
         if (isMatch) {
           snippet.filterText = searchQuery;
-          sortText.order1 += matchRate;
+          sortText.order1 += matchScore;
         } else {
           continue;
         }
@@ -585,7 +585,6 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
 function nearyMatch(input: string, snippet: string): [boolean, number] {
   let matchScore = 0;
-  let exactCount = 0;
   let oldIndex = 0;
   const inputCharas = [...input.toUpperCase()];
   const snippetCharas = [...snippet];
@@ -594,11 +593,7 @@ function nearyMatch(input: string, snippet: string): [boolean, number] {
     if (index === -1) {
       return [false, 0];
     }
-    const score = Math.abs(index - oldIndex);
-    matchScore += score;
-    if (score === 0) {
-      exactCount++;
-    }
+    matchScore += Math.abs(index - oldIndex);
     oldIndex = index;
     snippetCharas.splice(index, 1);
   }
@@ -630,7 +625,7 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
     let headerInfo: IHeader | undefined = undefined;
 
     // 行全体でヘッダーマッチングを試行
-    const fullLineMatch = line.match(/^([A-Z]+[0-9]*):(.*)$/);
+    const fullLineMatch = line.match(/^\s*([A-Z0-9]+):(.*?)\s*$/);
     if (fullLineMatch) {
       const testHeaderName = fullLineMatch[1];
       const testHeaderInfo = headers.get(testHeaderName);
@@ -647,7 +642,7 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
     if (!headerInfo) {
-      const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
+      const specialMatch = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
       if (specialMatch) {
         const baseName = specialMatch[1];
         const number = specialMatch[2];

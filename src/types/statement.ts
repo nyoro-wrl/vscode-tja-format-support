@@ -24,7 +24,7 @@ export type StatementParameter = {
 };
 
 /**
- * 文（ヘッダ･命令）
+ * 文（ヘッダー･命令）
  */
 export interface IStatement {
   /**

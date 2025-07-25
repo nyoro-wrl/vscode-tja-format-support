@@ -370,7 +370,8 @@ export const commands = new CommandCollection({
       "`<scoreinit>`: 配点初項  \n" +
       "`<scorediff>`: 配点公差  \n" +
       "`<level>`: レベル  \n" +
-      "`<course>`: 難易度",
+      "`<course>`: 難易度  \n" +
+      "`<hide>`: タイトルを隠す",
     parameter: [
       { name: "title", description: "タイトル" },
       { name: "subtitle", description: "サブタイトル" },
@@ -394,6 +395,12 @@ export const commands = new CommandCollection({
           { value: "Oni", detail: "おに" },
           { value: "Edit", detail: "エディット" },
         ],
+        isOptional: true,
+      },
+      {
+        name: "hide",
+        description: "タイトルを隠す  \n" + "`True`でタイトルを隠します。",
+        snippet: [{ value: "True", detail: "タイトルを隠す" }],
         isOptional: true,
       },
     ],

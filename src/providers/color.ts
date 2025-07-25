@@ -9,7 +9,7 @@ import { isTmg } from "../util/util";
 import { getRegExp } from "../types/statement";
 
 /**
- * DANTICKCOLOR:ヘッダのカラーピッカー機能
+ * DANTICKCOLOR:ヘッダーのカラーピッカー機能
  */
 export class DantickColorDocumentColorProvider implements vscode.DocumentColorProvider {
   async provideDocumentColors(

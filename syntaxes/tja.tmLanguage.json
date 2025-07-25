@@ -216,6 +216,9 @@
           "include": "#comment"
         },
         {
+          "include": "#inChartHeader"
+        },
+        {
           "include": "#notes"
         }
       ]
@@ -427,6 +430,24 @@
         {
           "name": "note.empty",
           "match": "0"
+        }
+      ]
+    },
+    "inChartHeader": {
+      "begin": "^\\s*([A-Z0-9]+):\\s*",
+      "end": "$",
+      "beginCaptures": {
+        "1": {
+          "name": "header.name"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "name": "header.parameter",
+          "match": ".*"
         }
       ]
     }

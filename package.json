@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -259,6 +259,10 @@
       {
         "id": "master",
         "description": "達人譜面"
+      },
+      {
+        "id": "header",
+        "description": "ヘッダー"
       }
     ],
     "semanticTokenScopes": [
@@ -291,6 +295,9 @@
           ],
           "master": [
             "source.tja branch.master note.empty"
+          ],
+          "header": [
+            "source.tja header.name"
           ]
         }
       }

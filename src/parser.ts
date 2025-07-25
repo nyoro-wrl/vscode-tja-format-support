@@ -100,7 +100,7 @@ export class Parser {
   }
 
   /**
-   * 共通ヘッダの作成
+   * 共通ヘッダーの作成
    * @param parent
    * @param token
    * @returns
@@ -108,12 +108,12 @@ export class Parser {
   private parseRootHeaders(parent: RootNode, token: Token): void {
     let findNode = <RootHeadersNode>parent.children.find((x) => x instanceof RootHeadersNode);
     if (findNode === undefined) {
-      // 共通ヘッダの作成
+      // 共通ヘッダーの作成
       let node = new RootHeadersNode(parent, token.range);
       node = this.parseNode(node);
       parent.push(node);
     } else {
-      // 既存の共通ヘッダを参照
+      // 既存の共通ヘッダーを参照
       findNode = this.parseNode(findNode);
     }
   }
@@ -267,7 +267,7 @@ export class Parser {
   }
 
   /**
-   * プレイスタイル別ヘッダの作成
+   * プレイスタイル別ヘッダーの作成
    * @param parent
    * @param token
    * @returns
@@ -275,18 +275,18 @@ export class Parser {
   private parseStyleHeaders(parent: StyleNode, token: Token): void {
     let findNode = <StyleHeadersNode>parent.children.find((x) => x instanceof StyleHeadersNode);
     if (findNode === undefined) {
-      // プレイスタイル別ヘッダの作成
+      // プレイスタイル別ヘッダーの作成
       let node = new StyleHeadersNode(parent, token.range);
       node = this.parseNode(node);
       parent.push(node);
     } else {
-      // 既存のプレイスタイル別ヘッダを参照
+      // 既存のプレイスタイル別ヘッダーを参照
       findNode = this.parseNode(findNode);
     }
   }
 
   /**
-   * ヘッダの作成
+   * ヘッダーの作成
    * @param parent
    * @param token
    * @param separator
@@ -299,6 +299,29 @@ export class Parser {
     let node = new HeaderNode(parent, token.range, separator);
     node = this.parseNode(node);
     parent.push(node);
+  }
+
+  /**
+   * 譜面内のFreeセクションヘッダーを処理（エラーなしで通す）
+   * @param parent
+   * @param token
+   */
+  private processFreeHeader(
+    parent: ChartNode | BranchSectionNode | SongNode | BranchNode | MeasureNode,
+    token: Token
+  ): void {
+    // Freeセクションのヘッダーは構文エラーを避けるために範囲だけ追加
+    parent.pushRange(token.range);
+    this.position++;
+    // パラメーター部分があれば一緒に処理
+    if (this.position < this.tokens.length) {
+      const nextToken = this.tokens[this.position];
+      if (nextToken.kind === "RawParameter") {
+        parent.pushRange(nextToken.range);
+        this.position++;
+      }
+    }
+    this.position--; // メインループで position++ されるので調整
   }
 
   /**
@@ -427,7 +450,7 @@ export class Parser {
   }
 
   /**
-   * 式（ヘッダ･命令）名の生成
+   * 式（ヘッダー･命令）名の生成
    * @param parent
    * @param token
    */
@@ -437,7 +460,7 @@ export class Parser {
   }
 
   /**
-   * 式（ヘッダ･命令）パラメーターの生成
+   * 式（ヘッダー･命令）パラメーターの生成
    * @param parent
    * @param token
    * @returns
@@ -1095,8 +1118,13 @@ export class Parser {
           parent instanceof SongNode
         ) {
           if (token.kind === "Header") {
-            this.addDiagnostic("Realtime", token.range, "ヘッダの位置が不正です。");
-            parent.pushRange(token.range);
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Free" || section === "Unknown") {
+              this.processFreeHeader(parent, token);
+            } else {
+              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              parent.pushRange(token.range);
+            }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -1149,8 +1177,13 @@ export class Parser {
           }
         } else if (parent instanceof BranchNode) {
           if (token.kind === "Header") {
-            this.addDiagnostic("Realtime", token.range, "ヘッダの位置が不正です。");
-            parent.pushRange(token.range);
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Free" || section === "Unknown") {
+              this.processFreeHeader(parent, token);
+            } else {
+              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              parent.pushRange(token.range);
+            }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
@@ -1186,8 +1219,13 @@ export class Parser {
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
-            this.addDiagnostic("Realtime", token.range, "ヘッダの位置が不正です。");
-            parent.pushRange(token.range);
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Free" || section === "Unknown") {
+              this.processFreeHeader(parent, token);
+            } else {
+              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              parent.pushRange(token.range);
+            }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";

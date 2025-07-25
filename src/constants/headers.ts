@@ -2,7 +2,7 @@ import { SnippetString } from "vscode";
 import { HeaderCollection } from "../types/header";
 
 /**
- * ヘッダの仕様一覧
+ * ヘッダーの仕様一覧
  */
 export const headers = new HeaderCollection({
   // 太鼓さん次郎
@@ -253,7 +253,7 @@ export const headers = new HeaderCollection({
     detail: "コースの課題曲",
     documentation:
       "コースに使用する譜面のファイルパス。  \n" +
-      "`.tjc`ファイル上で有効なヘッダです。  \n" +
+      "`.tjc`ファイル上で有効なヘッダーです。  \n" +
       "`<filepath>`: tjaファイルをルートディレクトリから指定します。",
     parameter: [{ name: "filepath", description: "コースの課題曲", snippet: "tja" }],
     section: "Root",
@@ -444,7 +444,7 @@ export const headers = new HeaderCollection({
     detail: "課題曲の合格条件",
     documentation:
       "課題曲の合格条件を指定します。  \n" +
-      "`EXAM`の直後に1以上の整数を指定します。ヘッダを呼ぶごとに数を増やします。  \n" +
+      "`EXAM`の直後に1以上の整数を指定します。ヘッダーを呼ぶごとに数を増やします。  \n" +
       "`#NEXTSONG`の後に呼ぶと課題曲ごとの条件を指定できます。  \n\n" +
       "`<type>`: 条件の種類を指定します。詳細は下部に記載。  \n" +
       "`<red>`: 赤合格の基準値を指定します。  \n" +
@@ -458,7 +458,8 @@ export const headers = new HeaderCollection({
       "`s`: スコア  \n" +
       "`r`: 連打数  \n" +
       "`h`: 叩けた数  \n" +
-      "`c`: 最大コンボ数  \n",
+      "`c`: 最大コンボ数  \n" +
+      "`a`: 精度(%)",
     parameter: [
       {
         name: "type",
@@ -471,7 +472,8 @@ export const headers = new HeaderCollection({
           "`s`: スコア  \n" +
           "`r`: 連打数  \n" +
           "`h`: 叩けた数  \n" +
-          "`c`: 最大コンボ数",
+          "`c`: 最大コンボ数  \n" +
+          "`a`: 精度(%)",
         snippet: [
           { value: "g", detail: "魂ゲージ(%)" },
           { value: "jp", detail: "良の数" },
@@ -481,6 +483,7 @@ export const headers = new HeaderCollection({
           { value: "r", detail: "連打数" },
           { value: "h", detail: "叩けた数" },
           { value: "c", detail: "最大コンボ数" },
+          { value: "a", detail: "精度(%)" },
         ],
       },
       {
@@ -495,7 +498,8 @@ export const headers = new HeaderCollection({
           "`s`: スコア  \n" +
           "`r`: 連打数  \n" +
           "`h`: 叩けた数  \n" +
-          "`c`: 最大コンボ数",
+          "`c`: 最大コンボ数  \n" +
+          "`a`: 精度(%)",
       },
       {
         name: "gold",
@@ -509,7 +513,8 @@ export const headers = new HeaderCollection({
           "`s`: スコア  \n" +
           "`r`: 連打数  \n" +
           "`h`: 叩けた数  \n" +
-          "`c`: 最大コンボ数",
+          "`c`: 最大コンボ数  \n" +
+          "`a`: 精度(%)",
       },
       {
         name: "range",
@@ -523,14 +528,15 @@ export const headers = new HeaderCollection({
           "`s`: スコア  \n" +
           "`r`: 連打数  \n" +
           "`h`: 叩けた数  \n" +
-          "`c`: 最大コンボ数",
+          "`c`: 最大コンボ数  \n" +
+          "`a`: 精度(%)",
         snippet: [
           { value: "m", detail: "基準値以上で合格" },
           { value: "l", detail: "基準値未満で合格" },
         ],
       },
     ],
-    section: "Root",
+    section: "Free",
     separator: "Comma",
     recommend: ["EXAM"],
     order: 2,

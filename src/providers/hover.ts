@@ -13,14 +13,10 @@ import {
 import { getRegExp, StatementParameter } from "../types/statement";
 import { IHeader } from "../types/header";
 import { ICommand } from "../types/command";
-import { 
-  isTmg, 
-  detectCommandInfo, 
-  calculateCommandParameterPosition 
-} from "../util/util";
+import { isTmg, detectCommandInfo, calculateCommandParameterPosition } from "../util/util";
 
 /**
- * ヘッダのマウスホバーヒント
+ * ヘッダーのマウスホバーヒント
  */
 export class HeaderHoverProvider implements vscode.HoverProvider {
   async provideHover(
@@ -152,7 +148,7 @@ export class HeaderParameterHoverProvider implements vscode.HoverProvider {
     let headerInfo: IHeader | undefined = undefined;
 
     // 行全体でヘッダーマッチングを試行
-    const fullLineMatch = line.match(/^([A-Z]+[0-9]*):(.*)$/);
+    const fullLineMatch = line.match(/^\s*([A-Z0-9]+):(.*?)\s*$/);
     if (fullLineMatch) {
       const testHeaderName = fullLineMatch[1];
       const testHeaderInfo = headers.get(testHeaderName);
@@ -169,7 +165,7 @@ export class HeaderParameterHoverProvider implements vscode.HoverProvider {
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
     if (!headerInfo) {
-      const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
+      const specialMatch = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
       if (specialMatch) {
         const baseName = specialMatch[1];
         const number = specialMatch[2];
@@ -386,11 +382,17 @@ export class CommandParameterHoverProvider implements vscode.HoverProvider {
     const hoverContent = this.buildHoverContent(currentParam, commandName);
 
     // パラメーター範囲を計算
-    const parameterRange = this.calculateParameterRange(document, position, line, commandInfo, _isTmg, parameterIndex);
+    const parameterRange = this.calculateParameterRange(
+      document,
+      position,
+      line,
+      commandInfo,
+      _isTmg,
+      parameterIndex
+    );
 
     return new Hover(hoverContent, parameterRange);
   }
-
 
   /**
    * ホバー内容を構築
@@ -446,7 +448,8 @@ export class CommandParameterHoverProvider implements vscode.HoverProvider {
       // 全パラメータ部分を取得
       const allParams = line.substring(openParenPos + 1);
       const closingParenPos = allParams.indexOf(")");
-      const paramsPart = closingParenPos === -1 ? allParams : allParams.substring(0, closingParenPos);
+      const paramsPart =
+        closingParenPos === -1 ? allParams : allParams.substring(0, closingParenPos);
       const params = paramsPart.split(",");
 
       if (parameterIndex < params.length) {
@@ -463,10 +466,15 @@ export class CommandParameterHoverProvider implements vscode.HoverProvider {
       const commandEndPos = sharpPos + 1 + commandInfo.name.length;
       const parameterPart = line.substring(commandEndPos);
 
-      if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+      if (
+        separatorChar === "" ||
+        separatorChar === "None" ||
+        commandInfo.separator === "None" ||
+        commandInfo.separator === "Space"
+      ) {
         // スペース区切りの場合
         const trimmedPart = parameterPart.trim();
-        const params = trimmedPart.split(/\s+/).filter(p => p.length > 0);
+        const params = trimmedPart.split(/\s+/).filter((p) => p.length > 0);
 
         if (parameterIndex < params.length) {
           // パラメータの開始位置を計算
@@ -474,20 +482,23 @@ export class CommandParameterHoverProvider implements vscode.HoverProvider {
           while (paramStart < line.length && line[paramStart] === " ") {
             paramStart++;
           }
-          
+
           for (let i = 0; i < parameterIndex; i++) {
             paramStart += params[i].length;
             while (paramStart < line.length && line[paramStart] === " ") {
               paramStart++;
             }
           }
-          
+
           const paramEnd = paramStart + params[parameterIndex].length;
           return new vscode.Range(position.line, paramStart, position.line, paramEnd);
         }
       } else {
         // カンマ区切りなどの場合
-        const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+        const separatorRegex = new RegExp(
+          separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+          "g"
+        );
         const trimmedPart = parameterPart.trim();
         const params = trimmedPart.split(separatorRegex);
 
