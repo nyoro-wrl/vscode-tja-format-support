@@ -14,6 +14,7 @@ import {
 } from "../util/util";
 import { ICommand } from "../types/command";
 import { easingStrings, isEasingType, lerp } from "../util/easing";
+import { getRegExp } from "../types/statement";
 
 /**
  * 譜面の拡大
@@ -178,7 +179,7 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
       (x) =>
         selection.contains(x.range) &&
         x instanceof CommandNode &&
-        commands.items.bpmchange.regexp.test(x.properties.name)
+        getRegExp(commands.items.bpmchange).test(x.properties.name)
     )
     .map((x) => x.range.start.line);
   for (const bpmChangeLine of bpmChangeLines) {
@@ -221,7 +222,7 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
         (x) =>
           selection.contains(x.range) &&
           x instanceof CommandNode &&
-          commands.items.scroll.regexp.test(x.properties.name)
+          getRegExp(commands.items.scroll).test(x.properties.name)
       )
       .forEach((command) => {
         const start = new Position(command.range.start.line, 0);
@@ -359,7 +360,7 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
         (x) =>
           selection.contains(x.range) &&
           x instanceof CommandNode &&
-          commands.items.scroll.regexp.test(x.properties.name)
+          getRegExp(commands.items.scroll).test(x.properties.name)
       )
       .forEach((command) => {
         const start = new Position(command.range.start.line, 0);

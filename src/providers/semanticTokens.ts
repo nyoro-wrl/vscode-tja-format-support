@@ -44,8 +44,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
         (((x.properties.isGogotime === true || x.properties.branchState !== "None") &&
           x.value === "0") ||
           x.properties.rollState !== "None"),
-      false,
-      (x) => x instanceof HeadersNode
+      { return: (x) => x instanceof HeadersNode, continue: true, token }
     );
     for (const note of notes) {
       if (token?.isCancellationRequested) {
@@ -76,8 +75,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
     if (branchHighlight) {
       const measureEnds = root.filter(
         (x) => x instanceof MeasureEndNode && x.properties.isGogotime === true,
-        false,
-        (x) => x instanceof HeadersNode
+        { return: (x) => x instanceof HeadersNode, continue: false, token }
       );
       for (const measureEnd of measureEnds) {
         tokensBuilder.push(measureEnd.range, "gogoMeasureEnd");

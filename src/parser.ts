@@ -31,7 +31,7 @@ import {
 } from "./types/node";
 import { ChartState } from "./types/state";
 import { DiagnosticResult } from "./providers/diagnostics";
-import { Separator } from "./types/statement";
+import { getRegExp, Separator } from "./types/statement";
 import { CommandSection, ICommand } from "./types/command";
 import { isTmg } from "./util/util";
 
@@ -162,24 +162,26 @@ export class Parser {
   private checkUnusedBalloonParameters(styleNode: StyleNode): void {
     const balloonHeaders = [
       {
-        header: styleNode.properties.headers.find((x) => headers.items.balloon.regexp.test(x.name)),
+        header: styleNode.properties.headers.find((x) =>
+          getRegExp(headers.items.balloon).test(x.name)
+        ),
         maxId: this.balloonId,
       },
       {
         header: styleNode.properties.headers.find((x) =>
-          headers.items.balloonnor.regexp.test(x.name)
+          getRegExp(headers.items.balloonnor).test(x.name)
         ),
         maxId: this.norBalloonId,
       },
       {
         header: styleNode.properties.headers.find((x) =>
-          headers.items.balloonexp.regexp.test(x.name)
+          getRegExp(headers.items.balloonexp).test(x.name)
         ),
         maxId: this.expBalloonId,
       },
       {
         header: styleNode.properties.headers.find((x) =>
-          headers.items.balloonmas.regexp.test(x.name)
+          getRegExp(headers.items.balloonmas).test(x.name)
         ),
         maxId: this.masBalloonId,
       },
@@ -193,7 +195,8 @@ export class Parser {
         if (maxId === -1 && hasNonEmptyParameters) {
           // BALLOON: header has parameters but no balloon notes in chart - warn on parameters
           const headerNode = styleNode.find<HeaderNode>(
-            (x) => x instanceof HeaderNode && x.properties.name === header.name
+            (x) => x instanceof HeaderNode && x.properties.name === header.name,
+            { token: this.parseCancel }
           );
           if (headerNode) {
             const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
@@ -213,7 +216,8 @@ export class Parser {
         } else if (maxId > -1 && header.parameters.length > maxId + 1) {
           // Find the range of unused parameters
           const headerNode = styleNode.find<HeaderNode>(
-            (x) => x instanceof HeaderNode && x.properties.name === header.name
+            (x) => x instanceof HeaderNode && x.properties.name === header.name,
+            { token: this.parseCancel }
           );
           if (headerNode) {
             const parametersNode = headerNode.children.find((x) => x instanceof ParametersNode);
@@ -331,32 +335,68 @@ export class Parser {
   ): void {
     if (command === commands.items.barlineoff) {
       if (this.chartState.showBarline === false) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.showBarline = false;
     } else if (command === commands.items.barlineon) {
       if (this.chartState.showBarline === true) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.showBarline = true;
     } else if (command === commands.items.gogostart) {
       if (this.chartState.isGogotime === true) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isGogotime = true;
     } else if (command === commands.items.gogoend) {
       if (this.chartState.isGogotime === false) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isGogotime = false;
     } else if (command === commands.items.dummystart) {
       if (this.chartState.isDummyNote === true) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isDummyNote = true;
     } else if (command === commands.items.dummyend) {
       if (this.chartState.isDummyNote === false) {
-        this.addDiagnostic("Unedited", token.range, "不要な命令です。", DiagnosticSeverity.Warning, "redundant-command");
+        this.addDiagnostic(
+          "Unedited",
+          token.range,
+          "不要な命令です。",
+          DiagnosticSeverity.Warning,
+          "redundant-command"
+        );
       }
       this.chartState.isDummyNote = false;
     } else if (
@@ -432,7 +472,7 @@ export class Parser {
       }
     }
     const name = parent.properties.name;
-    if (parent instanceof HeaderNode && headers.items.bpm.regexp.test(name)) {
+    if (parent instanceof HeaderNode && getRegExp(headers.items.bpm).test(name)) {
       const rawValue =
         rawParameter.children[0] !== undefined ? Number(rawParameter.children[0].value) : undefined;
       const value = Number.isNaN(rawValue) ? undefined : rawValue;
@@ -516,7 +556,9 @@ export class Parser {
    */
   private getActualMeasureCount(parent: ChartNode | SongNode): number {
     // 親ノードから実際のMeasureNodeの数を数える
-    const measureNodes = parent.filter((x) => x instanceof MeasureNode);
+    const measureNodes = parent.filter((x) => x instanceof MeasureNode, {
+      token: this.parseCancel,
+    });
     return measureNodes.length;
   }
 
@@ -677,8 +719,9 @@ export class Parser {
         }
       } else if (/[79]/.test(token.value)) {
         if (this.chartState.isDummyNote === false) {
-          const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode)
-            ?.properties.isBranchBalloon;
+          const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
+            token: this.parseCancel,
+          })?.properties.isBranchBalloon;
           if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
             this.nowBalloonId = ++this.balloonId;
           } else {
@@ -701,18 +744,20 @@ export class Parser {
     const node = new NoteNode(parent, token, this.chartState, this.nowBalloonId);
     parent.push(node);
     if (this.nowBalloonId !== undefined && /[79]/.test(token.value)) {
-      const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode);
+      const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
+        token: this.parseCancel,
+      });
       if (styleNode !== undefined) {
         const isBranchBalloon = styleNode?.properties.isBranchBalloon;
         let headerRegExp: RegExp;
         if (this.chartState.branchState === "None" || isBranchBalloon !== true) {
-          headerRegExp = headers.items.balloon.regexp;
+          headerRegExp = getRegExp(headers.items.balloon);
         } else if (this.chartState.branchState === "Normal") {
-          headerRegExp = headers.items.balloonnor.regexp;
+          headerRegExp = getRegExp(headers.items.balloonnor);
         } else if (this.chartState.branchState === "Expert") {
-          headerRegExp = headers.items.balloonexp.regexp;
+          headerRegExp = getRegExp(headers.items.balloonexp);
         } else {
-          headerRegExp = headers.items.balloonmas.regexp;
+          headerRegExp = getRegExp(headers.items.balloonmas);
         }
         const balloonHeader = styleNode.properties.headers.find((x) => headerRegExp.test(x.name));
         const wordRange = this.document.getWordRangeAtPosition(
@@ -772,11 +817,11 @@ export class Parser {
    * @returns
    */
   private parseFindLastOrPushCourse(parent: RootNode, token: Token): CourseNode {
-    let findNode = parent.findLastRange<CourseNode>(
-      (x) => x instanceof CourseNode,
-      false,
-      (x) => x instanceof HeadersNode
-    );
+    let findNode = parent.findLastRange<CourseNode>((x) => x instanceof CourseNode, {
+      return: (x) => x instanceof HeadersNode,
+      continue: false,
+      token: this.parseCancel,
+    });
     if (findNode === undefined) {
       // コースの作成
       let node = new CourseNode(parent, token.range);
@@ -830,7 +875,10 @@ export class Parser {
    */
   private validateChateEnd(parent: ChartNode): void {
     if (this.chartState.rollState !== "None") {
-      const lastMeasure = parent.findLastRange((x) => x instanceof MeasureNode, false);
+      const lastMeasure = parent.findLastRange((x) => x instanceof MeasureNode, {
+        continue: false,
+        token: this.parseCancel,
+      });
       if (lastMeasure !== undefined) {
         const text =
           this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
@@ -851,7 +899,10 @@ export class Parser {
    * @param parent
    */
   private validateMeasureEnd(parent: MeasureNode): void {
-    const node = parent.findDepth((x) => x instanceof NoteNode, false);
+    const node = parent.findDepth((x) => x instanceof NoteNode, {
+      continue: false,
+      token: this.parseCancel,
+    });
     if (node !== undefined) {
       this.addDiagnostic(
         "Unedited",
@@ -1154,7 +1205,8 @@ export class Parser {
             } else if (section === "Branch") {
               if (
                 info !== commands.items.branchstart &&
-                parent.findParent((x) => x instanceof BranchNode) === undefined
+                parent.findParent((x) => x instanceof BranchNode, { token: this.parseCancel }) ===
+                  undefined
               ) {
                 const node = this.parseCommand(parent, token, separator);
                 this.addDiagnostic("Realtime", node.range, "#BRANCHSTART がありません。");

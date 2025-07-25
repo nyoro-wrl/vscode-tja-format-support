@@ -1,10 +1,10 @@
-import { Range } from "vscode";
+import { CancellationToken, Range } from "vscode";
 import { commands } from "../constants/commands";
 import { headers } from "../constants/headers";
 import { Token } from "../lexer";
 import { Note } from "./note";
 import { BranchState, ChartState, RollState, TriBoolean } from "./state";
-import { Separator } from "./statement";
+import { getRegExp, Separator } from "./statement";
 
 interface HeadersProperties {
   readonly headers: StatementProperties[];
@@ -111,6 +111,89 @@ interface NoteProperties extends ChartStateProperties {
   note: Note;
 }
 
+export interface FindParentOptions {
+  /**
+   * 自身を検索対象に含むかどうか
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FindOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FilterOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 条件が一致しても再帰を続ける
+   */
+  continue?: boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FildLastRangeOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 条件が一致しても再帰を続ける
+   */
+  continue?: boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
+export interface FindDepthOptions {
+  /**
+   * 引き返す条件（それ以上の再帰処理を行わない）
+   */
+  return?: (node: Node) => boolean;
+  /**
+   * 条件が一致しても再帰を続ける
+   */
+  continue?: boolean;
+  /**
+   * 自身を検索対象に含む
+   */
+  includeSelf?: boolean;
+  /**
+   * キャンセル可能なトークン
+   */
+  token?: CancellationToken;
+}
+
 /**
  * ノード
  */
@@ -130,18 +213,21 @@ export abstract class Node {
   /**
    * 親ノードを再帰的に検索し、最初に一致したNodeを返す
    * @param predicate 一致する条件
-   * @param includeSelf 自身を検索対象に含む
+   * @param options 検索設定
    * @returns
    */
   public findParent<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    includeSelf: boolean = true
+    { includeSelf = true, token }: FindParentOptions = {}
   ): T | undefined {
+    if (token?.isCancellationRequested) {
+      return;
+    }
     if (includeSelf && predicate(this)) {
       return this as unknown as T;
     }
     if (this.parent !== undefined) {
-      const result = this.parent.findParent<T>(predicate);
+      const result = this.parent.findParent<T>(predicate, { token });
       if (result !== undefined) {
         return result;
       }
@@ -184,15 +270,16 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、最初に一致したNodeを返す
    * @param predicate 一致する条件
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
+   * @param options 検索設定
    * @returns
    */
   public find<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true
+    { return: ignorePredicate, includeSelf = true, token }: FindOptions = {}
   ): T | undefined {
+    if (token?.isCancellationRequested) {
+      return;
+    }
     if (includeSelf && predicate(this)) {
       return this as unknown as T;
     }
@@ -200,8 +287,11 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
       return;
     }
     for (const child of this.children) {
+      if (token?.isCancellationRequested) {
+        return;
+      }
       if (child instanceof ParentNode) {
-        const result = child.find<T>(predicate);
+        const result = child.find<T>(predicate, { token });
         if (result !== undefined) {
           return result;
         }
@@ -214,18 +304,22 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、一致した全てのNodeを返す
    * @param predicate 一致する条件
-   * @param _continue 条件が一致しても再帰を続ける
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
+   * @param options 検索設定
    * @returns
    */
   public filter<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    _continue: boolean = false,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true
+    {
+      return: ignorePredicate,
+      continue: _continue = false,
+      includeSelf = true,
+      token,
+    }: FilterOptions = {}
   ): T[] {
     const results: T[] = [];
+    if (token?.isCancellationRequested) {
+      return results;
+    }
     if (includeSelf && predicate(this)) {
       results.push(this as unknown as T);
       if (_continue === false) {
@@ -236,8 +330,15 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
       return results;
     }
     for (const child of this.children) {
+      if (token?.isCancellationRequested) {
+        return results;
+      }
       if (child instanceof ParentNode) {
-        const result = child.filter<T>(predicate, _continue, ignorePredicate);
+        const result = child.filter<T>(predicate, {
+          return: ignorePredicate,
+          continue: _continue,
+          token,
+        });
         results.push(...result);
       } else if (predicate(child)) {
         results.push(child as unknown as T);
@@ -249,21 +350,29 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、範囲末尾が最も後ろにあるNodeを返す
    * @param predicate 一致する条件
-   * @param _continue 条件が一致しても再帰を続ける
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
+   * @param options 検索設定
    * @returns
    */
   public findLastRange<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    _continue: boolean = false,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true
+    {
+      return: ignorePredicate,
+      continue: _continue = false,
+      includeSelf = true,
+      token,
+    }: FildLastRangeOptions = {}
   ): T | undefined {
-    const nodes: T[] = this.filter<T>(predicate, _continue, ignorePredicate, includeSelf);
+    const nodes: T[] = this.filter<T>(predicate, {
+      return: ignorePredicate,
+      continue: _continue,
+      includeSelf,
+      token,
+    });
     let result: T | undefined;
     for (const node of nodes) {
-      if (result === undefined) {
+      if (token?.isCancellationRequested) {
+        return result;
+      } else if (result === undefined) {
         result = node;
       } else if (
         result.range.end.line < node.range.end.line ||
@@ -279,20 +388,29 @@ export abstract class ParentNode<T extends Node = Node> extends Node {
   /**
    * 子ノードを再帰的に検索し、最も範囲の狭いNodeを返す
    * @param predicate 一致する条件
-   * @param _continue 条件が一致しても再帰を続ける
-   * @param ignorePredicate 引き返す条件（それ以上の再帰処理を行わない）
-   * @param includeSelf 自身を検索対象に含む
+   * @param options 検索設定
    * @returns
    */
   public findDepth<T extends Node = Node>(
     predicate: (node: Node) => boolean,
-    _continue: boolean = false,
-    ignorePredicate?: (node: Node) => boolean,
-    includeSelf: boolean = true
+    {
+      return: ignorePredicate,
+      continue: _continue = false,
+      includeSelf = true,
+      token,
+    }: FindDepthOptions = {}
   ): T | undefined {
-    const nodes: T[] = this.filter<T>(predicate, _continue, ignorePredicate, includeSelf);
+    const nodes: T[] = this.filter<T>(predicate, {
+      continue: _continue,
+      return: ignorePredicate,
+      includeSelf,
+      token,
+    });
     let result: { node: T; line: number; length: number | undefined } | undefined;
     for (const node of nodes) {
+      if (token?.isCancellationRequested) {
+        return result?.node;
+      }
       const line = node.range.end.line - node.range.start.line + 1;
       const length = line === 1 ? node.range.end.character - node.range.start.character : undefined;
       const nodeInfo = { node: node, line: line, length: length };
@@ -499,7 +617,7 @@ export class CourseNode extends ParentNode<StyleNode> {
     );
     if (courseHeaders !== undefined) {
       const courseHeader = courseHeaders.properties.headers.find((x) =>
-        headers.items.course.regexp.test(x.name)
+        getRegExp(headers.items.course).test(x.name)
       );
       if (courseHeader !== undefined) {
         this.properties.course = courseHeader.parameter;
@@ -530,16 +648,16 @@ export class StyleNode extends ParentNode<StyleHeadersNode | CommandNode | Chart
     if (node instanceof StyleHeadersNode) {
       this.properties.headers.push(...node.properties.headers);
       const styleHeader = node.properties.headers.find((x) =>
-        headers.items.style.regexp.test(x.name)
+        getRegExp(headers.items.style).test(x.name)
       );
       if (styleHeader !== undefined) {
         this.properties.style = styleHeader.parameter;
       }
       this.properties.isBranchBalloon = node.properties.headers.some(
         (x) =>
-          headers.items.balloonnor.regexp.test(x.name) ||
-          headers.items.balloonexp.regexp.test(x.name) ||
-          headers.items.balloonmas.regexp.test(x.name)
+          getRegExp(headers.items.balloonnor).test(x.name) ||
+          getRegExp(headers.items.balloonexp).test(x.name) ||
+          getRegExp(headers.items.balloonmas).test(x.name)
       );
     }
   }
@@ -638,12 +756,12 @@ export class ChartStateCommandNode extends CommandNode {
     super._pushStatement(node);
 
     if (node instanceof ParametersNode) {
-      if (commands.items.bpmchange.regexp.test(this.properties.name)) {
+      if (getRegExp(commands.items.bpmchange).test(this.properties.name)) {
         const rawValue =
           node.children[0] !== undefined ? Number(node.children[0].value) : undefined;
         const value = Number.isNaN(rawValue) ? undefined : rawValue;
         this.properties.chartState.bpm = value;
-      } else if (commands.items.scroll.regexp.test(this.properties.name)) {
+      } else if (getRegExp(commands.items.scroll).test(this.properties.name)) {
         const rawValue =
           node.children[0] !== undefined ? Number(node.children[0].value) : undefined;
         const value = Number.isNaN(rawValue) ? undefined : rawValue;
@@ -690,12 +808,12 @@ export class ChartNode extends ParentNode<
     if (node instanceof CommandNode) {
       if (
         this.properties.start === undefined &&
-        commands.items.start.regexp.test(node.properties.name)
+        getRegExp(commands.items.start).test(node.properties.name)
       ) {
         this.properties.start = node.properties;
       } else if (
         this.properties.end === undefined &&
-        commands.items.end.regexp.test(node.properties.name)
+        getRegExp(commands.items.end).test(node.properties.name)
       ) {
         this.properties.end = node.properties;
       }
@@ -766,7 +884,7 @@ export class SongNode extends ParentNode<
     if (node instanceof CommandNode) {
       if (
         this.properties.nextsong === undefined &&
-        commands.items.nextsong.regexp.test(node.properties.name)
+        getRegExp(commands.items.nextsong).test(node.properties.name)
       ) {
         this.properties.nextsong = node.properties;
       }

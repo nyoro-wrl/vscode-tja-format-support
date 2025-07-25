@@ -1,4 +1,4 @@
-import { IStatement, StatementCollection } from "./statement";
+import { IStatement, StatementCollection, StatementParameter } from "./statement";
 
 /**
  * ヘッダの記載位置
@@ -13,7 +13,7 @@ type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
 /**
  * ヘッダ
  */
-interface IHeader extends IStatement {
+export interface IHeader extends IStatement {
   /**
    * ヘッダの記載位置
    */
@@ -21,7 +21,7 @@ interface IHeader extends IStatement {
   /**
    * この後に書かれる可能性の高いヘッダ
    */
-  readonly recommend: string[];
+  readonly recommend: readonly string[];
 }
 
 /**
@@ -61,6 +61,10 @@ interface IHeaderRecord extends Record<string, IHeader> {
   readonly bgoffset: IHeader;
   readonly dantick: IHeader;
   readonly dantickcolor: IHeader;
+  readonly maker: IHeader;
+  readonly bga: IHeader;
+  readonly lyrics: IHeader;
+  readonly explicit: IHeader;
 }
 
 export class HeaderCollection extends StatementCollection<IHeader> {

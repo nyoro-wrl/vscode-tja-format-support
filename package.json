@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -167,6 +167,10 @@
               "type": "boolean",
               "description": "TJAPlayer"
             },
+            "optk": {
+              "type": "boolean",
+              "description": "OpenTaiko"
+            },
             "tmg": {
               "type": "boolean",
               "description": "TaikoManyGimmicks"
@@ -174,6 +178,7 @@
           },
           "default": {
             "tjap": true,
+            "optk": true,
             "tmg": false
           },
           "additionalProperties": false

@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 import { headers } from "../constants/headers";
 import { documents } from "../extension";
 import {
@@ -9,14 +8,25 @@ import {
   RootNode,
   StyleHeadersNode,
 } from "../types/node";
+import {
+  CancellationToken,
+  Position,
+  Range,
+  RenameProvider,
+  TextDocument,
+  WorkspaceEdit,
+} from "vscode";
+import { getRegExp } from "../types/statement";
 
-export class BalloonParameterRenameProvider implements vscode.RenameProvider {
+type NewType = CancellationToken;
+
+export class BalloonParameterRenameProvider implements RenameProvider {
   async provideRenameEdits(
-    document: vscode.TextDocument,
-    position: vscode.Position,
+    document: TextDocument,
+    position: Position,
     newName: string,
-    token: vscode.CancellationToken
-  ): Promise<vscode.WorkspaceEdit | undefined> {
+    token: NewType
+  ): Promise<WorkspaceEdit | undefined> {
     if (!/^\d+$/.test(newName)) {
       throw new Error("風船音符の打数は整数で入力してください");
     }
@@ -27,25 +37,30 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     // Try to find balloon header parameter first
-    const balloonHeaderResult = this.findBalloonHeaderParameter(document, position, root);
+    const balloonHeaderResult = this.findBalloonHeaderParameter(document, position, root, token);
     if (balloonHeaderResult) {
-      const workspaceEdit = new vscode.WorkspaceEdit();
+      const workspaceEdit = new WorkspaceEdit();
       workspaceEdit.replace(document.uri, balloonHeaderResult.range, newName);
       return workspaceEdit;
     }
 
     // Try to find balloon note
-    const balloonNoteResult = this.findBalloonNote(document, position, root);
+    const balloonNoteResult = this.findBalloonNote(document, position, root, token);
     if (balloonNoteResult) {
-      const workspaceEdit = new vscode.WorkspaceEdit();
+      const workspaceEdit = new WorkspaceEdit();
       workspaceEdit.replace(document.uri, balloonNoteResult.parameterRange, newName);
       return workspaceEdit;
     }
 
     // Try to find balloon note without parameter (parameter needs to be added)
-    const balloonNoteWithoutParam = this.findBalloonNoteWithoutParameter(document, position, root);
+    const balloonNoteWithoutParam = this.findBalloonNoteWithoutParameter(
+      document,
+      position,
+      root,
+      token
+    );
     if (balloonNoteWithoutParam) {
-      const workspaceEdit = new vscode.WorkspaceEdit();
+      const workspaceEdit = new WorkspaceEdit();
 
       // Add balloon parameter at the correct index position
       const targetIndex = balloonNoteWithoutParam.balloonNote.properties.note.balloonId;
@@ -71,7 +86,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
 
         if (colonIndex !== -1) {
           // Colon exists, insert after it
-          const insertPosition = new vscode.Position(
+          const insertPosition = new Position(
             balloonNoteWithoutParam.balloonHeader.range.start.line,
             headerStartChar + colonIndex + 1
           );
@@ -96,7 +111,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
           const sortedParams = balloonNoteWithoutParam.existingParameters.sort(
             (a, b) => a.properties.index - b.properties.index
           );
-          let insertPosition: vscode.Position;
+          let insertPosition: Position;
 
           // Find where to insert
           const insertAfterParam = sortedParams.find(
@@ -139,9 +154,14 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     // Try to find balloon note without header (header needs to be created)
-    const balloonNoteWithoutHeader = this.findBalloonNoteWithoutHeader(document, position, root);
+    const balloonNoteWithoutHeader = this.findBalloonNoteWithoutHeader(
+      document,
+      position,
+      root,
+      token
+    );
     if (balloonNoteWithoutHeader) {
-      const workspaceEdit = new vscode.WorkspaceEdit();
+      const workspaceEdit = new WorkspaceEdit();
 
       // Create new balloon header
       const headerName = this.getBalloonHeaderName(balloonNoteWithoutHeader.balloonNote);
@@ -155,10 +175,11 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
   }
 
   private findBalloonHeaderParameter(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    root: RootNode
-  ): { range: vscode.Range } | undefined {
+    document: TextDocument,
+    position: Position,
+    root: RootNode,
+    token: CancellationToken
+  ): { range: Range } | undefined {
     const wordRange = document.getWordRangeAtPosition(position, /[0-9]+/);
     if (!wordRange) {
       return undefined;
@@ -168,10 +189,11 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof HeaderNode &&
         x.range.contains(position) &&
-        (headers.items.balloon.regexp.test(x.properties.name) ||
-          headers.items.balloonnor.regexp.test(x.properties.name) ||
-          headers.items.balloonexp.regexp.test(x.properties.name) ||
-          headers.items.balloonmas.regexp.test(x.properties.name))
+        (getRegExp(headers.items.balloon).test(x.properties.name) ||
+          getRegExp(headers.items.balloonnor).test(x.properties.name) ||
+          getRegExp(headers.items.balloonexp).test(x.properties.name) ||
+          getRegExp(headers.items.balloonmas).test(x.properties.name)),
+      { token }
     );
 
     if (!balloonHeader) {
@@ -179,7 +201,8 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     const parameterNode = balloonHeader.find<ParameterNode>(
-      (x) => x instanceof ParameterNode && x.range.contains(position)
+      (x) => x instanceof ParameterNode && x.range.contains(position),
+      { token }
     );
 
     if (!parameterNode) {
@@ -190,10 +213,11 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
   }
 
   private findBalloonNote(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    root: RootNode
-  ): { parameterRange: vscode.Range } | undefined {
+    document: TextDocument,
+    position: Position,
+    root: RootNode,
+    token: CancellationToken
+  ): { parameterRange: Range } | undefined {
     const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
     if (!wordRange) {
       return undefined;
@@ -204,7 +228,8 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined
+        x.properties.note.balloonId !== undefined,
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -230,7 +255,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode);
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (!style) {
       return undefined;
     }
@@ -240,13 +265,14 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof HeaderNode &&
         ((balloonNote.properties.branchState === "None" &&
-          headers.items.balloon.regexp.test(x.properties.name)) ||
+          getRegExp(headers.items.balloon).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Normal" &&
-            headers.items.balloonnor.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Expert" &&
-            headers.items.balloonexp.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Master" &&
-            headers.items.balloonmas.regexp.test(x.properties.name)))
+            getRegExp(headers.items.balloonmas).test(x.properties.name))),
+      { token }
     );
 
     if (!balloonHeader) {
@@ -256,7 +282,8 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     // Find parameter by balloonId using the parameter's index property
     const balloonParameter = balloonHeader.find<ParameterNode>(
       (x) =>
-        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId,
+      { token }
     );
 
     if (!balloonParameter || balloonParameter.value.trim() === "") {
@@ -266,9 +293,10 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
   }
 
   private findBalloonNoteWithoutParameter(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    root: RootNode
+    document: TextDocument,
+    position: Position,
+    root: RootNode,
+    token: CancellationToken
   ):
     | { balloonHeader: HeaderNode; existingParameters: ParameterNode[]; balloonNote: NoteNode }
     | undefined {
@@ -282,7 +310,8 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined
+        x.properties.note.balloonId !== undefined,
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -307,7 +336,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode);
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (!style) {
       return undefined;
     }
@@ -317,13 +346,14 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof HeaderNode &&
         ((balloonNote.properties.branchState === "None" &&
-          headers.items.balloon.regexp.test(x.properties.name)) ||
+          getRegExp(headers.items.balloon).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Normal" &&
-            headers.items.balloonnor.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Expert" &&
-            headers.items.balloonexp.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Master" &&
-            headers.items.balloonmas.regexp.test(x.properties.name)))
+            getRegExp(headers.items.balloonmas).test(x.properties.name))),
+      { token }
     );
 
     if (!balloonHeader) {
@@ -335,14 +365,16 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof ParameterNode &&
         x.properties.index === balloonNote.properties.note.balloonId &&
-        x.value.trim() !== ""
+        x.value.trim() !== "",
+      { token }
     );
     if (existingParameter) {
       return undefined; // Parameter already exists with a value
     }
 
     const balloonParameters = balloonHeader.filter<ParameterNode>(
-      (x) => x instanceof ParameterNode
+      (x) => x instanceof ParameterNode,
+      { token }
     );
 
     return {
@@ -353,10 +385,11 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
   }
 
   private findBalloonNoteWithoutHeader(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    root: RootNode
-  ): { balloonNote: NoteNode; insertPosition: vscode.Position } | undefined {
+    document: TextDocument,
+    position: Position,
+    root: RootNode,
+    token: CancellationToken
+  ): { balloonNote: NoteNode; insertPosition: Position } | undefined {
     const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
     if (!wordRange) {
       return undefined;
@@ -367,7 +400,8 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined
+        x.properties.note.balloonId !== undefined,
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -392,7 +426,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       return undefined;
     }
 
-    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode);
+    const style = balloonNote.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (!style) {
       return undefined;
     }
@@ -402,13 +436,14 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       (x) =>
         x instanceof HeaderNode &&
         ((balloonNote.properties.branchState === "None" &&
-          headers.items.balloon.regexp.test(x.properties.name)) ||
+          getRegExp(headers.items.balloon).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Normal" &&
-            headers.items.balloonnor.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Expert" &&
-            headers.items.balloonexp.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
           (balloonNote.properties.branchState === "Master" &&
-            headers.items.balloonmas.regexp.test(x.properties.name)))
+            getRegExp(headers.items.balloonmas).test(x.properties.name))),
+      { token }
     );
 
     if (balloonHeader) {
@@ -416,16 +451,18 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     // Find where to insert the header - after the last header in the style
-    const styleHeaders = style.find<StyleHeadersNode>((x) => x instanceof StyleHeadersNode);
-    let insertPosition: vscode.Position;
+    const styleHeaders = style.find<StyleHeadersNode>((x) => x instanceof StyleHeadersNode, {
+      token,
+    });
+    let insertPosition: Position;
 
     if (styleHeaders && styleHeaders.children.length > 0) {
       // Insert after the last header
       const lastHeader = styleHeaders.children[styleHeaders.children.length - 1];
-      insertPosition = new vscode.Position(lastHeader.range.end.line + 1, 0);
+      insertPosition = new Position(lastHeader.range.end.line + 1, 0);
     } else {
       // Insert at the beginning of the style
-      insertPosition = new vscode.Position(style.range.start.line + 1, 0);
+      insertPosition = new Position(style.range.start.line + 1, 0);
     }
 
     return {
@@ -448,20 +485,21 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
   }
 
   async prepareRename(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: vscode.CancellationToken
-  ): Promise<vscode.Range | { range: vscode.Range; placeholder: string }> {
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken
+  ): Promise<Range | { range: Range; placeholder: string }> {
     const root = documents.parse(document, token);
     if (!root) {
       throw new Error("ファイルの解析に失敗しました");
     }
 
     // Try to find balloon header parameter first
-    const balloonHeaderResult = this.findBalloonHeaderParameter(document, position, root);
+    const balloonHeaderResult = this.findBalloonHeaderParameter(document, position, root, token);
     if (balloonHeaderResult) {
       const parameterNode = root.find<ParameterNode>(
-        (x) => x instanceof ParameterNode && x.range.contains(position)
+        (x) => x instanceof ParameterNode && x.range.contains(position),
+        { token }
       );
       return {
         range: balloonHeaderResult.range,
@@ -470,14 +508,15 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     // Try to find balloon note
-    const balloonNoteResult = this.findBalloonNote(document, position, root);
+    const balloonNoteResult = this.findBalloonNote(document, position, root, token);
     if (balloonNoteResult) {
       // Find all balloon notes that contain the cursor position
       const candidateNotes = root.filter<NoteNode>(
         (x) =>
           x instanceof NoteNode &&
           x.range.contains(position) &&
-          x.properties.note.balloonId !== undefined
+          x.properties.note.balloonId !== undefined,
+        { token }
       );
 
       if (candidateNotes.length === 0) {
@@ -498,7 +537,7 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
         }
       }
 
-      const style = balloonNote?.findParent<StyleNode>((x) => x instanceof StyleNode);
+      const style = balloonNote?.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
       if (!style || !balloonNote || balloonNote.properties.note.balloonId === undefined) {
         throw new Error("風船音符の打数パラメータではありません");
       }
@@ -507,13 +546,14 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
         (x) =>
           x instanceof HeaderNode &&
           ((balloonNote.properties.branchState === "None" &&
-            headers.items.balloon.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloon).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Normal" &&
-              headers.items.balloonnor.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Expert" &&
-              headers.items.balloonexp.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
-              headers.items.balloonmas.regexp.test(x.properties.name)))
+              getRegExp(headers.items.balloonmas).test(x.properties.name))),
+        { token }
       );
 
       if (!balloonHeader) {
@@ -523,7 +563,9 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
       // Find parameter by balloonId using the parameter's index property
       const balloonParameter = balloonHeader.find<ParameterNode>(
         (x) =>
-          x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+          x instanceof ParameterNode &&
+          x.properties.index === balloonNote.properties.note.balloonId,
+        { token }
       );
       if (!balloonParameter) {
         throw new Error("風船音符のパラメータが見つかりません");
@@ -535,7 +577,12 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     // Try to find balloon note without parameter (allow editing to add parameter)
-    const balloonNoteWithoutParam = this.findBalloonNoteWithoutParameter(document, position, root);
+    const balloonNoteWithoutParam = this.findBalloonNoteWithoutParameter(
+      document,
+      position,
+      root,
+      token
+    );
     if (balloonNoteWithoutParam) {
       return {
         range: balloonNoteWithoutParam.balloonNote.range,
@@ -544,7 +591,12 @@ export class BalloonParameterRenameProvider implements vscode.RenameProvider {
     }
 
     // Try to find balloon note without header (allow editing to create header)
-    const balloonNoteWithoutHeader = this.findBalloonNoteWithoutHeader(document, position, root);
+    const balloonNoteWithoutHeader = this.findBalloonNoteWithoutHeader(
+      document,
+      position,
+      root,
+      token
+    );
     if (balloonNoteWithoutHeader) {
       return {
         range: balloonNoteWithoutHeader.balloonNote.range,

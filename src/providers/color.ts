@@ -6,6 +6,7 @@ import { documents } from "../extension";
 import { ChartNode, CommandNode, HeaderNode, HeadersNode, ParametersNode } from "../types/node";
 import { rgb, hex } from "color-convert";
 import { isTmg } from "../util/util";
+import { getRegExp } from "../types/statement";
 
 /**
  * DANTICKCOLOR:ヘッダのカラーピッカー機能
@@ -22,9 +23,9 @@ export class DantickColorDocumentColorProvider implements vscode.DocumentColorPr
     }
 
     const dantickcolorHeaders = root.filter<HeaderNode>(
-      (x) => x instanceof HeaderNode && headers.items.dantickcolor.regexp.test(x.properties.name),
-      false,
-      (x) => x instanceof ChartNode
+      (x) =>
+        x instanceof HeaderNode && getRegExp(headers.items.dantickcolor).test(x.properties.name),
+      { return: (x) => x instanceof ChartNode, continue: false, token }
     );
     for (const dantickcolorHeader of dantickcolorHeaders) {
       if (token.isCancellationRequested) {
@@ -82,9 +83,8 @@ export class ColorCommandDocumentColorProvider implements vscode.DocumentColorPr
     }
 
     const colorHeaders = root.filter<CommandNode>(
-      (x) => x instanceof CommandNode && commands.items.color.regexp.test(x.properties.name),
-      false,
-      (x) => x instanceof HeadersNode
+      (x) => x instanceof CommandNode && getRegExp(commands.items.color).test(x.properties.name),
+      { return: (x) => x instanceof HeadersNode, continue: false, token }
     );
     for (const colorHeader of colorHeaders) {
       if (token.isCancellationRequested) {

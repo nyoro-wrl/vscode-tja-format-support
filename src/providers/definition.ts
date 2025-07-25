@@ -10,6 +10,7 @@ import {
   CommandNode,
   ChartNode,
 } from "../types/node";
+import { getRegExp } from "../types/statement";
 
 /**
  * 風船打数から風船音符にジャンプ（雑実装）
@@ -32,23 +33,24 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
       (x) =>
         x instanceof HeaderNode &&
         x.range.contains(position) &&
-        (headers.items.balloon.regexp.test(x.properties.name) ||
-          headers.items.balloonnor.regexp.test(x.properties.name) ||
-          headers.items.balloonexp.regexp.test(x.properties.name) ||
-          headers.items.balloonmas.regexp.test(x.properties.name)),
-      (x) => x instanceof ChartNode
+        (getRegExp(headers.items.balloon).test(x.properties.name) ||
+          getRegExp(headers.items.balloonnor).test(x.properties.name) ||
+          getRegExp(headers.items.balloonexp).test(x.properties.name) ||
+          getRegExp(headers.items.balloonmas).test(x.properties.name)),
+      { return: (x) => x instanceof ChartNode, token }
     );
     if (balloonHeader === undefined) {
       return Promise.reject();
     }
     const parameterNode = balloonHeader.find<ParameterNode>(
-      (x) => x instanceof ParameterNode && x.range.contains(position)
+      (x) => x instanceof ParameterNode && x.range.contains(position),
+      { token }
     );
     if (parameterNode === undefined) {
       return Promise.reject();
     }
     const balloonId = parameterNode.properties.index;
-    const styleNode = balloonHeader.findParent<StyleNode>((x) => x instanceof StyleNode);
+    const styleNode = balloonHeader.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
     if (styleNode === undefined) {
       return Promise.reject();
     }
@@ -58,14 +60,14 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
         x.properties.note.balloonId !== undefined &&
         x.properties.note.balloonId === balloonId &&
         ((x.properties.branchState === "None" &&
-          headers.items.balloon.regexp.test(balloonHeader.properties.name)) ||
+          getRegExp(headers.items.balloon).test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Normal" &&
-            headers.items.balloonnor.regexp.test(balloonHeader.properties.name)) ||
+            getRegExp(headers.items.balloonnor).test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Expert" &&
-            headers.items.balloonexp.regexp.test(balloonHeader.properties.name)) ||
+            getRegExp(headers.items.balloonexp).test(balloonHeader.properties.name)) ||
           (x.properties.branchState === "Master" &&
-            headers.items.balloonmas.regexp.test(balloonHeader.properties.name))),
-      (x) => x instanceof HeadersNode || x instanceof CommandNode
+            getRegExp(headers.items.balloonmas).test(balloonHeader.properties.name))),
+      { return: (x) => x instanceof HeadersNode || x instanceof CommandNode, token }
     );
     if (balloonNotes === undefined) {
       return Promise.reject();
@@ -102,7 +104,8 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
       (x) =>
         x instanceof NoteNode &&
         x.range.contains(position) &&
-        x.properties.note.balloonId !== undefined
+        x.properties.note.balloonId !== undefined,
+      { token }
     );
 
     if (candidateNotes.length === 0) {
@@ -122,7 +125,7 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
         }
       }
     }
-    const style = balloonNote?.findParent((x) => x instanceof StyleNode);
+    const style = balloonNote?.findParent((x) => x instanceof StyleNode, { token });
     if (
       balloonNote === undefined ||
       balloonNote.properties.note.balloonId === undefined ||
@@ -131,18 +134,19 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
       return Promise.reject();
     }
     const balloonHeader = balloonNote
-      .findParent<StyleNode>((x) => x instanceof StyleNode)
+      .findParent<StyleNode>((x) => x instanceof StyleNode, { token })
       ?.find<HeaderNode>(
         (x) =>
           x instanceof HeaderNode &&
           ((balloonNote.properties.branchState === "None" &&
-            headers.items.balloon.regexp.test(x.properties.name)) ||
+            getRegExp(headers.items.balloon).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Normal" &&
-              headers.items.balloonnor.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonnor).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Expert" &&
-              headers.items.balloonexp.regexp.test(x.properties.name)) ||
+              getRegExp(headers.items.balloonexp).test(x.properties.name)) ||
             (balloonNote.properties.branchState === "Master" &&
-              headers.items.balloonmas.regexp.test(x.properties.name)))
+              getRegExp(headers.items.balloonmas).test(x.properties.name))),
+        { token }
       );
     if (balloonHeader === undefined) {
       return Promise.reject();
@@ -150,7 +154,9 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
 
     // Find parameter by balloonId using the parameter's index property
     const balloonParameter = balloonHeader.find<ParameterNode>(
-      (x) => x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId
+      (x) =>
+        x instanceof ParameterNode && x.properties.index === balloonNote.properties.note.balloonId,
+      { token }
     );
     if (!balloonParameter) {
       return Promise.reject();

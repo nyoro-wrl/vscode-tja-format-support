@@ -1,9 +1,27 @@
+import { SnippetString } from "vscode";
 import { Collection, ICollection } from "./collection";
 
 /**
  * パラメーターの区切り文字
  */
 export type Separator = "Comma" | "Space" | "None" | "Unknown";
+
+export type FilePathType = "Audio" | "tja" | "Image" | "Movie" | "Lyrics" | "File";
+
+export type SnippetParameter = {
+  value: string;
+  detail: string;
+};
+
+/**
+ * パラメータ定義
+ */
+export type StatementParameter = {
+  name: string;
+  description: string;
+  snippet?: readonly SnippetParameter[] | FilePathType;
+  isOptional?: true;
+};
 
 /**
  * 文（ヘッダ･命令）
@@ -18,21 +36,13 @@ export interface IStatement {
    */
   readonly detail: string;
   /**
-   * 一致する正規表現
-   */
-  readonly regexp: RegExp;
-  /**
-   * 構文テキスト
-   */
-  readonly syntax: string;
-  /**
-   * 補完テキスト
-   */
-  readonly snippet: string;
-  /**
    * 解説テキスト
    */
   readonly documentation: string;
+  /**
+   * パラメータ定義の配列
+   */
+  readonly parameter: readonly StatementParameter[];
   /**
    * パラメーターの区切り文字
    */
@@ -45,6 +55,14 @@ export interface IStatement {
    *     2 // 明確な目的がないと使わない
    */
   readonly order: number;
+  /**
+   * 一致する正規表現
+   */
+  readonly regexp?: RegExp;
+  /**
+   * 補完テキスト
+   */
+  readonly snippet?: SnippetString;
 }
 
 interface IStatementCollection<T extends IStatement> extends ICollection<T> {
@@ -65,9 +83,13 @@ export class StatementCollection<T extends IStatement>
    */
   get(string: string): T | undefined {
     for (const statement of this) {
-      if (statement.regexp.test(string)) {
+      if (getRegExp(statement).test(string)) {
         return statement;
       }
     }
   }
+}
+
+export function getRegExp(header: IStatement): RegExp {
+  return header.regexp || new RegExp(`^${header.name}$`);
 }
