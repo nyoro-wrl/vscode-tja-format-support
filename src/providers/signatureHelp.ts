@@ -40,17 +40,21 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     let headerInfo: IHeader | undefined = undefined;
 
     // 通常のヘッダー処理を優先
-    const beforeCursor = line.substring(0, position.character);
-    const headerMatch = beforeCursor.match(/([A-Z]+[0-9]*):(.*)$/);
-    if (headerMatch) {
-      headerName = headerMatch[1];
-      headerInfo = headers.get(headerName);
+    let headerMatch: RegExpMatchArray | null = null;
+    const headerLineMatch = line.match(/^\s*([A-Z0-9]+):(.*?)\s*$/);
+    if (headerLineMatch) {
+      const beforeCursor = line.substring(0, position.character);
+      headerMatch = beforeCursor.match(/([A-Z0-9]+):(.*)$/);
+      if (headerMatch) {
+        headerName = headerMatch[1];
+        headerInfo = headers.get(headerName);
+      }
     }
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
     // 通常のマッチが失敗した場合のみ実行
     if (!headerInfo) {
-      const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
+      const specialMatch = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
       if (specialMatch) {
         const baseName = specialMatch[1];
         const number = specialMatch[2];
@@ -96,10 +100,10 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     }
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
-    const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
-    if (specialMatch && headerInfo && headerInfo.parameter.length > 1) {
-      const baseName = specialMatch[1];
-      const number = specialMatch[2];
+    const specialMatchForDisplay = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
+    if (specialMatchForDisplay && headerInfo && headerInfo.parameter.length > 1) {
+      const baseName = specialMatchForDisplay[1];
+      const number = specialMatchForDisplay[2];
       const fullHeaderName = baseName + number;
 
       const colonPosition = line.indexOf(":");

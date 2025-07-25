@@ -625,7 +625,7 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
     let headerInfo: IHeader | undefined = undefined;
 
     // 行全体でヘッダーマッチングを試行
-    const fullLineMatch = line.match(/^([A-Z]+[0-9]*):(.*)$/);
+    const fullLineMatch = line.match(/^\s*([A-Z0-9]+):(.*?)\s*$/);
     if (fullLineMatch) {
       const testHeaderName = fullLineMatch[1];
       const testHeaderInfo = headers.get(testHeaderName);
@@ -642,7 +642,7 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
 
     // 特殊なヘッダー処理（EXAM等の数字付きヘッダー）
     if (!headerInfo) {
-      const specialMatch = line.match(/^([A-Z]+)([0-9]+):?(.*)$/);
+      const specialMatch = line.match(/^\s*([A-Z]+)([0-9]+):(.*?)\s*$/);
       if (specialMatch) {
         const baseName = specialMatch[1];
         const number = specialMatch[2];

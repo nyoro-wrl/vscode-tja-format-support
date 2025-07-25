@@ -1,4 +1,4 @@
-import { IStatement, StatementCollection, StatementParameter } from "./statement";
+import { IStatement, StatementCollection } from "./statement";
 
 /**
  * ヘッダーの記載位置
@@ -6,9 +6,10 @@ import { IStatement, StatementCollection, StatementParameter } from "./statement
  *     "Root" // 共通ヘッダー
  *     "Course" // 難易度別ヘッダー
  *     "Style" // プレイスタイル別ヘッダー
+ *     "Free" // 譜面内にも書けるヘッダー
  *     "Unknown" // 不明
  */
-type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
+export type HeaderSection = "Root" | "Course" | "Style" | "Free" | "Unknown";
 
 /**
  * ヘッダー

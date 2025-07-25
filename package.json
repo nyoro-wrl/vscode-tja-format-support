@@ -259,6 +259,10 @@
       {
         "id": "master",
         "description": "達人譜面"
+      },
+      {
+        "id": "header",
+        "description": "ヘッダー"
       }
     ],
     "semanticTokenScopes": [
@@ -291,6 +295,9 @@
           ],
           "master": [
             "source.tja branch.master note.empty"
+          ],
+          "header": [
+            "source.tja header.name"
           ]
         }
       }
