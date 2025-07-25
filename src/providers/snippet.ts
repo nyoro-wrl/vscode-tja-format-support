@@ -308,10 +308,10 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       }
 
       const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
-      const [isMatch, matchRate] = nearyMatch(word, header.name);
+      const [isMatch, matchScore] = nearyMatch(word, header.name);
       if (isMatch) {
         snippet.filterText = word;
-        sortText.order2 += matchRate;
+        sortText.order2 += matchScore;
       } else {
         continue;
       }
@@ -489,10 +489,10 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       }
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
-      const [isMatch, matchRate] = nearyMatch(searchQuery, command.name);
+      const [isMatch, matchScore] = nearyMatch(searchQuery, command.name);
       if (isMatch) {
         snippet.filterText = searchQuery;
-        sortText.order1 += matchRate;
+        sortText.order1 += matchScore;
       } else {
         continue;
       }
@@ -565,10 +565,10 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
         const name = unknownCommand.properties.name;
         const snippet = new CompletionItem("#" + name, CompletionItemKind.Function);
-        const [isMatch, matchRate] = nearyMatch(searchQuery, name);
+        const [isMatch, matchScore] = nearyMatch(searchQuery, name);
         if (isMatch) {
           snippet.filterText = searchQuery;
-          sortText.order1 += matchRate;
+          sortText.order1 += matchScore;
         } else {
           continue;
         }
@@ -585,7 +585,6 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
 function nearyMatch(input: string, snippet: string): [boolean, number] {
   let matchScore = 0;
-  let exactCount = 0;
   let oldIndex = 0;
   const inputCharas = [...input.toUpperCase()];
   const snippetCharas = [...snippet];
@@ -596,9 +595,6 @@ function nearyMatch(input: string, snippet: string): [boolean, number] {
     }
     const score = Math.abs(index - oldIndex);
     matchScore += score;
-    if (score === 0) {
-      exactCount++;
-    }
     oldIndex = index;
     snippetCharas.splice(index, 1);
   }
