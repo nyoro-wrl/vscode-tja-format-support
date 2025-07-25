@@ -1,31 +1,31 @@
 import { IStatement, StatementCollection, StatementParameter } from "./statement";
 
 /**
- * ヘッダの記載位置
+ * ヘッダーの記載位置
  *
- *     "Root" // 共通ヘッダ
- *     "Course" // 難易度別ヘッダ
- *     "Style" // プレイスタイル別ヘッダ
+ *     "Root" // 共通ヘッダー
+ *     "Course" // 難易度別ヘッダー
+ *     "Style" // プレイスタイル別ヘッダー
  *     "Unknown" // 不明
  */
 type HeaderSection = "Root" | "Course" | "Style" | "Unknown";
 
 /**
- * ヘッダ
+ * ヘッダー
  */
 export interface IHeader extends IStatement {
   /**
-   * ヘッダの記載位置
+   * ヘッダーの記載位置
    */
   readonly section: HeaderSection;
   /**
-   * この後に書かれる可能性の高いヘッダ
+   * この後に書かれる可能性の高いヘッダー
    */
   readonly recommend: readonly string[];
 }
 
 /**
- * ヘッダのマッピング
+ * ヘッダーのマッピング
  */
 interface IHeaderRecord extends Record<string, IHeader> {
   readonly title: IHeader;

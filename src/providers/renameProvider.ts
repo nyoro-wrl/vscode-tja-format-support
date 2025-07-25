@@ -557,7 +557,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       );
 
       if (!balloonHeader) {
-        throw new Error("対応する風船音符ヘッダが見つかりません");
+        throw new Error("対応する風船音符ヘッダーが見つかりません");
       }
 
       // Find parameter by balloonId using the parameter's index property

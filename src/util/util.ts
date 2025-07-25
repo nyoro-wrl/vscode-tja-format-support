@@ -326,7 +326,7 @@ export function detectCommandInfo(
     if (lineMatch) {
       commandName = lineMatch[2];
       commandInfo = commands.get(commandName);
-      
+
       // コマンド名の後（パラメータ部分）にカーソルがあるかチェック
       const sharpPos = line.indexOf("#");
       const commandEndPos = sharpPos + 1 + commandName.length;
@@ -341,7 +341,7 @@ export function detectCommandInfo(
   return {
     commandName,
     commandInfo,
-    isInParameterArea
+    isInParameterArea,
   };
 }
 
@@ -393,18 +393,19 @@ export function calculateCommandParameterPosition(
     const closingParenPos = allParams.indexOf(")");
     const paramsPart = closingParenPos === -1 ? allParams : allParams.substring(0, closingParenPos);
     const params = paramsPart.split(",");
-    const parameterValue = currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
+    const parameterValue =
+      currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
 
     return {
       parameterIndex: currentParamIndex,
       parameterValue,
-      currentParam: commandInfo.parameter[currentParamIndex]
+      currentParam: commandInfo.parameter[currentParamIndex],
     };
   } else {
     // 通常形式: #COMMAND param1 param2
     const sharpPos = line.indexOf("#");
     const commandEndPos = sharpPos + 1 + commandInfo.name.length;
-    
+
     if (position.character <= commandEndPos) {
       return undefined;
     }
@@ -413,15 +414,20 @@ export function calculateCommandParameterPosition(
     const parameterPart = line.substring(commandEndPos, position.character);
     let currentParamIndex = 0;
 
-    if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+    if (
+      separatorChar === "" ||
+      separatorChar === "None" ||
+      commandInfo.separator === "None" ||
+      commandInfo.separator === "Space"
+    ) {
       // スペース区切り（separatorがNoneまたはSpaceの場合）
       const trimmedPart = parameterPart.trim();
-      
+
       if (trimmedPart === "") {
         currentParamIndex = 0;
       } else {
-        const params = trimmedPart.split(/\s+/).filter(p => p.length > 0);
-        
+        const params = trimmedPart.split(/\s+/).filter((p) => p.length > 0);
+
         if (parameterPart.endsWith(" ")) {
           currentParamIndex = params.length;
         } else {
@@ -442,19 +448,25 @@ export function calculateCommandParameterPosition(
     // パラメーター値を取得
     const allParameterPart = line.substring(commandEndPos).trim();
     let params: string[];
-    if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
-      params = allParameterPart.split(/\s+/).filter(p => p.length > 0);
+    if (
+      separatorChar === "" ||
+      separatorChar === "None" ||
+      commandInfo.separator === "None" ||
+      commandInfo.separator === "Space"
+    ) {
+      params = allParameterPart.split(/\s+/).filter((p) => p.length > 0);
     } else {
       const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
       params = allParameterPart.split(separatorRegex);
     }
-    
-    const parameterValue = currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
+
+    const parameterValue =
+      currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
 
     return {
       parameterIndex: currentParamIndex,
       parameterValue,
-      currentParam: commandInfo.parameter[currentParamIndex]
+      currentParam: commandInfo.parameter[currentParamIndex],
     };
   }
 }
