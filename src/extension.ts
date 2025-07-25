@@ -6,9 +6,10 @@ import {
   JumpBalloonParameterDefinitionProvider,
 } from "./providers/definition";
 import { BalloonParameterRenameProvider } from "./providers/renameProvider";
-import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider, HeaderParameterHoverProvider } from "./providers/hover";
+import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider, HeaderParameterHoverProvider, CommandParameterHoverProvider } from "./providers/hover";
 import {
   CommandCompletionItemProvider,
+  CommandParameterCompletionItemProvider,
   HeaderCompletionItemProvider,
   HeaderParameterCompletionItemProvider,
   NotesPaddingItemProvider,
@@ -94,6 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider(), ":", " "),
     languages.registerCompletionItemProvider(selector, new HeaderParameterCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
+    languages.registerCompletionItemProvider(selector, new CommandParameterCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new NotesPaddingItemProvider()),
     languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ",", ":"),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
@@ -102,6 +104,7 @@ export function activate(context: vscode.ExtensionContext) {
     languages.registerHoverProvider(selector, new HeaderHoverProvider()),
     languages.registerHoverProvider(selector, new HeaderParameterHoverProvider()),
     languages.registerHoverProvider(selector, new CommandHoverProvider()),
+    languages.registerHoverProvider(selector, new CommandParameterHoverProvider()),
     languages.registerHoverProvider(selector, new BalloonHoverProvider()),
     languages.registerFoldingRangeProvider(selector, new FoldingRangeProvider()),
     languages.registerDocumentSymbolProvider(selector, new DocumentSymbolProvider()),

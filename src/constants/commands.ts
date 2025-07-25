@@ -16,7 +16,7 @@ export const commands = new CommandCollection({
     parameter: [
       {
         name: "player",
-        description: "プレイヤーサイド",
+        description: "プレイヤーサイド  \n" + "`P1`または`P2`",
         snippet: [
           { value: "P1", detail: "1Pサイド" },
           { value: "P2", detail: "2Pサイド" },
@@ -50,7 +50,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "Base",
     order: 0,
-    snippet: new SnippetString().appendText("BPMCHANGE "),
   },
   gogostart: {
     name: "GOGOSTART",
@@ -79,14 +78,13 @@ export const commands = new CommandCollection({
     parameter: [
       {
         name: "measure",
-        description: "表紙  \n" + "`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。",
+        description: "拍子  \n" + "`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。",
       },
     ],
     separator: "None",
     section: "MeasureHead",
     category: "Base",
     order: 0,
-    snippet: new SnippetString().appendText("MEASURE "),
   },
   scroll: {
     name: "SCROLL",
@@ -97,7 +95,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "Base",
     order: 0,
-    snippet: new SnippetString().appendText("SCROLL "),
   },
   delay: {
     name: "DELAY",
@@ -110,7 +107,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "Base",
     order: 1,
-    snippet: new SnippetString().appendText("DELAY "),
   },
   section: {
     name: "SECTION",
@@ -147,18 +143,23 @@ export const commands = new CommandCollection({
       },
       {
         name: "expart",
-        description: "玄人譜面の分岐に必要な値",
+        description:
+          "玄人譜面の分岐に必要な値  \n" +
+          "### 分岐条件の種類  \n" +
+          "`r`: 連打数, `p`: 精度(%), `s`: スコア",
       },
       {
         name: "master",
-        description: "達人譜面の分岐に必要な値",
+        description:
+          "達人譜面の分岐に必要な値  \n" +
+          "### 分岐条件の種類  \n" +
+          "`r`: 連打数, `p`: 精度(%), `s`: スコア",
       },
     ],
     separator: "Comma",
     section: "Branch",
     category: "Base",
     order: 2,
-    snippet: new SnippetString().appendText("BRANCHSTART "),
   },
   branchend: {
     name: "BRANCHEND",
@@ -265,7 +266,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TJAP",
     order: 2,
-    snippet: new SnippetString().appendText("LYRIC "),
   },
   sudden: {
     name: "SUDDEN",
@@ -282,7 +282,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TJAP",
     order: 1,
-    snippet: new SnippetString().appendText("SUDDEN "),
   },
   direction: {
     name: "DIRECTION",
@@ -300,7 +299,16 @@ export const commands = new CommandCollection({
     parameter: [
       {
         name: "direction",
-        description: "スクロール方向",
+        description:
+          "スクロール方向  \n" +
+          "`0`: ←（通常）  \n" +
+          "`1`: ↓  \n" +
+          "`2`: ↑  \n" +
+          "`3`: ↙  \n" +
+          "`4`: ↖  \n" +
+          "`5`: →  \n" +
+          "`6`: ↘  \n" +
+          "`7`: ↗",
         snippet: [
           { value: "0", detail: "←（通常）" },
           { value: "1", detail: "↓" },
@@ -317,7 +325,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TJAP",
     order: 1,
-    snippet: new SnippetString().appendText("DIRECTION "),
   },
   // TJAPlayer3
   jposscroll: {
@@ -339,7 +346,7 @@ export const commands = new CommandCollection({
       },
       {
         name: "direction",
-        description: "移動方向",
+        description: "移動方向  \n" + "`0`: ←  \n" + "`1`: →",
         snippet: [
           { value: "0", detail: "←" },
           { value: "1", detail: "→" },
@@ -350,7 +357,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TJAP",
     order: 1,
-    snippet: new SnippetString().appendText("JPOSSCROLL "),
   },
   nextsong: {
     name: "NEXTSONG",
@@ -395,7 +401,6 @@ export const commands = new CommandCollection({
     section: "Song",
     category: "TJAP",
     order: 2,
-    snippet: new SnippetString().appendText("NEXTSONG "),
   },
   senotechange: {
     name: "SENOTECHANGE",
@@ -440,7 +445,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TJAP",
     order: 2,
-    snippet: new SnippetString().appendText("SENOTECHANGE "),
   },
   // TaikoManyGimmicks
   judgedelay: {
@@ -468,9 +472,9 @@ export const commands = new CommandCollection({
           "`0` ~ `3`で指定します。ここに指定した値によって以降のパラメーターが異なります。",
         snippet: [
           { value: "0", detail: "判定位置を元に戻す" },
-          { value: "1", detail: "判定枠から`<x>`秒前の位置にずらす" },
-          { value: "2", detail: "判定枠から`<x>`,`<y>`軸の位置にずらす" },
-          { value: "3", detail: "判定枠から`<x>`,`<y>`軸かつ`<z>`秒前の位置にずらす" },
+          { value: "1", detail: "判定枠から<x>秒前の位置にずらす" },
+          { value: "2", detail: "判定枠から<x>,<y>軸の位置にずらす" },
+          { value: "3", detail: "判定枠から<x>,<y>軸かつ<z>秒前の位置にずらす" },
         ],
       },
       {
@@ -493,7 +497,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("JUDGEDELAY "),
   },
   dummystart: {
     name: "DUMMYSTART",
@@ -532,7 +535,7 @@ export const commands = new CommandCollection({
     parameter: [
       {
         name: "type",
-        description: "動作種類  \n" + "`0` ~ `2`で指定します。",
+        description: "動作種類  \n" + "`0`: 元に戻す  \n" + "`1`: 出現  \n" + "`2`: 隠蔽",
         snippet: [
           { value: "0", detail: "元に戻す" },
           { value: "1", detail: "出現" },
@@ -549,7 +552,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("NOTESPAWN "),
   },
   size: {
     name: "SIZE",
@@ -560,7 +562,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("SIZE "),
   },
   color: {
     name: "COLOR",
@@ -580,7 +581,7 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("COLOR 255 255 255"),
+    snippet: new SnippetString().appendText("COLOR ").appendPlaceholder("255 255 255"),
   },
   angle: {
     name: "ANGLE",
@@ -591,7 +592,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("ANGLE "),
   },
   gradation: {
     name: "GRADATION",
@@ -702,7 +702,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("GRADATION "),
   },
   barlinesize: {
     name: "BARLINESIZE",
@@ -719,7 +718,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("BARLINESIZE "),
   },
   resetcommand: {
     name: "RESETCOMMAND",
@@ -741,7 +739,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("ALPHA "),
   },
   hispeed: {
     name: "HISPEED",
@@ -754,7 +751,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "TMG",
     order: 1,
-    snippet: new SnippetString().appendText("HISPEED "),
   },
   include: {
     name: "INCLUDE",
@@ -765,7 +761,6 @@ export const commands = new CommandCollection({
     section: "Unknown",
     category: "TMG",
     order: 2,
-    snippet: new SnippetString().appendText("INCLUDE "),
   },
   // OpenTaiko
   nmscroll: {
@@ -800,7 +795,6 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "OpTk",
     order: 1,
-    snippet: new SnippetString().appendText("BGAON "),
   },
   bgaoff: {
     name: "BGAOFF",
@@ -811,6 +805,5 @@ export const commands = new CommandCollection({
     section: "Inner",
     category: "OpTk",
     order: 1,
-    snippet: new SnippetString().appendText("BGAOFF "),
   },
 });

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { headers } from "../constants/headers";
-import { getSeparatorChar, isInComment } from "../util/util";
+import { commands } from "../constants/commands";
+import { getSeparatorChar, isInComment, isTmg } from "../util/util";
 import {
   MarkdownString,
   ParameterInformation,
@@ -9,6 +10,7 @@ import {
   SignatureInformation,
 } from "vscode";
 import { IHeader } from "../types/header";
+import { ICommand } from "../types/command";
 
 export class CommandSignatureHelpProvider implements SignatureHelpProvider {
   async provideSignatureHelp(
@@ -25,6 +27,12 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     // コメント内の場合は署名ヘルプを無効化
     if (isInComment(line, position)) {
       return Promise.resolve(result);
+    }
+
+    // コマンド処理を先に試行
+    const commandResult = this.handleCommandSignature(document, line, position, context);
+    if (commandResult) {
+      return Promise.resolve(commandResult);
     }
 
     // ヘッダー名を特定するための事前チェック
@@ -205,5 +213,251 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
       default:
         return "数字を指定します。";
     }
+  }
+
+  /**
+   * コマンドのシグネチャヘルプを処理
+   */
+  private handleCommandSignature(
+    document: vscode.TextDocument,
+    line: string,
+    position: vscode.Position,
+    context: vscode.SignatureHelpContext
+  ): SignatureHelp | null {
+    const _isTmg = isTmg(document);
+
+    // コマンドのマッチングパターン（通常形式とTMG形式）
+    let commandMatch: RegExpMatchArray | null = null;
+    let commandName: string | undefined = undefined;
+    let commandInfo: ICommand | undefined = undefined;
+
+    if (_isTmg) {
+      // TMG形式: #COMMAND(param1,param2)
+      const beforeCursor = line.substring(0, position.character);
+      commandMatch = beforeCursor.match(/^(\s*)#([A-Z0-9]+)\s*\(([^)]*)$/);
+      if (commandMatch) {
+        commandName = commandMatch[2];
+        commandInfo = commands.get(commandName);
+      }
+    } else {
+      // 通常形式: #COMMAND param1 param2 (カーソル位置まで)
+      const beforeCursor = line.substring(0, position.character);
+      commandMatch = beforeCursor.match(/^(\s*)#([A-Z0-9]+)(\s+(.*))?$/);
+      if (commandMatch) {
+        commandName = commandMatch[2];
+        commandInfo = commands.get(commandName);
+      }
+    }
+
+    if (!commandInfo || !commandName || !commandMatch) {
+      return null;
+    }
+
+    // パラメータが存在しない場合は署名ヘルプを表示しない
+    if (commandInfo.parameter.length === 0) {
+      return null;
+    }
+
+    // トリガー文字の検証
+    if (context.triggerCharacter && !context.isRetrigger) {
+      const isValidTrigger = this.validateCommandTrigger(
+        line, 
+        position, 
+        context.triggerCharacter, 
+        commandInfo, 
+        commandName, 
+        _isTmg
+      );
+      if (!isValidTrigger) {
+        return null;
+      }
+    }
+
+    const separatorChar = getSeparatorChar(commandInfo.separator);
+
+    if (_isTmg) {
+      // TMG形式の処理
+      return this.handleTmgCommandSignature(line, position, commandInfo, commandName, commandMatch, separatorChar);
+    } else {
+      // 通常形式の処理
+      return this.handleNormalCommandSignature(line, position, commandInfo, commandName, commandMatch, separatorChar);
+    }
+  }
+
+  /**
+   * コマンドのトリガー文字を検証
+   */
+  private validateCommandTrigger(
+    line: string,
+    position: vscode.Position,
+    triggerChar: string,
+    commandInfo: ICommand,
+    commandName: string,
+    isTmg: boolean
+  ): boolean {
+    const separatorChar = getSeparatorChar(commandInfo.separator);
+    const sharpPos = line.indexOf("#");
+    const commandEndPos = sharpPos + 1 + commandName.length;
+
+    if (isTmg) {
+      // TMG形式の場合
+      const openParenPos = line.indexOf("(");
+      if (openParenPos === -1) {
+        return false;
+      }
+
+      if (triggerChar === "(") {
+        // 開き括弧でトリガーされた場合、コマンド名直後であることを確認
+        return position.character === openParenPos + 1;
+      } else if (triggerChar === ",") {
+        // カンマでトリガーされた場合、括弧内であることを確認
+        return position.character > openParenPos;
+      }
+    } else {
+      // 通常形式の場合
+      if (triggerChar === " ") {
+        if (separatorChar === " ") {
+          // スペース区切りのコマンドの場合、パラメータ部分でのスペースも許可
+          // スペースをスキップしてパラメータ開始位置を取得
+          let parameterStartPos = commandEndPos;
+          while (parameterStartPos < line.length && line[parameterStartPos] === " ") {
+            parameterStartPos++;
+          }
+          return position.character >= commandEndPos + 1; // コマンド名直後以降のスペース
+        } else {
+          // スペース区切りでない場合、コマンド名直後のスペースのみ許可
+          return position.character === commandEndPos + 1;
+        }
+      } else if (separatorChar && separatorChar !== "" && separatorChar !== " " && triggerChar === separatorChar) {
+        // スペース以外の区切り文字でトリガーされた場合、パラメータ部分であることを確認
+        // スペースをスキップしてパラメータ開始位置を取得
+        let parameterStartPos = commandEndPos;
+        while (parameterStartPos < line.length && line[parameterStartPos] === " ") {
+          parameterStartPos++;
+        }
+        return position.character > parameterStartPos;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * 通常形式のコマンドシグネチャヘルプを処理
+   */
+  private handleNormalCommandSignature(
+    line: string,
+    position: vscode.Position,
+    commandInfo: ICommand,
+    commandName: string,
+    commandMatch: RegExpMatchArray,
+    separatorChar: string
+  ): SignatureHelp | null {
+    const result = new SignatureHelp();
+
+    // コマンド名の開始位置と終了位置を計算
+    const sharpPos = line.indexOf("#");
+    const commandStartPos = sharpPos + 1;
+    const commandEndPos = commandStartPos + commandName.length;
+
+    // パラメータ部分を取得
+    const parameterPart = commandMatch[4] || "";
+    
+    // スペースを飛ばしてパラメータ開始位置を取得
+    let parameterStartPos = commandEndPos;
+    while (parameterStartPos < line.length && line[parameterStartPos] === " ") {
+      parameterStartPos++;
+    }
+
+    // 現在のパラメータインデックスを計算
+    let currentParamIndex = 0;
+    const beforeCurrentPos = line.substring(0, position.character);
+    const parameterBeforePos = beforeCurrentPos.substring(parameterStartPos);
+
+    if (separatorChar === "" || separatorChar === "None") {
+      // 区切り文字が存在しない場合（スペース区切り）
+      // スペースで分割してパラメータ数を数える
+      const params = parameterBeforePos.trim().split(/\s+/).filter(p => p.length > 0);
+      currentParamIndex = params.length > 0 ? params.length - 1 : 0;
+      if (currentParamIndex >= commandInfo.parameter.length) {
+        currentParamIndex = -1;
+      }
+    } else {
+      // カンマ区切りなど特定の区切り文字がある場合
+      const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+      const separatorCount = (parameterBeforePos.match(separatorRegex) || []).length;
+      currentParamIndex = separatorCount >= commandInfo.parameter.length ? -1 : separatorCount;
+    }
+
+    // シグネチャを作成
+    let paramNames: string;
+    if (separatorChar === "" || separatorChar === "None") {
+      paramNames = commandInfo.parameter.map((x) => `<${x.name}>`).join(" ");
+    } else {
+      paramNames = commandInfo.parameter.map((x) => `<${x.name}>`).join(separatorChar);
+    }
+    const signature = new SignatureInformation(`#${commandName} ${paramNames}`);
+
+    // パラメータ情報を作成
+    const parameters = commandInfo.parameter.map(
+      (x) => new ParameterInformation(`<${x.name}>`, new MarkdownString(x.description))
+    );
+    signature.parameters = parameters;
+
+    result.signatures = [signature];
+    result.activeSignature = 0;
+    result.activeParameter = currentParamIndex;
+
+    return result;
+  }
+
+  /**
+   * TMG形式のコマンドシグネチャヘルプを処理
+   */
+  private handleTmgCommandSignature(
+    line: string,
+    position: vscode.Position,
+    commandInfo: ICommand,
+    commandName: string,
+    commandMatch: RegExpMatchArray,
+    separatorChar: string
+  ): SignatureHelp | null {
+    const result = new SignatureHelp();
+
+    // 括弧内にカーソルがあるかチェック
+    const openParenPos = line.indexOf("(");
+    const closeParenPos = line.lastIndexOf(")");
+    
+    if (openParenPos === -1 || position.character <= openParenPos) {
+      return null;
+    }
+
+    // 括弧内のパラメータ部分を取得
+    const parameterPart = commandMatch[3] || "";
+    
+    // 現在のパラメータインデックスを計算
+    let currentParamIndex = 0;
+    const beforeCurrentPos = line.substring(0, position.character);
+    const afterOpenParen = beforeCurrentPos.substring(openParenPos + 1);
+
+    // TMG形式ではカンマ区切り
+    const commaCount = (afterOpenParen.match(/,/g) || []).length;
+    currentParamIndex = commaCount >= commandInfo.parameter.length ? -1 : commaCount;
+
+    // シグネチャを作成
+    const paramNames = commandInfo.parameter.map((x) => `<${x.name}>`).join(",");
+    const signature = new SignatureInformation(`#${commandName}(${paramNames})`);
+
+    // パラメータ情報を作成
+    const parameters = commandInfo.parameter.map(
+      (x) => new ParameterInformation(`<${x.name}>`, new MarkdownString(x.description))
+    );
+    signature.parameters = parameters;
+
+    result.signatures = [signature];
+    result.activeSignature = 0;
+    result.activeParameter = currentParamIndex;
+
+    return result;
   }
 }

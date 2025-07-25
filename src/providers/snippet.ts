@@ -37,6 +37,7 @@ import {
 } from "../util/util";
 import { FilePathType, getRegExp } from "../types/statement";
 import { IHeader } from "../types/header";
+import { ICommand } from "../types/command";
 
 /**
  * FilePathTypeに対応するファイル拡張子マッピング
@@ -65,7 +66,7 @@ function getExtensionsForFilePathType(filePathType: FilePathType): readonly stri
 }
 
 /**
- * ファイルパラメータの置換範囲を計算
+ * ファイルパラメータの置換範囲を計算（ヘッダー用）
  * @param document テキストドキュメント
  * @param position カーソル位置
  * @returns 置換範囲、または計算できない場合はundefined
@@ -90,6 +91,119 @@ function calculateParameterReplaceRange(
   }
 
   return new vscode.Range(position.line, actualStart, position.line, currentLine.length);
+}
+
+/**
+ * コマンドパラメータの置換範囲を計算
+ * @param document テキストドキュメント
+ * @param position カーソル位置
+ * @param commandInfo コマンド情報
+ * @param currentParamIndex 現在のパラメータインデックス
+ * @returns 置換範囲、または計算できない場合はundefined
+ */
+function calculateCommandParameterReplaceRange(
+  document: vscode.TextDocument,
+  position: vscode.Position,
+  commandInfo: ICommand,
+  currentParamIndex: number
+): vscode.Range | undefined {
+  const currentLine = document.lineAt(position.line).text;
+  const sharpPos = currentLine.indexOf("#");
+
+  if (sharpPos === -1) {
+    return undefined;
+  }
+
+  const commandEndPos = sharpPos + 1 + commandInfo.name.length;
+  const separatorChar = getSeparatorChar(commandInfo.separator);
+
+  // パラメータ部分を取得
+  const parameterPart = currentLine.substring(commandEndPos);
+
+  if (
+    separatorChar === "" ||
+    separatorChar === "None" ||
+    commandInfo.separator === "None" ||
+    commandInfo.separator === "Space"
+  ) {
+    // スペース区切りの場合
+    const trimmedPart = parameterPart.trim();
+    if (trimmedPart === "" && currentParamIndex === 0) {
+      // 最初のパラメータで空の場合、コマンド名の後から行末まで
+      let paramStart = commandEndPos;
+      while (paramStart < currentLine.length && currentLine[paramStart] === " ") {
+        paramStart++;
+      }
+      return new vscode.Range(position.line, paramStart, position.line, currentLine.length);
+    }
+
+    // 既存のパラメータがある場合、現在のパラメータ位置を特定
+    const params = trimmedPart.split(/\s+/).filter((p) => p.length > 0);
+    let paramStartPos = commandEndPos;
+
+    // 先頭の空白をスキップ
+    while (paramStartPos < currentLine.length && currentLine[paramStartPos] === " ") {
+      paramStartPos++;
+    }
+
+    // 現在のパラメータの開始位置を計算
+    for (let i = 0; i < currentParamIndex && i < params.length; i++) {
+      const paramLength = params[i].length;
+      paramStartPos += paramLength;
+      // 次のスペースをスキップ
+      while (paramStartPos < currentLine.length && currentLine[paramStartPos] === " ") {
+        paramStartPos++;
+      }
+    }
+
+    let paramEndPos = currentLine.length;
+    if (currentParamIndex < params.length) {
+      // 既存パラメータの場合、そのパラメータの終了位置を計算
+      paramEndPos = paramStartPos + params[currentParamIndex].length;
+    }
+
+    return new vscode.Range(position.line, paramStartPos, position.line, paramEndPos);
+  } else {
+    // カンマ区切りなどの場合
+    const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+    const trimmedPart = parameterPart.trim();
+    
+    if (trimmedPart === "" && currentParamIndex === 0) {
+      // 最初のパラメータで空の場合、コマンド名の後から行末まで
+      let paramStart = commandEndPos;
+      while (paramStart < currentLine.length && currentLine[paramStart] === " ") {
+        paramStart++;
+      }
+      return new vscode.Range(position.line, paramStart, position.line, currentLine.length);
+    }
+    
+    // 区切り文字で分割してパラメータを取得
+    const params = trimmedPart.split(separatorRegex);
+    
+    // パラメータの開始位置を計算
+    let paramStartPos = commandEndPos;
+    // 先頭の空白をスキップ
+    while (paramStartPos < currentLine.length && currentLine[paramStartPos] === " ") {
+      paramStartPos++;
+    }
+    
+    // 現在のパラメータまでの位置を計算
+    for (let i = 0; i < currentParamIndex && i < params.length; i++) {
+      paramStartPos += params[i].length;
+      if (i < params.length - 1) {
+        // 区切り文字の長さ分進める
+        paramStartPos += separatorChar.length;
+      }
+    }
+    
+    let paramEndPos = currentLine.length;
+    if (currentParamIndex < params.length) {
+      // 既存パラメータの場合、そのパラメータの終了位置を計算
+      paramEndPos = paramStartPos + params[currentParamIndex].length;
+    }
+    
+    return new vscode.Range(position.line, paramStartPos, position.line, paramEndPos);
+  }
 }
 
 /**
@@ -365,9 +479,22 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       }
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
-      snippet.insertText = new SnippetString(
-        (containSharp ? "" : "#") + (command.snippet?.value ?? command.name)
-      );
+
+      // insertTextを決定
+      let insertTextValue: string;
+      if (command.snippet) {
+        // snippetが定義されている場合はそれを使用
+        insertTextValue = command.snippet.value ?? command.name;
+      } else {
+        // snippetが省略されている場合
+        insertTextValue = command.name;
+        // 1つ目のパラメータが存在し、かつisOptionalではない場合はスペースを追加
+        if (command.parameter.length > 0 && !command.parameter[0].isOptional) {
+          insertTextValue += " ";
+        }
+      }
+
+      snippet.insertText = new SnippetString((containSharp ? "" : "#") + insertTextValue);
       if (_isTmg) {
         snippet.insertText = toTmgCommandSnippetText(snippet.insertText);
       }
@@ -375,6 +502,23 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       snippet.documentation = new MarkdownString().appendMarkdown(syntax + command.documentation);
       snippet.detail = command.detail;
       snippet.sortText = sortText.toString();
+
+      // コマンド補完後に署名ヘルプをトリガー（パラメータがあり、末尾がスペースの場合のみ）
+      if (command.parameter.length > 0) {
+        // insertTextがスペースで終わるかチェック
+        const insertTextValue =
+          snippet.insertText instanceof SnippetString
+            ? snippet.insertText.value
+            : snippet.insertText;
+
+        if (insertTextValue && insertTextValue.endsWith(" ")) {
+          snippet.command = {
+            command: "editor.action.triggerParameterHints",
+            title: "Trigger Parameter Hints",
+          };
+        }
+      }
+
       snippets.push(snippet);
       order++;
     }
@@ -703,6 +847,369 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
 }
 
 /**
+ * コマンドパラメーターの補完
+ */
+export class CommandParameterCompletionItemProvider implements vscode.CompletionItemProvider {
+  async provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken,
+    context: vscode.CompletionContext
+  ): Promise<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
+    const snippets: vscode.CompletionItem[] = [];
+
+    // 現在行のテキストを取得
+    const line = document.lineAt(position).text;
+
+    // コメント内の場合は補完を無効化
+    if (isInComment(line, position)) {
+      return snippets;
+    }
+
+    const _isTmg = isTmg(document);
+
+    // コマンド名を特定するための処理
+    let commandName: string | undefined = undefined;
+    let commandInfo: ICommand | undefined = undefined;
+
+    if (_isTmg) {
+      // TMG形式: #COMMAND(param1,param2)
+      const beforeCursor = line.substring(0, position.character);
+      const commandMatch = beforeCursor.match(/^(\s*)#([A-Z0-9]+)\s*\(([^)]*)$/);
+      if (commandMatch) {
+        commandName = commandMatch[2];
+        commandInfo = commands.get(commandName);
+      }
+    } else {
+      // 通常形式: #COMMAND param1 param2
+      // 行全体をチェックしてコマンドを特定
+      const lineMatch = line.match(/^(\s*)#([A-Z0-9]+)(\s.*)?$/);
+
+      if (lineMatch) {
+        commandName = lineMatch[2];
+        commandInfo = commands.get(commandName);
+
+        // コマンド名の後（パラメータ部分）にカーソルがあるかチェック
+        const sharpPos = line.indexOf("#");
+        const commandEndPos = sharpPos + 1 + commandName.length;
+        if (position.character <= commandEndPos) {
+          return snippets;
+        }
+      }
+    }
+
+    if (!commandInfo || !commandName) {
+      return snippets;
+    }
+
+    // 現在のパラメーター位置を計算（インライン実装）
+    let currentParam: any = null;
+    let currentParamIndex = 0;
+    const separatorChar = getSeparatorChar(commandInfo.separator);
+
+    if (_isTmg) {
+      // TMG形式の処理は省略（今回は通常形式のみ）
+      return snippets;
+    } else {
+      // 通常形式: #COMMAND param1 param2
+      const sharpPos = line.indexOf("#");
+      const commandEndPos = sharpPos + 1 + commandName.length;
+
+      if (position.character <= commandEndPos) {
+        return snippets;
+      }
+
+      // パラメータ部分の文字列を取得
+      const parameterPart = line.substring(commandEndPos, position.character);
+
+      if (
+        separatorChar === "" ||
+        separatorChar === "None" ||
+        commandInfo.separator === "None" ||
+        commandInfo.separator === "Space"
+      ) {
+        // スペース区切り（separatorがNoneまたはSpaceの場合）
+        const trimmedPart = parameterPart.trim();
+
+        if (trimmedPart === "") {
+          currentParamIndex = 0;
+        } else {
+          const params = trimmedPart.split(/\s+/).filter((p) => p.length > 0);
+
+          if (parameterPart.endsWith(" ")) {
+            currentParamIndex = params.length;
+          } else {
+            currentParamIndex = params.length - 1;
+          }
+        }
+      } else {
+        // 他の区切り文字
+        const separatorRegex = new RegExp(
+          separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+          "g"
+        );
+        const separatorCount = (parameterPart.match(separatorRegex) || []).length;
+        currentParamIndex = separatorCount;
+      }
+
+      if (currentParamIndex >= commandInfo.parameter.length) {
+        return snippets;
+      }
+
+      currentParam = commandInfo.parameter[currentParamIndex];
+    }
+
+    if (!currentParam) {
+      return snippets;
+    }
+
+    // snippet の型によって処理を分ける
+    if (Array.isArray(currentParam.snippet)) {
+      // 選択肢系（SnippetParameter[]）の処理
+      const snippetArray = currentParam.snippet;
+      if (snippetArray.length === 0) {
+        return snippets;
+      }
+      // 補完アイテムを作成（parameter.snippetの順番を保持）
+      for (let i = 0; i < snippetArray.length; i++) {
+        const item = snippetArray[i];
+
+        // 数値と文字列でアイコンを分ける
+        const isNumeric = /^\d+$/.test(item.value);
+        const kind = isNumeric
+          ? vscode.CompletionItemKind.Value
+          : vscode.CompletionItemKind.EnumMember;
+
+        const snippet = new vscode.CompletionItem(item.value, kind);
+        snippet.insertText = item.value;
+        snippet.detail = item.detail;
+        snippet.documentation = new vscode.MarkdownString(currentParam.description);
+        snippet.sortText = i.toString().padStart(3, "0");
+        snippets.push(snippet);
+      }
+    } else if (currentParam.snippet && !Array.isArray(currentParam.snippet)) {
+      // ファイルパス系（FilePathType）の処理
+      const filePathType = currentParam.snippet as FilePathType;
+      const filePathCompletions = await this.getCommandFilePathCompletions(
+        document,
+        position,
+        filePathType,
+        line,
+        commandInfo,
+        currentParamIndex
+      );
+      return filePathCompletions;
+    }
+    return snippets;
+  }
+
+  /**
+   * コマンド用ファイルパス補完を取得
+   * @param document テキストドキュメント
+   * @param position カーソル位置
+   * @param filePathType ファイルパスタイプ
+   * @param line 現在行のテキスト
+   * @param commandInfo コマンド情報
+   * @param currentParamIndex 現在のパラメータインデックス
+   * @returns ファイルパス補完アイテムの配列
+   */
+  private async getCommandFilePathCompletions(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    filePathType: FilePathType,
+    line: string,
+    commandInfo: ICommand,
+    currentParamIndex: number
+  ): Promise<vscode.CompletionItem[]> {
+    try {
+      // ドキュメントパスの検証
+      if (!document.uri.fsPath) {
+        return [];
+      }
+
+      const documentDir = path.dirname(document.uri.fsPath);
+      const currentFileName = path.basename(document.uri.fsPath);
+
+      // 現在のパラメータ値を取得
+      const sharpPos = line.indexOf("#");
+      const commandEndPos = sharpPos + 1 + commandInfo.name.length;
+      const parameterPart = line.substring(commandEndPos).trim();
+      const separatorChar = getSeparatorChar(commandInfo.separator);
+
+      let currentParameterValue = "";
+      if (parameterPart) {
+        let params: string[];
+        if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+          // スペース区切り
+          params = parameterPart.split(/\s+/).filter((p) => p.length > 0);
+        } else {
+          // 他の区切り文字（カンマなど）
+          const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+          params = parameterPart.split(separatorRegex);
+        }
+        
+        if (currentParamIndex < params.length) {
+          currentParameterValue = params[currentParamIndex].trim();
+        }
+      }
+
+      return await this.getCommandFileCompletions(
+        documentDir,
+        filePathType,
+        currentFileName,
+        currentParameterValue,
+        position,
+        document,
+        commandInfo,
+        currentParamIndex
+      );
+    } catch (error) {
+      // エラーが発生した場合は空の配列を返す
+      console.warn("Failed to get command file path completions:", error);
+      return [];
+    }
+  }
+
+  /**
+   * コマンド用指定ディレクトリからファイル補完候補を取得
+   * @param directoryPath 検索対象ディレクトリパス
+   * @param filePathType ファイルパスタイプ
+   * @param currentFileName 現在のファイル名（除外対象）
+   * @param currentParameterValue 現在のパラメータ値
+   * @param position カーソル位置
+   * @param document テキストドキュメント
+   * @param commandInfo コマンド情報
+   * @param currentParamIndex 現在のパラメータインデックス
+   * @returns ファイル補完アイテムの配列
+   */
+  private async getCommandFileCompletions(
+    directoryPath: string,
+    filePathType: FilePathType,
+    currentFileName?: string,
+    currentParameterValue?: string,
+    position?: vscode.Position,
+    document?: vscode.TextDocument,
+    commandInfo?: ICommand,
+    currentParamIndex?: number
+  ): Promise<vscode.CompletionItem[]> {
+    const completionItems: vscode.CompletionItem[] = [];
+
+    try {
+      const files = await fs.promises.readdir(directoryPath, { withFileTypes: true });
+      const allowedExtensions = getExtensionsForFilePathType(filePathType);
+
+      for (const file of files) {
+        if (file.isFile()) {
+          const fileName = file.name;
+
+          // 隠しファイルを除外
+          if (fileName.startsWith(".")) {
+            continue;
+          }
+
+          // 自身のファイルを除外
+          if (currentFileName && fileName === currentFileName) {
+            continue;
+          }
+
+          const fileExt = path.extname(fileName).toLowerCase();
+
+          const completionItem = new vscode.CompletionItem(
+            fileName,
+            vscode.CompletionItemKind.File
+          );
+
+          // ソート用の優先度を設定（推奨拡張子ほど上位に）
+          completionItem.sortText = this.getCommandSortText(filePathType, fileExt, fileName);
+
+          // 既存のパラメータ値を置換する範囲を設定
+          if (
+            position &&
+            document &&
+            commandInfo &&
+            currentParamIndex !== undefined &&
+            currentParameterValue !== undefined
+          ) {
+            const replaceRange = calculateCommandParameterReplaceRange(
+              document,
+              position,
+              commandInfo,
+              currentParamIndex
+            );
+            if (replaceRange) {
+              completionItem.range = replaceRange;
+            }
+          }
+
+          completionItems.push(completionItem);
+        } else if (file.isDirectory()) {
+          // サブディレクトリも候補に追加
+          const completionItem = new vscode.CompletionItem(
+            file.name + "/",
+            vscode.CompletionItemKind.Folder
+          );
+          completionItem.detail = "フォルダ";
+          completionItem.insertText = file.name + "/";
+          completionItem.command = {
+            command: "editor.action.triggerSuggest",
+            title: "Re-trigger completions",
+          };
+
+          // フォルダにも同じ置換範囲を設定
+          if (
+            position &&
+            document &&
+            commandInfo &&
+            currentParamIndex !== undefined &&
+            currentParameterValue !== undefined
+          ) {
+            const replaceRange = calculateCommandParameterReplaceRange(
+              document,
+              position,
+              commandInfo,
+              currentParamIndex
+            );
+            if (replaceRange) {
+              completionItem.range = replaceRange;
+            }
+          }
+
+          completionItems.push(completionItem);
+        }
+      }
+    } catch (error) {
+      // ディレクトリアクセスエラーは無視
+    }
+
+    return completionItems;
+  }
+
+  /**
+   * コマンド用ソート用のテキストを生成（推奨拡張子を優先）
+   * @param filePathType ファイルパスタイプ
+   * @param extension ファイル拡張子
+   * @param fileName ファイル名
+   * @returns ソート用文字列
+   */
+  private getCommandSortText(
+    filePathType: FilePathType,
+    extension: string,
+    fileName: string
+  ): string {
+    const allowedExtensions = getExtensionsForFilePathType(filePathType);
+    const index = allowedExtensions.indexOf(extension);
+
+    if (index >= 0) {
+      // 推奨拡張子の場合、インデックスに基づいて優先順位を設定
+      return `0${index.toString().padStart(2, "0")}_${fileName}`;
+    } else {
+      // 非推奨拡張子の場合、拡張子別にグループ化して後ろに配置
+      return `1${extension}_${fileName}`;
+    }
+  }
+}
+
+/**
  * 譜面の0埋め
  */
 export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
@@ -721,7 +1228,7 @@ export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
     }
     const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
     const previewText = document.getText(previewRange);
-    if (/,/.test(previewText)) {
+    if (/[^A-Z0-9\s]/.test(previewText)) {
       return snippets;
     }
 
@@ -775,8 +1282,10 @@ export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
     if (previewLineLength < 1) {
       return snippets;
     }
-    const text = word + "0".repeat(previewLineLength);
-    const snippet = new CompletionItem(text, CompletionItemKind.Snippet);
+    const label = "0".repeat(previewLineLength);
+    const text = word + label;
+    const snippet = new CompletionItem(label, CompletionItemKind.Snippet);
+    snippet.filterText = text;
     snippet.insertText = text;
     snippet.detail = "直前の行と同じ長さで0埋め";
     snippets.push(snippet);

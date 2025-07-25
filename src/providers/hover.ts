@@ -12,6 +12,8 @@ import {
 } from "../util/util";
 import { getRegExp, StatementParameter } from "../types/statement";
 import { IHeader } from "../types/header";
+import { ICommand } from "../types/command";
+import { isTmg } from "../util/util";
 
 /**
  * ヘッダのマウスホバーヒント
@@ -336,6 +338,296 @@ export class HeaderParameterHoverProvider implements vscode.HoverProvider {
     if (positionInParams >= lastEnd) {
       const startPos = colonPosition + 1 + lastEnd;
       return new vscode.Range(position.line, startPos, position.line, line.length);
+    }
+
+    return undefined;
+  }
+}
+
+/**
+ * コマンドパラメーターのマウスホバーヒント
+ */
+export class CommandParameterHoverProvider implements vscode.HoverProvider {
+  async provideHover(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken
+  ): Promise<vscode.Hover> {
+    const line = document.lineAt(position).text;
+
+    // コメント内の場合はホバーを無効化
+    if (isInComment(line, position)) {
+      return Promise.reject();
+    }
+
+    const _isTmg = isTmg(document);
+
+    // コマンド名を特定するための処理
+    let commandName: string | undefined = undefined;
+    let commandInfo: ICommand | undefined = undefined;
+
+    if (_isTmg) {
+      // TMG形式: #COMMAND(param1,param2)
+      const beforeCursor = line.substring(0, position.character);
+      const commandMatch = beforeCursor.match(/^(\s*)#([A-Z0-9]+)\s*\(([^)]*)$/);
+      if (commandMatch) {
+        commandName = commandMatch[2];
+        commandInfo = commands.get(commandName);
+      }
+    } else {
+      // 通常形式: #COMMAND param1 param2
+      const lineMatch = line.match(/^(\s*)#([A-Z0-9]+)(\s.*)?$/);
+      if (lineMatch) {
+        commandName = lineMatch[2];
+        commandInfo = commands.get(commandName);
+        
+        // コマンド名の後（パラメータ部分）にカーソルがあるかチェック
+        const sharpPos = line.indexOf("#");
+        const commandEndPos = sharpPos + 1 + commandName.length;
+        if (position.character <= commandEndPos) {
+          return Promise.reject();
+        }
+      }
+    }
+
+    if (!commandInfo || !commandName) {
+      return Promise.reject();
+    }
+
+    // 現在のパラメーター位置を計算
+    const parameterInfo = this.calculateParameterPosition(line, position, commandInfo, _isTmg);
+    if (!parameterInfo) {
+      return Promise.reject();
+    }
+
+    const { currentParam, parameterValue, parameterIndex } = parameterInfo;
+
+    // ホバー情報を構築
+    const hoverContent = this.buildHoverContent(currentParam, commandName);
+
+    // パラメーター範囲を計算
+    const parameterRange = this.calculateParameterRange(document, position, line, commandInfo, _isTmg, parameterIndex);
+
+    return new Hover(hoverContent, parameterRange);
+  }
+
+  /**
+   * 現在のパラメーター位置とその情報を計算
+   */
+  private calculateParameterPosition(
+    line: string,
+    position: vscode.Position,
+    commandInfo: ICommand,
+    isTmgFormat: boolean
+  ): { currentParam: StatementParameter; parameterValue: string; parameterIndex: number } | null {
+    const separatorChar = getSeparatorChar(commandInfo.separator);
+
+    if (isTmgFormat) {
+      // TMG形式: #COMMAND(param1,param2)
+      const openParenPos = line.indexOf("(");
+      if (openParenPos === -1 || position.character <= openParenPos) {
+        return null;
+      }
+
+      const beforeCurrentPos = line.substring(0, position.character);
+      const afterOpenParen = beforeCurrentPos.substring(openParenPos + 1);
+
+      // TMG形式ではカンマ区切り
+      const commaCount = (afterOpenParen.match(/,/g) || []).length;
+      const currentParamIndex = commaCount >= commandInfo.parameter.length ? -1 : commaCount;
+
+      if (currentParamIndex === -1 || currentParamIndex >= commandInfo.parameter.length) {
+        return null;
+      }
+
+      // パラメーター値を取得
+      const allParams = line.substring(openParenPos + 1);
+      const closingParenPos = allParams.indexOf(")");
+      const paramsPart = closingParenPos === -1 ? allParams : allParams.substring(0, closingParenPos);
+      const params = paramsPart.split(",");
+      const parameterValue = currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
+
+      return { 
+        currentParam: commandInfo.parameter[currentParamIndex], 
+        parameterValue,
+        parameterIndex: currentParamIndex
+      };
+    } else {
+      // 通常形式: #COMMAND param1 param2
+      const sharpPos = line.indexOf("#");
+      const commandEndPos = sharpPos + 1 + commandInfo.name.length;
+      
+      if (position.character <= commandEndPos) {
+        return null;
+      }
+
+      // パラメータ部分の文字列を取得
+      const parameterPart = line.substring(commandEndPos, position.character);
+      let currentParamIndex = 0;
+
+      if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+        // スペース区切り（separatorがNoneまたはSpaceの場合）
+        const trimmedPart = parameterPart.trim();
+        
+        if (trimmedPart === "") {
+          currentParamIndex = 0;
+        } else {
+          const params = trimmedPart.split(/\s+/).filter(p => p.length > 0);
+          
+          if (parameterPart.endsWith(" ")) {
+            currentParamIndex = params.length;
+          } else {
+            currentParamIndex = params.length - 1;
+          }
+        }
+      } else {
+        // 他の区切り文字
+        const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+        const separatorCount = (parameterPart.match(separatorRegex) || []).length;
+        currentParamIndex = separatorCount;
+      }
+
+      if (currentParamIndex >= commandInfo.parameter.length) {
+        return null;
+      }
+
+      // パラメーター値を取得
+      const allParameterPart = line.substring(commandEndPos).trim();
+      let params: string[];
+      if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+        params = allParameterPart.split(/\s+/).filter(p => p.length > 0);
+      } else {
+        const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+        params = allParameterPart.split(separatorRegex);
+      }
+      
+      const parameterValue = currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
+
+      return { 
+        currentParam: commandInfo.parameter[currentParamIndex], 
+        parameterValue,
+        parameterIndex: currentParamIndex
+      };
+    }
+  }
+
+  /**
+   * ホバー内容を構築
+   */
+  private buildHoverContent(parameter: StatementParameter, commandName: string): MarkdownString[] {
+    const contents: MarkdownString[] = [];
+
+    // パラメーター名とタイプ
+    const parameterTitle = new MarkdownString();
+    const param = parameter.isOptional ? `{${parameter.name}}` : `<${parameter.name}>`;
+    parameterTitle.appendCodeblock(`#${commandName} ${param}`);
+    contents.push(parameterTitle);
+
+    // パラメーターの説明
+    if (parameter.description) {
+      const description = new MarkdownString(parameter.description);
+      contents.push(description);
+    }
+
+    // 選択肢がある場合は表示
+    if (Array.isArray(parameter.snippet) && parameter.snippet.length > 0) {
+      const options = new MarkdownString();
+      options.appendMarkdown("**利用可能な値:**\n\n");
+      parameter.snippet.forEach((option) => {
+        options.appendMarkdown(`- \`${option.value}\`: ${option.detail}\n`);
+      });
+      contents.push(options);
+    }
+
+    return contents;
+  }
+
+  /**
+   * パラメーター範囲を計算
+   */
+  private calculateParameterRange(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    line: string,
+    commandInfo: ICommand,
+    isTmgFormat: boolean,
+    parameterIndex: number
+  ): vscode.Range | undefined {
+    const separatorChar = getSeparatorChar(commandInfo.separator);
+
+    if (isTmgFormat) {
+      // TMG形式の範囲計算
+      const openParenPos = line.indexOf("(");
+      if (openParenPos === -1) {
+        return undefined;
+      }
+
+      // 全パラメータ部分を取得
+      const allParams = line.substring(openParenPos + 1);
+      const closingParenPos = allParams.indexOf(")");
+      const paramsPart = closingParenPos === -1 ? allParams : allParams.substring(0, closingParenPos);
+      const params = paramsPart.split(",");
+
+      if (parameterIndex < params.length) {
+        let startPos = openParenPos + 1;
+        for (let i = 0; i < parameterIndex; i++) {
+          startPos += params[i].length + 1; // +1 for comma
+        }
+        const endPos = startPos + params[parameterIndex].length;
+        return new vscode.Range(position.line, startPos, position.line, endPos);
+      }
+    } else {
+      // 通常形式の範囲計算
+      const sharpPos = line.indexOf("#");
+      const commandEndPos = sharpPos + 1 + commandInfo.name.length;
+      const parameterPart = line.substring(commandEndPos);
+
+      if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+        // スペース区切りの場合
+        const trimmedPart = parameterPart.trim();
+        const params = trimmedPart.split(/\s+/).filter(p => p.length > 0);
+
+        if (parameterIndex < params.length) {
+          // パラメータの開始位置を計算
+          let paramStart = commandEndPos;
+          while (paramStart < line.length && line[paramStart] === " ") {
+            paramStart++;
+          }
+          
+          for (let i = 0; i < parameterIndex; i++) {
+            paramStart += params[i].length;
+            while (paramStart < line.length && line[paramStart] === " ") {
+              paramStart++;
+            }
+          }
+          
+          const paramEnd = paramStart + params[parameterIndex].length;
+          return new vscode.Range(position.line, paramStart, position.line, paramEnd);
+        }
+      } else {
+        // カンマ区切りなどの場合
+        const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+        const trimmedPart = parameterPart.trim();
+        const params = trimmedPart.split(separatorRegex);
+
+        if (parameterIndex < params.length) {
+          let paramStart = commandEndPos;
+          while (paramStart < line.length && line[paramStart] === " ") {
+            paramStart++;
+          }
+
+          // 指定されたパラメーターまでの位置を計算
+          for (let i = 0; i < parameterIndex; i++) {
+            paramStart += params[i].length;
+            if (i < params.length - 1) {
+              paramStart += separatorChar.length;
+            }
+          }
+
+          const paramEnd = paramStart + params[parameterIndex].length;
+          return new vscode.Range(position.line, paramStart, position.line, paramEnd);
+        }
+      }
     }
 
     return undefined;
