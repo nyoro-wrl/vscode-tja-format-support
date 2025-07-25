@@ -169,7 +169,7 @@ function calculateCommandParameterReplaceRange(
     // カンマ区切りなどの場合
     const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
     const trimmedPart = parameterPart.trim();
-    
+
     if (trimmedPart === "" && currentParamIndex === 0) {
       // 最初のパラメータで空の場合、コマンド名の後から行末まで
       let paramStart = commandEndPos;
@@ -178,17 +178,17 @@ function calculateCommandParameterReplaceRange(
       }
       return new vscode.Range(position.line, paramStart, position.line, currentLine.length);
     }
-    
+
     // 区切り文字で分割してパラメータを取得
     const params = trimmedPart.split(separatorRegex);
-    
+
     // パラメータの開始位置を計算
     let paramStartPos = commandEndPos;
     // 先頭の空白をスキップ
     while (paramStartPos < currentLine.length && currentLine[paramStartPos] === " ") {
       paramStartPos++;
     }
-    
+
     // 現在のパラメータまでの位置を計算
     for (let i = 0; i < currentParamIndex && i < params.length; i++) {
       paramStartPos += params[i].length;
@@ -197,13 +197,13 @@ function calculateCommandParameterReplaceRange(
         paramStartPos += separatorChar.length;
       }
     }
-    
+
     let paramEndPos = currentLine.length;
     if (currentParamIndex < params.length) {
       // 既存パラメータの場合、そのパラメータの終了位置を計算
       paramEndPos = paramStartPos + params[currentParamIndex].length;
     }
-    
+
     return new vscode.Range(position.line, paramStartPos, position.line, paramEndPos);
   }
 }
@@ -231,6 +231,7 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
     const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9]+/);
     const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
     const previewText = document.getText(previewRange);
+    const word = wordRange === undefined ? "" : document.getText(wordRange);
     if (/[^\s]/.test(previewText)) {
       return snippets;
     }
@@ -307,8 +308,14 @@ export class HeaderCompletionItemProvider implements vscode.CompletionItemProvid
       }
 
       const snippet = new CompletionItem(header.name + ":", CompletionItemKind.Constant);
+      const [isMatch, matchRate] = nearyMatch(word, header.name);
+      if (isMatch) {
+        snippet.filterText = word;
+        sortText.order2 += matchRate;
+      } else {
+        continue;
+      }
       snippet.insertText = header.snippet ?? new SnippetString(header.name + ":");
-      // syntax自動生成
       const syntax = generateHeaderSyntax(header.name, header.parameter, header.separator);
       snippet.documentation = new MarkdownString().appendMarkdown(syntax + header.documentation);
       snippet.detail = header.detail;
@@ -341,6 +348,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
     const wordRange = document.getWordRangeAtPosition(position, /([a-zA-Z]+|#[a-zA-Z]*)/);
     const word = wordRange === undefined ? "" : document.getText(wordRange);
     const containSharp = /^#/.test(word);
+    const searchQuery = containSharp ? word.slice(1) : word;
     const previewRange = new Range(new Position(position.line, 0), wordRange?.start ?? position);
     const previewText = document.getText(previewRange);
     if (/[^\s]/.test(previewText)) {
@@ -481,6 +489,13 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
       }
 
       const snippet = new CompletionItem("#" + command.name, CompletionItemKind.Function);
+      const [isMatch, matchRate] = nearyMatch(searchQuery, command.name);
+      if (isMatch) {
+        snippet.filterText = searchQuery;
+        sortText.order1 += matchRate;
+      } else {
+        continue;
+      }
 
       // insertTextを決定
       let insertTextValue: string;
@@ -550,6 +565,13 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
         const name = unknownCommand.properties.name;
         const snippet = new CompletionItem("#" + name, CompletionItemKind.Function);
+        const [isMatch, matchRate] = nearyMatch(searchQuery, name);
+        if (isMatch) {
+          snippet.filterText = searchQuery;
+          sortText.order1 += matchRate;
+        } else {
+          continue;
+        }
         snippet.insertText = new SnippetString((containSharp ? "" : "#") + name);
         snippet.documentation = "譜面内で定義された命令";
         snippet.sortText = sortText.toString();
@@ -559,6 +581,28 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
 
     return snippets;
   }
+}
+
+function nearyMatch(input: string, snippet: string): [boolean, number] {
+  let matchScore = 0;
+  let exactCount = 0;
+  let oldIndex = 0;
+  const inputCharas = [...input.toUpperCase()];
+  const snippetCharas = [...snippet];
+  for (const inputChara of inputCharas) {
+    const index = snippetCharas.findIndex((x, i) => i >= oldIndex && x === inputChara);
+    if (index === -1) {
+      return [false, 0];
+    }
+    const score = Math.abs(index - oldIndex);
+    matchScore += score;
+    if (score === 0) {
+      exactCount++;
+    }
+    oldIndex = index;
+    snippetCharas.splice(index, 1);
+  }
+  return [true, matchScore];
 }
 
 /**
@@ -879,7 +923,12 @@ export class CommandParameterCompletionItemProvider implements vscode.Completion
     const { commandName, commandInfo } = commandDetection;
 
     // パラメーター位置を計算
-    const parameterPosition = calculateCommandParameterPosition(line, position, commandInfo, _isTmg);
+    const parameterPosition = calculateCommandParameterPosition(
+      line,
+      position,
+      commandInfo,
+      _isTmg
+    );
     if (!parameterPosition) {
       return snippets;
     }
@@ -962,15 +1011,23 @@ export class CommandParameterCompletionItemProvider implements vscode.Completion
       let currentParameterValue = "";
       if (parameterPart) {
         let params: string[];
-        if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+        if (
+          separatorChar === "" ||
+          separatorChar === "None" ||
+          commandInfo.separator === "None" ||
+          commandInfo.separator === "Space"
+        ) {
           // スペース区切り
           params = parameterPart.split(/\s+/).filter((p) => p.length > 0);
         } else {
           // 他の区切り文字（カンマなど）
-          const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+          const separatorRegex = new RegExp(
+            separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            "g"
+          );
           params = parameterPart.split(separatorRegex);
         }
-        
+
         if (currentParamIndex < params.length) {
           currentParameterValue = params[currentParamIndex].trim();
         }
