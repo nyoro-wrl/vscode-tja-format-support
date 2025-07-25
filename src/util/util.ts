@@ -9,6 +9,8 @@ import {
 } from "../types/node";
 import { ChartState } from "../types/state";
 import { Separator, StatementParameter } from "../types/statement";
+import { ICommand } from "../types/command";
+import { commands } from "../constants/commands";
 import path = require("path");
 
 /**
@@ -282,4 +284,177 @@ export function generateCommandSyntax(
     .map((x) => (x.isOptional === true ? `{${x.name}}` : `<${x.name}>`))
     .join(separatorChar);
   return new MarkdownString().appendCodeblock(`#${name} ${paramPart}`).value;
+}
+
+/**
+ * コマンド情報を検出する結果の型
+ */
+export interface CommandDetectionResult {
+  commandName: string;
+  commandInfo: ICommand;
+  isInParameterArea: boolean;
+}
+
+/**
+ * 行からコマンド情報を検出する
+ * @param line 現在の行テキスト
+ * @param position カーソル位置
+ * @param isTmg TMG形式かどうか
+ * @returns コマンド検出結果、または検出できない場合はundefined
+ */
+export function detectCommandInfo(
+  line: string,
+  position: Position,
+  isTmg: boolean
+): CommandDetectionResult | undefined {
+  let commandName: string | undefined = undefined;
+  let commandInfo: ICommand | undefined = undefined;
+  let isInParameterArea = false;
+
+  if (isTmg) {
+    // TMG形式: #COMMAND(param1,param2)
+    const beforeCursor = line.substring(0, position.character);
+    const commandMatch = beforeCursor.match(/^(\s*)#([A-Z0-9]+)\s*\(([^)]*)$/);
+    if (commandMatch) {
+      commandName = commandMatch[2];
+      commandInfo = commands.get(commandName);
+      isInParameterArea = true;
+    }
+  } else {
+    // 通常形式: #COMMAND param1 param2
+    const lineMatch = line.match(/^(\s*)#([A-Z0-9]+)(\s.*)?$/);
+    if (lineMatch) {
+      commandName = lineMatch[2];
+      commandInfo = commands.get(commandName);
+      
+      // コマンド名の後（パラメータ部分）にカーソルがあるかチェック
+      const sharpPos = line.indexOf("#");
+      const commandEndPos = sharpPos + 1 + commandName.length;
+      isInParameterArea = position.character > commandEndPos;
+    }
+  }
+
+  if (!commandInfo || !commandName) {
+    return undefined;
+  }
+
+  return {
+    commandName,
+    commandInfo,
+    isInParameterArea
+  };
+}
+
+/**
+ * パラメーター位置計算の結果の型
+ */
+export interface ParameterPositionResult {
+  parameterIndex: number;
+  parameterValue: string;
+  currentParam: StatementParameter;
+}
+
+/**
+ * コマンドパラメーターの位置を計算する
+ * @param line 現在の行テキスト
+ * @param position カーソル位置
+ * @param commandInfo コマンド情報
+ * @param isTmg TMG形式かどうか
+ * @returns パラメーター位置結果、または計算できない場合はundefined
+ */
+export function calculateCommandParameterPosition(
+  line: string,
+  position: Position,
+  commandInfo: ICommand,
+  isTmg: boolean
+): ParameterPositionResult | undefined {
+  const separatorChar = getSeparatorChar(commandInfo.separator);
+
+  if (isTmg) {
+    // TMG形式: #COMMAND(param1,param2)
+    const openParenPos = line.indexOf("(");
+    if (openParenPos === -1 || position.character <= openParenPos) {
+      return undefined;
+    }
+
+    const beforeCurrentPos = line.substring(0, position.character);
+    const afterOpenParen = beforeCurrentPos.substring(openParenPos + 1);
+
+    // TMG形式ではカンマ区切り
+    const commaCount = (afterOpenParen.match(/,/g) || []).length;
+    const currentParamIndex = commaCount >= commandInfo.parameter.length ? -1 : commaCount;
+
+    if (currentParamIndex === -1 || currentParamIndex >= commandInfo.parameter.length) {
+      return undefined;
+    }
+
+    // パラメーター値を取得
+    const allParams = line.substring(openParenPos + 1);
+    const closingParenPos = allParams.indexOf(")");
+    const paramsPart = closingParenPos === -1 ? allParams : allParams.substring(0, closingParenPos);
+    const params = paramsPart.split(",");
+    const parameterValue = currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
+
+    return {
+      parameterIndex: currentParamIndex,
+      parameterValue,
+      currentParam: commandInfo.parameter[currentParamIndex]
+    };
+  } else {
+    // 通常形式: #COMMAND param1 param2
+    const sharpPos = line.indexOf("#");
+    const commandEndPos = sharpPos + 1 + commandInfo.name.length;
+    
+    if (position.character <= commandEndPos) {
+      return undefined;
+    }
+
+    // パラメータ部分の文字列を取得
+    const parameterPart = line.substring(commandEndPos, position.character);
+    let currentParamIndex = 0;
+
+    if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+      // スペース区切り（separatorがNoneまたはSpaceの場合）
+      const trimmedPart = parameterPart.trim();
+      
+      if (trimmedPart === "") {
+        currentParamIndex = 0;
+      } else {
+        const params = trimmedPart.split(/\s+/).filter(p => p.length > 0);
+        
+        if (parameterPart.endsWith(" ")) {
+          currentParamIndex = params.length;
+        } else {
+          currentParamIndex = params.length - 1;
+        }
+      }
+    } else {
+      // 他の区切り文字
+      const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+      const separatorCount = (parameterPart.match(separatorRegex) || []).length;
+      currentParamIndex = separatorCount;
+    }
+
+    if (currentParamIndex >= commandInfo.parameter.length) {
+      return undefined;
+    }
+
+    // パラメーター値を取得
+    const allParameterPart = line.substring(commandEndPos).trim();
+    let params: string[];
+    if (separatorChar === "" || separatorChar === "None" || commandInfo.separator === "None" || commandInfo.separator === "Space") {
+      params = allParameterPart.split(/\s+/).filter(p => p.length > 0);
+    } else {
+      const separatorRegex = new RegExp(separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+      params = allParameterPart.split(separatorRegex);
+    }
+    
+    const parameterValue = currentParamIndex < params.length ? params[currentParamIndex].trim() : "";
+
+    return {
+      parameterIndex: currentParamIndex,
+      parameterValue,
+      currentParam: commandInfo.parameter[currentParamIndex]
+    };
+  }
 }

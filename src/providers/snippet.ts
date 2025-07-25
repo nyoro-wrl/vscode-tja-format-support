@@ -34,6 +34,8 @@ import {
   getSeparatorChar,
   isInComment,
   generateCommandSyntax,
+  detectCommandInfo,
+  calculateCommandParameterPosition,
 } from "../util/util";
 import { FilePathType, getRegExp } from "../types/statement";
 import { IHeader } from "../types/header";
@@ -868,100 +870,21 @@ export class CommandParameterCompletionItemProvider implements vscode.Completion
 
     const _isTmg = isTmg(document);
 
-    // コマンド名を特定するための処理
-    let commandName: string | undefined = undefined;
-    let commandInfo: ICommand | undefined = undefined;
-
-    if (_isTmg) {
-      // TMG形式: #COMMAND(param1,param2)
-      const beforeCursor = line.substring(0, position.character);
-      const commandMatch = beforeCursor.match(/^(\s*)#([A-Z0-9]+)\s*\(([^)]*)$/);
-      if (commandMatch) {
-        commandName = commandMatch[2];
-        commandInfo = commands.get(commandName);
-      }
-    } else {
-      // 通常形式: #COMMAND param1 param2
-      // 行全体をチェックしてコマンドを特定
-      const lineMatch = line.match(/^(\s*)#([A-Z0-9]+)(\s.*)?$/);
-
-      if (lineMatch) {
-        commandName = lineMatch[2];
-        commandInfo = commands.get(commandName);
-
-        // コマンド名の後（パラメータ部分）にカーソルがあるかチェック
-        const sharpPos = line.indexOf("#");
-        const commandEndPos = sharpPos + 1 + commandName.length;
-        if (position.character <= commandEndPos) {
-          return snippets;
-        }
-      }
-    }
-
-    if (!commandInfo || !commandName) {
+    // コマンド情報を検出
+    const commandDetection = detectCommandInfo(line, position, _isTmg);
+    if (!commandDetection || !commandDetection.isInParameterArea) {
       return snippets;
     }
 
-    // 現在のパラメーター位置を計算（インライン実装）
-    let currentParam: any = null;
-    let currentParamIndex = 0;
-    const separatorChar = getSeparatorChar(commandInfo.separator);
+    const { commandName, commandInfo } = commandDetection;
 
-    if (_isTmg) {
-      // TMG形式の処理は省略（今回は通常形式のみ）
-      return snippets;
-    } else {
-      // 通常形式: #COMMAND param1 param2
-      const sharpPos = line.indexOf("#");
-      const commandEndPos = sharpPos + 1 + commandName.length;
-
-      if (position.character <= commandEndPos) {
-        return snippets;
-      }
-
-      // パラメータ部分の文字列を取得
-      const parameterPart = line.substring(commandEndPos, position.character);
-
-      if (
-        separatorChar === "" ||
-        separatorChar === "None" ||
-        commandInfo.separator === "None" ||
-        commandInfo.separator === "Space"
-      ) {
-        // スペース区切り（separatorがNoneまたはSpaceの場合）
-        const trimmedPart = parameterPart.trim();
-
-        if (trimmedPart === "") {
-          currentParamIndex = 0;
-        } else {
-          const params = trimmedPart.split(/\s+/).filter((p) => p.length > 0);
-
-          if (parameterPart.endsWith(" ")) {
-            currentParamIndex = params.length;
-          } else {
-            currentParamIndex = params.length - 1;
-          }
-        }
-      } else {
-        // 他の区切り文字
-        const separatorRegex = new RegExp(
-          separatorChar.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-          "g"
-        );
-        const separatorCount = (parameterPart.match(separatorRegex) || []).length;
-        currentParamIndex = separatorCount;
-      }
-
-      if (currentParamIndex >= commandInfo.parameter.length) {
-        return snippets;
-      }
-
-      currentParam = commandInfo.parameter[currentParamIndex];
-    }
-
-    if (!currentParam) {
+    // パラメーター位置を計算
+    const parameterPosition = calculateCommandParameterPosition(line, position, commandInfo, _isTmg);
+    if (!parameterPosition) {
       return snippets;
     }
+
+    const { currentParam, parameterIndex: currentParamIndex } = parameterPosition;
 
     // snippet の型によって処理を分ける
     if (Array.isArray(currentParam.snippet)) {
