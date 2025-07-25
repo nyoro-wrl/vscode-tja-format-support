@@ -302,6 +302,29 @@ export class Parser {
   }
 
   /**
+   * 譜面内のFreeセクションヘッダーを処理（エラーなしで通す）
+   * @param parent
+   * @param token
+   */
+  private processFreeHeader(
+    parent: ChartNode | BranchSectionNode | SongNode | BranchNode | MeasureNode,
+    token: Token
+  ): void {
+    // Freeセクションのヘッダーは構文エラーを避けるために範囲だけ追加
+    parent.pushRange(token.range);
+    this.position++;
+    // パラメーター部分があれば一緒に処理
+    if (this.position < this.tokens.length) {
+      const nextToken = this.tokens[this.position];
+      if (nextToken.kind === "RawParameter") {
+        parent.pushRange(nextToken.range);
+        this.position++;
+      }
+    }
+    this.position--; // メインループで position++ されるので調整
+  }
+
+  /**
    * 命令の作成
    * @param parent
    * @param token
@@ -1095,8 +1118,13 @@ export class Parser {
           parent instanceof SongNode
         ) {
           if (token.kind === "Header") {
-            this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
-            parent.pushRange(token.range);
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Free" || section === "Unknown") {
+              this.processFreeHeader(parent, token);
+            } else {
+              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              parent.pushRange(token.range);
+            }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";
@@ -1149,8 +1177,13 @@ export class Parser {
           }
         } else if (parent instanceof BranchNode) {
           if (token.kind === "Header") {
-            this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
-            parent.pushRange(token.range);
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Free" || section === "Unknown") {
+              this.processFreeHeader(parent, token);
+            } else {
+              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              parent.pushRange(token.range);
+            }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
@@ -1186,8 +1219,13 @@ export class Parser {
           }
         } else if (parent instanceof MeasureNode) {
           if (token.kind === "Header") {
-            this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
-            parent.pushRange(token.range);
+            const section = headers.get(token.value)?.section ?? "Unknown";
+            if (section === "Free" || section === "Unknown") {
+              this.processFreeHeader(parent, token);
+            } else {
+              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              parent.pushRange(token.range);
+            }
           } else if (token.kind === "Command") {
             const info = commands.get(token.value);
             const section = info?.section ?? "Unknown";

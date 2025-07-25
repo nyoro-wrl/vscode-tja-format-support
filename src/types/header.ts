@@ -9,7 +9,7 @@ import { IStatement, StatementCollection } from "./statement";
  *     "Free" // 譜面内にも書けるヘッダー
  *     "Unknown" // 不明
  */
-export type HeaderSection = "Root" | "Course" | "Style" | "Free" | "Unknown";
+type HeaderSection = "Root" | "Course" | "Style" | "Free" | "Unknown";
 
 /**
  * ヘッダー
