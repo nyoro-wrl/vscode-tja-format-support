@@ -506,12 +506,6 @@
             }
           },
           {
-            "scope": "source.tja gogotime measureEnd",
-            "settings": {
-              "foreground": "#fcb7d4"
-            }
-          },
-          {
             "scope": "source.tja measureEnd",
             "settings": {
               "foreground": "#d4d4d4"
