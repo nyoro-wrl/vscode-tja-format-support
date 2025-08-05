@@ -218,7 +218,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
     root: RootNode,
     token: CancellationToken
   ): { parameterRange: Range } | undefined {
-    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    const wordRange = document.getWordRangeAtPosition(position, /([79D]0*8?|0*8|0+)/);
     if (!wordRange) {
       return undefined;
     }
@@ -300,7 +300,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
   ):
     | { balloonHeader: HeaderNode; existingParameters: ParameterNode[]; balloonNote: NoteNode }
     | undefined {
-    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    const wordRange = document.getWordRangeAtPosition(position, /([79D]0*8?|0*8|0+)/);
     if (!wordRange) {
       return undefined;
     }
@@ -390,7 +390,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
     root: RootNode,
     token: CancellationToken
   ): { balloonNote: NoteNode; insertPosition: Position } | undefined {
-    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    const wordRange = document.getWordRangeAtPosition(position, /([79D]0*8?|0*8|0+)/);
     if (!wordRange) {
       return undefined;
     }

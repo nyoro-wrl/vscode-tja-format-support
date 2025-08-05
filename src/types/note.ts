@@ -2,7 +2,7 @@ import { Range } from "vscode";
 import { Token } from "../lexer";
 import { TriBoolean } from "./state";
 
-type NoteType = "Don" | "Ka" | "Roll" | "Balloon" | "Bomb" | "Adlib" | "Kadon" | undefined;
+type NoteType = "Don" | "Ka" | "Roll" | "Balloon" | "Bomb" | "Fuze" | "Adlib" | "Kadon" | undefined;
 type NoteSize = "Small" | "Big" | undefined;
 
 export class Note {
@@ -52,6 +52,7 @@ export class Note {
   // 7: Balloon, Small
   // 9: Balloon, Big
   // C: Bomb
+  // D: Fuze
   // F: Adlib
 
   constructor(token: Token, isGogotime: TriBoolean, isDummyNote: TriBoolean, balloonId?: number) {
@@ -94,6 +95,9 @@ export class Note {
     } else if (token.value === "C") {
       this.type = "Bomb";
       this.isLong = false;
+    } else if (token.value === "D") {
+      this.type = "Fuze";
+      this.isLong = true;
     } else if (token.value === "F") {
       this.type = "Adlib";
       this.isLong = false;

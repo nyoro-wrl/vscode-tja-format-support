@@ -241,6 +241,10 @@
         "description": "風船（大）"
       },
       {
+        "id": "fuze",
+        "description": "時限爆弾"
+      },
+      {
         "id": "gogo",
         "description": "ゴーゴータイム"
       },
@@ -280,6 +284,9 @@
           ],
           "balloonBig": [
             "source.tja note.balloon.big"
+          ],
+          "fuze": [
+            "source.tja note.fuze"
           ],
           "gogo": [
             "source.tja gogotime note.empty"
@@ -503,6 +510,16 @@
             "settings": {
               "foreground": "#ff8400",
               "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": [
+              "source.tja noteRange.fuze note.start",
+              "source.tja noteRange.fuze note.empty",
+              "source.tja noteRange.fuze note.end"
+            ],
+            "settings": {
+              "foreground": "#a595ff"
             }
           },
           {
