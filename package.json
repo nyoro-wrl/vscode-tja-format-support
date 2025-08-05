@@ -2,7 +2,7 @@
   "name": "tja-format-support",
   "displayName": "TJA Format Support",
   "description": "Taiko Jiro Format Support Extension",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "publisher": "nyoro",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -241,6 +241,10 @@
         "description": "風船（大）"
       },
       {
+        "id": "fuze",
+        "description": "時限爆弾"
+      },
+      {
         "id": "gogo",
         "description": "ゴーゴータイム"
       },
@@ -280,6 +284,9 @@
           ],
           "balloonBig": [
             "source.tja note.balloon.big"
+          ],
+          "fuze": [
+            "source.tja note.fuze"
           ],
           "gogo": [
             "source.tja gogotime note.empty"
@@ -506,9 +513,13 @@
             }
           },
           {
-            "scope": "source.tja gogotime measureEnd",
+            "scope": [
+              "source.tja noteRange.fuze note.start",
+              "source.tja noteRange.fuze note.empty",
+              "source.tja noteRange.fuze note.end"
+            ],
             "settings": {
-              "foreground": "#fcb7d4"
+              "foreground": "#a595ff"
             }
           },
           {

@@ -72,7 +72,7 @@ export class JumpBalloonNotesDefinitionProvider implements vscode.DefinitionProv
     if (balloonNotes === undefined) {
       return Promise.reject();
     }
-    const balloonRange = document.getWordRangeAtPosition(balloonNotes.range.end, /([79]0*8?)/);
+    const balloonRange = document.getWordRangeAtPosition(balloonNotes.range.end, /([79D]0*8?)/);
     if (balloonRange === undefined) {
       return Promise.reject();
     }
@@ -90,7 +90,7 @@ export class JumpBalloonParameterDefinitionProvider implements vscode.Definition
     position: vscode.Position,
     token: vscode.CancellationToken
   ): Promise<vscode.Definition | vscode.LocationLink[]> {
-    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    const wordRange = document.getWordRangeAtPosition(position, /([79D]0*8?|0*8|0+)/);
     if (wordRange === undefined) {
       return Promise.reject();
     }

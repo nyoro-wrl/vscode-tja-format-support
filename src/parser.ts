@@ -29,7 +29,7 @@ import {
   SongNode,
   HeadersNode,
 } from "./types/node";
-import { ChartState } from "./types/state";
+import { ChartState, RollState } from "./types/state";
 import { DiagnosticResult } from "./providers/diagnostics";
 import { getRegExp, Separator } from "./types/statement";
 import { CommandSection, ICommand } from "./types/command";
@@ -721,26 +721,23 @@ export class Parser {
   private parseNote(parent: MeasureNode, token: Token): void {
     if (/[1-79A-Z]/.test(token.value)) {
       if (token.value !== "8" && this.chartState.rollState !== "None") {
-        const text =
-          this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
-            ? "連打"
-            : "風船";
+        const name = this.getRollStateName(this.chartState.rollState);
         this.addDiagnostic(
           "Realtime",
           token.range,
-          `${text}音符が途切れています。`,
+          `${name}音符が途切れています。`,
           DiagnosticSeverity.Warning
         );
       }
       this.chartState.rollState = "None";
-      if (/[1-6A-Z]/.test(token.value)) {
+      if (/[1-6A-CE-Z]/.test(token.value)) {
         this.nowBalloonId = undefined;
         if (token.value === "5") {
           this.chartState.rollState = "Roll";
         } else if (token.value === "6") {
           this.chartState.rollState = "RollBig";
         }
-      } else if (/[79]/.test(token.value)) {
+      } else if (/[79D]/.test(token.value)) {
         if (this.chartState.isDummyNote === false) {
           const isBranchBalloon = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
             token: this.parseCancel,
@@ -761,12 +758,14 @@ export class Parser {
           this.chartState.rollState = "Balloon";
         } else if (token.value === "9") {
           this.chartState.rollState = "BalloonBig";
+        } else if (token.value === "D") {
+          this.chartState.rollState = "Fuze";
         }
       }
     }
     const node = new NoteNode(parent, token, this.chartState, this.nowBalloonId);
     parent.push(node);
-    if (this.nowBalloonId !== undefined && /[79]/.test(token.value)) {
+    if (this.nowBalloonId !== undefined && /[79D]/.test(token.value)) {
       const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
         token: this.parseCancel,
       });
@@ -785,7 +784,7 @@ export class Parser {
         const balloonHeader = styleNode.properties.headers.find((x) => headerRegExp.test(x.name));
         const wordRange = this.document.getWordRangeAtPosition(
           token.range.end,
-          /([79]0*8?|0*8|0+)/
+          /([79D]0*8?|0*8|0+)/
         );
         if (wordRange !== undefined) {
           let shouldShowWarning = false;
@@ -903,14 +902,11 @@ export class Parser {
         token: this.parseCancel,
       });
       if (lastMeasure !== undefined) {
-        const text =
-          this.chartState.rollState === "Roll" || this.chartState.rollState === "RollBig"
-            ? "連打"
-            : "風船";
+        const name = this.getRollStateName(this.chartState.rollState);
         this.addDiagnostic(
           "Unedited",
           new Range(lastMeasure.range.end, lastMeasure.range.end),
-          `${text}音符が途切れています。`,
+          `${name}音符が途切れています。`,
           DiagnosticSeverity.Error
         );
       }
@@ -1302,5 +1298,20 @@ export class Parser {
       }
     }
     return parent;
+  }
+
+  private getRollStateName(state: RollState): string {
+    switch (state) {
+      case "None":
+        return "";
+      case "Roll":
+      case "RollBig":
+        return "連打";
+      case "Balloon":
+      case "BalloonBig":
+        return "風船";
+      case "Fuze":
+        return "時限爆弾";
+    }
   }
 }

@@ -150,12 +150,15 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     const smallKaIcon = "circle-outline";
     const bigDonIcon = "circle-large-filled";
     const bigKaIcon = "circle-large-outline";
-    const rollIcon = "record-small";
+    const rollIcon = "pie-chart";
+    const smallRollIcon = "record-small";
     const bigRollIcon = "record";
-    const balloonIcon = "record-small";
+    const balloonIcon = "pie-chart";
+    const smallBalloonIcon = "record-small";
     const bigBalloonIcon = "record";
     const kadonIcon = "color-mode";
     const bombIcon = "flame";
+    const fuzeRollIcon = "compass";
     const adlibIcon = "issue-draft";
 
     const notesTree = this.newTree(label, combo.toString(), "note");
@@ -179,6 +182,7 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
 
     const kadon = comboNotes.filter((x) => x.type === "Kadon").length;
     const bomb = notes.filter((x) => x.type === "Bomb").length;
+    const fuze = notes.filter((x) => x.type === "Fuze").length;
     const adlib = notes.filter((x) => x.type === "Adlib").length;
 
     // ツリーの作成
@@ -212,14 +216,15 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     const kaBigTree = this.newTree("Ka", `${kaBig} (${toPercent(kaBig / combo)})`, bigKaIcon);
 
     const rollTree = this.newTree("Roll", `${roll}`, rollIcon);
-    const smallRollTree = this.newTree("Small", `${smallRoll}`, rollIcon);
+    const smallRollTree = this.newTree("Small", `${smallRoll}`, smallRollIcon);
     const bigRollTree = this.newTree("Big", `${bigRoll}`, bigRollIcon);
     const balloonTree = this.newTree("Balloon", `${balloon}`, balloonIcon);
-    const smallBalloonTree = this.newTree("Small", `${smallBalloon}`, balloonIcon);
+    const smallBalloonTree = this.newTree("Small", `${smallBalloon}`, smallBalloonIcon);
     const bigBalloonTree = this.newTree("Big", `${bigBalloon}`, bigBalloonIcon);
 
     const kadonTree = this.newTree("Kadon", `${kadon} (${toPercent(kadon / combo)})`, kadonIcon);
     const bombTree = this.newTree("Bomb", `${bomb}`, bombIcon);
+    const fuzeRollTree = this.newTree("Fuze", `${fuze}`, fuzeRollIcon);
     const adlibTree = this.newTree("Adlib", `${adlib}`, adlibIcon);
 
     donTree.addChild(smallDonTree, bigDonTree);
@@ -228,13 +233,16 @@ export class InfoTreeDataProvider implements vscode.TreeDataProvider<TreeItem>, 
     bigTree.addChild(donBigTree, kaBigTree);
     rollTree.addChild(smallRollTree, bigRollTree);
     balloonTree.addChild(smallBalloonTree, bigBalloonTree);
-    notesTree.addChild(donTree, kaTree, smallTree, bigTree);
+    notesTree.addChild(donTree, kaTree, smallTree, bigTree, rollTree, balloonTree);
     if (kadon > 0) {
       bigTree.addChild(kadonTree);
       notesTree.addChild(kadonTree);
     }
     if (bomb > 0) {
       notesTree.addChild(bombTree);
+    }
+    if (fuze > 0) {
+      notesTree.addChild(fuzeRollTree);
     }
     if (adlib > 0) {
       notesTree.addChild(adlibTree);

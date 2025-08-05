@@ -278,6 +278,9 @@
           "include": "#balloonBig"
         },
         {
+          "include": "#fuze"
+        },
+        {
           "name": "note.end",
           "match": "8"
         }
@@ -385,6 +388,39 @@
     "balloonBig": {
       "name": "noteRange.balloon.big",
       "begin": "(9)(0*)(,?)",
+      "end": "(8|(?=[1-79A-Z])|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
+      "beginCaptures": {
+        "1": { "name": "note.start" },
+        "2": { "name": "note.empty" },
+        "3": { "name": "measureEnd" }
+      },
+      "endCaptures": {
+        "0": { "name": "note.end" }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#commandBranchTmg"
+        },
+        {
+          "include": "#commandBranch"
+        },
+        {
+          "include": "#commandTmg"
+        },
+        {
+          "include": "#command"
+        },
+        {
+          "include": "#rollMeasure"
+        }
+      ]
+    },
+    "fuze": {
+      "name": "noteRange.fuze",
+      "begin": "(D)(0*)(,?)",
       "end": "(8|(?=[1-79A-Z])|(?=^\\s*#(END|BRANCHSTART|N|E|M|BRANCHEND)\\s))",
       "beginCaptures": {
         "1": { "name": "note.start" },

@@ -74,7 +74,7 @@ export class BalloonHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     token: vscode.CancellationToken
   ): Promise<vscode.Hover> {
-    const wordRange = document.getWordRangeAtPosition(position, /([79]0*8?|0*8|0+)/);
+    const wordRange = document.getWordRangeAtPosition(position, /([79D]0*8?|0*8|0+)/);
     if (wordRange === undefined || position.isEqual(wordRange.end)) {
       return Promise.reject();
     }

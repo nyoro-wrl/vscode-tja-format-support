@@ -1,7 +1,7 @@
 import { ChartStateProperties } from "./node";
 
 export type TriBoolean = boolean | "unknown";
-export type RollState = "None" | "Roll" | "RollBig" | "Balloon" | "BalloonBig";
+export type RollState = "None" | "Roll" | "RollBig" | "Balloon" | "BalloonBig" | "Fuze";
 export type BranchState = "None" | "Normal" | "Expert" | "Master";
 
 /**
