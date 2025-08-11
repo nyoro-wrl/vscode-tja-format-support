@@ -36,6 +36,8 @@ import { MeasureCountInlayHintsProvider } from "./providers/inlayHints";
 import { ActiveFileContext } from "./contexts/activeFileContext";
 import { ActiveTjaFile } from "./events/activeTjaFile";
 import { changeLiteMode, changeLiteModeCommand } from "./commands/changeLiteMode";
+import { changeLanguage, changeLanguageCommand } from "./commands/changeLanguage";
+import { debugLanguage, debugLanguageCommand } from "./commands/debugLanguage";
 import {
   toBig,
   toSmall,
@@ -50,6 +52,7 @@ import {
 } from "./commands/chartEdit";
 import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
+import { getLanguageManager } from "./i18n";
 
 
 export let activeTjaFile: ActiveTjaFile;
@@ -64,6 +67,10 @@ export let documents: Documents;
  */
 export function activate(context: vscode.ExtensionContext) {
   versionCheck(context);
+  
+  // 初始化语言管理器
+  const languageManager = getLanguageManager();
+  
   activeTjaFile = new ActiveTjaFile();
   documents = new Documents();
 
@@ -71,6 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
     activeTjaFile,
     new ActiveFileContext(),
     documents,
+    languageManager.onConfigurationChanged(),
     vscode.window.createTreeView("tja.info", {
       treeDataProvider: new InfoTreeDataProvider(),
     }),
@@ -86,6 +94,8 @@ export function activate(context: vscode.ExtensionContext) {
     commands.registerTextEditorCommand("tja.random", random),
     commands.registerTextEditorCommand(jumpMeasureCommand.command, jumpMeasure),
     commands.registerCommand(changeLiteModeCommand.command, changeLiteMode),
+    commands.registerCommand(changeLanguageCommand.command, changeLanguage),
+    commands.registerCommand(debugLanguageCommand.command, debugLanguage),
     commands.registerCommand("tja.balloonParameterQuickFix", balloonParameterQuickFix),
     languages.registerDocumentSemanticTokensProvider(
       selector,
