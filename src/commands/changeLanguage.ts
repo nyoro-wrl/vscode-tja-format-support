@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { getLanguageManager, SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
+import { getLanguageManager, SUPPORTED_LANGUAGES, LanguageConfig, SupportedLanguage } from "../i18n";
 
 /**
  * 切换语言命令
@@ -10,18 +10,30 @@ export const changeLanguageCommand = {
 };
 
 /**
- * 切换语言
+ * 言語切換
  */
 export async function changeLanguage(): Promise<void> {
   const languageManager = getLanguageManager();
-  const currentLanguage = languageManager.getCurrentLanguage();
+  const currentConfig = languageManager.getConfiguredLanguage();
+  const currentActualLanguage = languageManager.getCurrentLanguage();
   
-  // 创建语言选择项
-  const languageItems = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => ({
-    label: name,
-    description: code === currentLanguage ? "$(check) Current" : undefined,
-    code: code as SupportedLanguage
-  }));
+  // 言語選択項目を作成
+  const languageItems = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => {
+    let displayName: string = name;
+    let description: string | undefined;
+    
+    // Autoの場合は元の名前をそのまま使用
+    
+    if (code === currentConfig) {
+      description = "$(check) Current";
+    }
+    
+    return {
+      label: displayName,
+      description,
+      languageCode: code as LanguageConfig
+    };
+  });
   
   // 显示快速选择菜单
   const selected = await vscode.window.showQuickPick(languageItems, {
@@ -29,13 +41,14 @@ export async function changeLanguage(): Promise<void> {
     ignoreFocusOut: false
   });
   
-  if (selected && selected.code !== currentLanguage) {
-    // 设置新语言
-    languageManager.setLanguage(selected.code);
+  if (selected && selected.languageCode !== currentConfig) {
+    // 新言語を設定
+    languageManager.setLanguage(selected.languageCode);
     
-    // 显示重启提示
-    const restartMessage = getRestartMessage(selected.code);
-    const restartButton = getRestartButtonText(selected.code);
+    // 再起動メッセージを表示
+    const newActualLanguage = languageManager.getCurrentLanguage();
+    const restartMessage = getRestartMessage(newActualLanguage);
+    const restartButton = getRestartButtonText(newActualLanguage);
     
     const choice = await vscode.window.showInformationMessage(
       restartMessage,
@@ -51,7 +64,7 @@ export async function changeLanguage(): Promise<void> {
 }
 
 /**
- * 获取重启提示消息
+ * 再起動メッセージを取得
  */
 function getRestartMessage(language: SupportedLanguage): string {
   switch (language) {
@@ -66,7 +79,7 @@ function getRestartMessage(language: SupportedLanguage): string {
 }
 
 /**
- * 获取重启按钮文本
+ * 再起動ボタンテキストを取得
  */
 function getRestartButtonText(language: SupportedLanguage): string {
   switch (language) {

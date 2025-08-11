@@ -16,7 +16,7 @@
   "config.liteMode": "Skip syntax parsing to improve processing speed. All features will be disabled.",
   "config.completion": "Player-specific command completion display settings",
   "config.measureCountHint": "Display measure numbers for measures after blank lines.",
-  "config.language": "表示言語を選択します。 / 选择显示语言。 / Select display language.",
+  "config.language": "Select display language. Auto mode will follow VS Code's display language setting.",
   
   "view.chartInfo": "Chart Info",
   

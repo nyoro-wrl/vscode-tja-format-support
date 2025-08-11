@@ -16,7 +16,7 @@
   "config.liteMode": "跳过语法分析以提高处理速度。所有功能将被禁用。",
   "config.completion": "玩家专用命令的补全显示设置",
   "config.measureCountHint": "在空行后的小节显示小节编号。", 
-  "config.language": "表示言語を選択します。 / 选择显示语言。 / Select display language.",
+  "config.language": "选择显示语言。自动模式将跟随 VS Code 的显示语言设置。",
   
   "view.chartInfo": "谱面信息",
   

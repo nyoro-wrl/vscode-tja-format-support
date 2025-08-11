@@ -91,7 +91,7 @@
         "category": "tja"
       },
       {
-        "command": "tja.debugLanguage", 
+        "command": "tja.debugLanguage",
         "title": "Debug Language Settings / 调试语言设置 / 言語設定のデバッグ",
         "category": "tja"
       }
@@ -200,13 +200,19 @@
         },
         "tjaFormatSupport.language": {
           "type": "string",
-          "enum": ["zh", "ja", "en"],
+          "enum": [
+            "auto",
+            "zh",
+            "ja",
+            "en"
+          ],
           "enumDescriptions": [
+            "Auto",
             "中文",
             "日本語",
             "English"
           ],
-          "default": "ja",
+          "default": "auto",
           "description": "%config.language%"
         }
       }
