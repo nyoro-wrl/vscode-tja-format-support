@@ -1,8 +1,13 @@
 import * as vscode from "vscode";
-import { getLanguageManager, SUPPORTED_LANGUAGES, LanguageConfig, SupportedLanguage } from "../i18n";
+import {
+  getLanguageManager,
+  SUPPORTED_LANGUAGES,
+  LanguageConfig,
+  SupportedLanguage,
+} from "../i18n";
 
 /**
- * 切换语言命令
+ * 言語切換コマンド
  */
 export const changeLanguageCommand = {
   command: "tja.changeLanguage",
@@ -15,49 +20,48 @@ export const changeLanguageCommand = {
 export async function changeLanguage(): Promise<void> {
   const languageManager = getLanguageManager();
   const currentConfig = languageManager.getConfiguredLanguage();
-  const currentActualLanguage = languageManager.getCurrentLanguage();
-  
+
   // 言語選択項目を作成
   const languageItems = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => {
     let displayName: string = name;
     let description: string | undefined;
-    
+
     // Autoの場合は元の名前をそのまま使用
-    
+
     if (code === currentConfig) {
       description = "$(check) Current";
     }
-    
+
     return {
       label: displayName,
       description,
-      languageCode: code as LanguageConfig
+      languageCode: code as LanguageConfig,
     };
   });
-  
-  // 显示快速选择菜单
+
+  // クイック選択メニューを表示
   const selected = await vscode.window.showQuickPick(languageItems, {
     placeHolder: "Select display language / 选择显示语言 / 表示言語を選択",
-    ignoreFocusOut: false
+    ignoreFocusOut: false,
   });
-  
+
   if (selected && selected.languageCode !== currentConfig) {
     // 新言語を設定
     languageManager.setLanguage(selected.languageCode);
-    
+
     // 再起動メッセージを表示
     const newActualLanguage = languageManager.getCurrentLanguage();
     const restartMessage = getRestartMessage(newActualLanguage);
     const restartButton = getRestartButtonText(newActualLanguage);
-    
+
     const choice = await vscode.window.showInformationMessage(
       restartMessage,
       restartButton,
       "Later"
     );
-    
+
     if (choice === restartButton) {
-      // 重启VS Code以应用新语言设置
+      // VS Codeを再起動して新しい言語設定を適用
       await vscode.commands.executeCommand("workbench.action.reloadWindow");
     }
   }

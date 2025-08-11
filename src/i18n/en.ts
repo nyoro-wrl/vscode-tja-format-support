@@ -1,7 +1,7 @@
 import { LanguageResources } from "./index";
 
 /**
- * 英文资源
+ * English Resources
  */
 export const en: LanguageResources = {
   commands: {
@@ -46,7 +46,7 @@ export const en: LanguageResources = {
     gogo: "GoGo Time"
   },
 
-  // TJA命令详细信息
+  // TJA Command Details
   tjaCommands: {
     start: {
       detail: "Start",
@@ -118,7 +118,7 @@ export const en: LanguageResources = {
     }
   },
 
-  // TJA头部信息
+  // TJA Header Information
   tjaHeaders: {
     title: {
       detail: "Title",

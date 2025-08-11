@@ -4,7 +4,7 @@ import { ja } from "./ja";
 import { en } from "./en";
 
 /**
- * 支持的语言列表
+ * サポート言語一覧
  */
 export const SUPPORTED_LANGUAGES = {
   auto: "Auto",
@@ -17,10 +17,10 @@ export type LanguageConfig = keyof typeof SUPPORTED_LANGUAGES;
 export type SupportedLanguage = "zh" | "ja" | "en";
 
 /**
- * 语言资源接口
+ * 言語リソースインターフェース
  */
 export interface LanguageResources {
-  // 命令相关
+  // コマンド関連
   commands: {
     zoom: string;
     truncate: string;
@@ -34,7 +34,7 @@ export interface LanguageResources {
     random: string;
   };
 
-  // 配置项描述
+  // 設定項目説明
   config: {
     gogotimeHighlight: string;
     branchHighlight: string;
@@ -44,12 +44,12 @@ export interface LanguageResources {
     language: string;
   };
 
-  // 视图相关
+  // ビュー関連
   views: {
     chartInfo: string;
   };
 
-  // 状态栏相关
+  // ステータスバー関連
   statusBar: {
     measure: string;
     combo: string;
@@ -57,7 +57,7 @@ export interface LanguageResources {
     normalMode: string;
   };
 
-  // 语义令牌类型
+  // セマンティックトークン種別
   semanticTokens: {
     roll: string;
     rollBig: string;
@@ -67,7 +67,7 @@ export interface LanguageResources {
     gogo: string;
   };
 
-  // TJA命令详细信息
+  // TJAコマンド詳細情報
   tjaCommands: {
     start: {
       detail: string;
@@ -139,7 +139,7 @@ export interface LanguageResources {
     };
   };
 
-  // TJA头部信息
+  // TJAヘッダー情報
   tjaHeaders: {
     title: {
       detail: string;
@@ -185,7 +185,7 @@ export interface LanguageResources {
 }
 
 /**
- * 当前语言资源映射
+ * 現在言語リソースマッピング
  */
 const resources: Record<SupportedLanguage, LanguageResources> = {
   zh,
@@ -194,7 +194,7 @@ const resources: Record<SupportedLanguage, LanguageResources> = {
 };
 
 /**
- * 语言管理器
+ * 言語マネージャー
  */
 export class LanguageManager {
   private static instance: LanguageManager;
@@ -255,7 +255,7 @@ export class LanguageManager {
   }
 
   /**
-   * 获取当前语言
+   * 現在言語を取得
    */
   getCurrentLanguage(): SupportedLanguage {
     return this.currentLanguage;
@@ -286,14 +286,14 @@ export class LanguageManager {
   }
 
   /**
-   * 获取当前语言的资源
+   * 現在言語のリソースを取得
    */
   getResources(): LanguageResources {
     return resources[this.currentLanguage];
   }
 
   /**
-   * 获取翻译文本
+   * 翻訳テキストを取得
    */
   t(key: string): string {
     const keys = key.split(".");
@@ -303,8 +303,8 @@ export class LanguageManager {
       if (value && typeof value === "object" && k in value) {
         value = value[k];
       } else {
-        // 如果找不到翻译，返回键名作为后备
-        console.warn(`[TJA Language] 翻译键未找到: ${key} (语言: ${this.currentLanguage})`);
+        // 翻訳が見つからない場合、キー名をフォールバックとして返す
+        console.warn(`[TJA Language] 翻訳キーが見つかりません: ${key} (言語: ${this.currentLanguage})`);
         return key;
       }
     }
@@ -312,13 +312,13 @@ export class LanguageManager {
     if (typeof value === "string") {
       return value;
     } else {
-      console.warn(`[TJA Language] 翻译值不是字符串: ${key} = ${value}`);
+      console.warn(`[TJA Language] 翻訳値が文字列ではありません: ${key} = ${value}`);
       return key;
     }
   }
 
   /**
-   * 监听配置变化
+   * 設定変更を監視
    */
   onConfigurationChanged(): vscode.Disposable {
     return vscode.workspace.onDidChangeConfiguration((e) => {
@@ -339,11 +339,11 @@ export class LanguageManager {
 }
 
 /**
- * 获取语言管理器实例
+ * 言語マネージャーインスタンスを取得
  */
 export const getLanguageManager = () => LanguageManager.getInstance();
 
 /**
- * 获取翻译文本的便捷函数
+ * 翻訳テキスト取得の便利関数
  */
 export const t = (key: string) => getLanguageManager().t(key);

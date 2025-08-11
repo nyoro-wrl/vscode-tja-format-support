@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { getLanguageManager, SUPPORTED_LANGUAGES } from "../i18n";
 
 /**
- * 调试语言设置命令
+ * 言語設定デバッグコマンド
  */
 export const debugLanguageCommand = {
   command: "tja.debugLanguage",
@@ -10,25 +10,25 @@ export const debugLanguageCommand = {
 };
 
 /**
- * 调试语言设置
+ * 言語設定をデバッグ
  */
 export async function debugLanguage(): Promise<void> {
   const languageManager = getLanguageManager();
   const currentLanguage = languageManager.getCurrentLanguage();
   
-  // 获取配置信息
+  // 設定情報を取得
   const config = vscode.workspace.getConfiguration("tjaFormatSupport");
   const configuredLanguage = config.get<string>("language");
   const vsCodeLanguage = vscode.env.language;
   
-  // 测试翻译功能
+  // 翻訳機能をテスト
   const testTranslations = {
     statusBarMeasure: languageManager.t("statusBar.measure"),
     commandsZoom: languageManager.t("commands.zoom"),
     configLanguage: languageManager.t("config.language")
   };
   
-  // 创建调试信息
+  // デバッグ情報を作成
   const debugInfo = [
     "=== TJA 语言设置调试信息 ===",
     "",
@@ -52,25 +52,25 @@ export async function debugLanguage(): Promise<void> {
     "3. 查看开发者控制台的日志信息"
   ].join("\n");
   
-  // 显示调试信息
+  // デバッグ情報を表示
   const action = await vscode.window.showInformationMessage(
     "语言调试信息已复制到剪贴板",
     "查看详情",
     "重新设置语言"
   );
   
-  // 复制到剪贴板
+  // クリップボードにコピー
   await vscode.env.clipboard.writeText(debugInfo);
   
   if (action === "查看详情") {
-    // 创建临时文档显示调试信息
+    // 一時ドキュメントを作成してデバッグ情報を表示
     const doc = await vscode.workspace.openTextDocument({
       content: debugInfo,
       language: "plaintext"
     });
     await vscode.window.showTextDocument(doc);
   } else if (action === "重新设置语言") {
-    // 重新打开语言选择
+    // 言語選択を再度開く
     await vscode.commands.executeCommand("tja.changeLanguage");
   }
   

@@ -1,7 +1,7 @@
 import { LanguageResources } from "./index";
 
 /**
- * 日语资源
+ * 日本語リソース
  */
 export const ja: LanguageResources = {
   commands: {

@@ -1,7 +1,7 @@
 import { t } from "../i18n";
 
 /**
- * 获取本地化的命令信息
+ * ローカライズされたコマンド情報を取得
  */
 export function getLocalizedCommandInfo(commandKey: string) {
   return {
@@ -11,14 +11,14 @@ export function getLocalizedCommandInfo(commandKey: string) {
 }
 
 /**
- * 获取本地化的命令参数描述
+ * ローカライズされたコマンドパラメータ説明を取得
  */
 export function getLocalizedCommandParamDescription(commandKey: string, paramKey: string) {
   return t(`tjaCommands.${commandKey}.${paramKey}`);
 }
 
 /**
- * 获取本地化的头部信息
+ * ローカライズされたヘッダー情報を取得
  */
 export function getLocalizedHeaderInfo(headerKey: string) {
   return {
@@ -28,7 +28,7 @@ export function getLocalizedHeaderInfo(headerKey: string) {
 }
 
 /**
- * 获取本地化的头部参数描述
+ * ローカライズされたヘッダーパラメータ説明を取得
  */
 export function getLocalizedHeaderParamDescription(headerKey: string, paramKey: string = "paramDescription") {
   return t(`tjaHeaders.${headerKey}.${paramKey}`);
