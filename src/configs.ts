@@ -48,4 +48,5 @@ export class Configs {
   gogotimeHighlight = new Property<boolean>(id, "gogotimeHighlight");
   branchHighlight = new Property<boolean>(id, "branchHighlight");
   liteMode = new Property<boolean>(id, "liteMode");
+  language = new Property<string>(id, "language");
 }

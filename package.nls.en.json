@@ -1,0 +1,29 @@
+{
+  "tja.zoom": "Chart Zoom",
+  "tja.truncate": "Chart Truncate", 
+  "tja.constantScroll": "Constant Scroll Speed",
+  "tja.transitionScroll": "Transition Scroll Speed",
+  "tja.deleteCommands": "Batch Delete Commands",
+  "tja.toBig": "Replace with Big Notes",
+  "tja.toSmall": "Replace with Small Notes",
+  "tja.toRest": "Replace with Rests", 
+  "tja.reverse": "Reverse Don/Ka",
+  "tja.random": "Randomize Don/Ka",
+  
+  "config.title": "TJA Format Support",
+  "config.gogotimeHighlight": "Highlight GoGo Time sections with colors.",
+  "config.branchHighlight": "Highlight branch sections with different colors.",
+  "config.liteMode": "Skip syntax parsing to improve processing speed. All features will be disabled.",
+  "config.completion": "Player-specific command completion display settings",
+  "config.measureCountHint": "Display measure numbers for measures after blank lines.",
+  "config.language": "Select display language. Auto mode will follow VS Code's display language setting.",
+  
+  "view.chartInfo": "Chart Info",
+  
+  "semantic.roll": "Roll",
+  "semantic.rollBig": "Big Roll",
+  "semantic.balloon": "Balloon",
+  "semantic.balloonBig": "Big Balloon", 
+  "semantic.fuze": "Fuze",
+  "semantic.gogo": "GoGo Time"
+}
