@@ -3,17 +3,7 @@
 太鼓の達人シミュレーターで使用される`.tja`フォーマットをサポートします。
 `.tjc` `.tjf` `.tmg`にもある程度対応しています。
 
-**🌍 多语言支持 / Multi-language Support / マルチ言語対応**
-
-这个扩展现在支持多种语言！/ This extension now supports multiple languages! / この拡張機能は多言語に対応しています！
-
-- 🇨🇳 中文 / Chinese
-- 🇯🇵 日本語 / Japanese  
-- 🇺🇸 English
-
-通过命令面板搜索 "Change Language" 来切换语言，或在设置中修改 `tjaFormatSupport.language`。
-Use Command Palette and search for "Change Language" to switch languages, or modify `tjaFormatSupport.language` in settings.
-コマンドパレットで「Change Language」を検索して言語を切り替えるか、設定で `tjaFormatSupport.language` を変更してください。
+**日本語** | [English](README.en.md) | [中文](README.zh.md)
 
 ## 主な機能
 
