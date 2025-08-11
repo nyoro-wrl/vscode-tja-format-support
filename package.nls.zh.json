@@ -1,0 +1,29 @@
+{
+  "tja.zoom": "谱面缩放",
+  "tja.truncate": "谱面裁剪",
+  "tja.constantScroll": "滚动速度固定化",
+  "tja.transitionScroll": "滚动速度变换", 
+  "tja.deleteCommands": "批量删除命令",
+  "tja.toBig": "替换为大音符",
+  "tja.toSmall": "替换为小音符",
+  "tja.toRest": "替换为休止符",
+  "tja.reverse": "反转咚/咔",
+  "tja.random": "随机咚/咔",
+  
+  "config.title": "TJA Format Support",
+  "config.gogotimeHighlight": "为 GoGo Time 添加颜色高亮。",
+  "config.branchHighlight": "为谱面分岐的每个区段添加颜色区分。",
+  "config.liteMode": "跳过语法分析以提高处理速度。所有功能将被禁用。",
+  "config.completion": "玩家专用命令的补全显示设置",
+  "config.measureCountHint": "在空行后的小节显示小节编号。", 
+  "config.language": "选择显示语言。自动模式将跟随 VS Code 的显示语言设置。",
+  
+  "view.chartInfo": "谱面信息",
+  
+  "semantic.roll": "连打",
+  "semantic.rollBig": "连打（大）",
+  "semantic.balloon": "气球", 
+  "semantic.balloonBig": "气球（大）",
+  "semantic.fuze": "定时炸弹",
+  "semantic.gogo": "GoGo Time"
+}

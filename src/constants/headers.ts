@@ -1,5 +1,6 @@
 import { SnippetString } from "vscode";
 import { HeaderCollection } from "../types/header";
+import { getLocalizedHeaderInfo, getLocalizedHeaderParamDescription } from "../util/i18nHelper";
 
 /**
  * ヘッダーの仕様一覧
@@ -8,9 +9,18 @@ export const headers = new HeaderCollection({
   // 太鼓さん次郎
   title: {
     name: "TITLE",
-    detail: "タイトル",
-    documentation: "曲のタイトル。",
-    parameter: [{ name: "string", description: "タイトル" }],
+    get detail() { 
+      return getLocalizedHeaderInfo("title").detail; 
+    },
+    get documentation() { 
+      return getLocalizedHeaderInfo("title").documentation; 
+    },
+    parameter: [{ 
+      name: "string", 
+      get description() { 
+        return getLocalizedHeaderParamDescription("title"); 
+      } 
+    }],
     section: "Root",
     separator: "None",
     recommend: ["SUBTITLE"],
@@ -19,20 +29,18 @@ export const headers = new HeaderCollection({
   },
   course: {
     name: "COURSE",
-    detail: "難易度",
-    documentation:
-      "譜面の難易度。  \n" +
-      "`<course>`: `Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n" +
-      "`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。  \n" +
-      "`Dan`または`6`を入れると段位道場譜面として認識されます。",
+    get detail() { 
+      return getLocalizedHeaderInfo("course").detail; 
+    },
+    get documentation() { 
+      return getLocalizedHeaderInfo("course").documentation; 
+    },
     parameter: [
       {
         name: "course",
-        description:
-          "難易度  \n" +
-          "`Easy`,`Normal`,`Hard`,`Oni`,`Edit`,`Tower`,`Dan`もしくは`0` ~ `6`の値を指定します。  \n" +
-          "`Tower`または`5`を入れると連打音符が常に他の音符より手前に表示されます。  \n" +
-          "`Dan`または`6`を入れると段位道場譜面として認識されます。",
+        get description() { 
+          return getLocalizedHeaderParamDescription("course"); 
+        },
         snippet: [
           { value: "0", detail: "かんたん" },
           { value: "1", detail: "ふつう" },
@@ -58,9 +66,18 @@ export const headers = new HeaderCollection({
   },
   level: {
     name: "LEVEL",
-    detail: "レベル",
-    documentation: "譜面のレベル。",
-    parameter: [{ name: "int", description: "レベル" }],
+    get detail() { 
+      return getLocalizedHeaderInfo("level").detail; 
+    },
+    get documentation() { 
+      return getLocalizedHeaderInfo("level").documentation; 
+    },
+    parameter: [{ 
+      name: "int", 
+      get description() { 
+        return getLocalizedHeaderParamDescription("level"); 
+      } 
+    }],
     section: "Course",
     separator: "None",
     recommend: [],
@@ -68,9 +85,18 @@ export const headers = new HeaderCollection({
   },
   bpm: {
     name: "BPM",
-    detail: "BPM",
-    documentation: "曲のBPM。",
-    parameter: [{ name: "bpm", description: "BPM" }],
+    get detail() { 
+      return getLocalizedHeaderInfo("bpm").detail; 
+    },
+    get documentation() { 
+      return getLocalizedHeaderInfo("bpm").documentation; 
+    },
+    parameter: [{ 
+      name: "bpm", 
+      get description() { 
+        return getLocalizedHeaderParamDescription("bpm"); 
+      } 
+    }],
     section: "Root",
     separator: "None",
     recommend: [],
@@ -78,10 +104,19 @@ export const headers = new HeaderCollection({
   },
   wave: {
     name: "WAVE",
-    detail: "音源ファイル",
-    documentation:
-      "音源ファイルのパス。  \n" + "殆どのプレイヤーが`.wav`,`.mp3`,`.ogg`に対応しています。",
-    parameter: [{ name: "filepath", description: "音源ファイルパス", snippet: "Audio" }],
+    get detail() { 
+      return getLocalizedHeaderInfo("wave").detail; 
+    },
+    get documentation() { 
+      return getLocalizedHeaderInfo("wave").documentation; 
+    },
+    parameter: [{ 
+      name: "filepath", 
+      get description() { 
+        return getLocalizedHeaderParamDescription("wave"); 
+      }, 
+      snippet: "Audio" 
+    }],
     section: "Root",
     separator: "None",
     recommend: ["OFFSET"],
@@ -89,7 +124,9 @@ export const headers = new HeaderCollection({
   },
   offset: {
     name: "OFFSET",
-    detail: "音源ファイルの再生タイミング",
+    get detail() { 
+      return getLocalizedHeaderInfo("offset").detail; 
+    },
     documentation: "譜面の開始位置と音源ファイルの再生タイミングの差を秒数で指定します。",
     parameter: [{ name: "second", description: "音源ファイルの再生タイミング" }],
     section: "Root",
