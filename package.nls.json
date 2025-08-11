@@ -1,0 +1,29 @@
+{
+  "tja.zoom": "譜面の拡大",
+  "tja.truncate": "譜面の切り詰め",
+  "tja.constantScroll": "スクロール速度の一定化", 
+  "tja.transitionScroll": "スクロール速度の遷移",
+  "tja.deleteCommands": "命令の一括削除",
+  "tja.toBig": "大音符に置換",
+  "tja.toSmall": "小音符に置換", 
+  "tja.toRest": "休符に置換",
+  "tja.reverse": "ドン/カッを反転",
+  "tja.random": "ドン/カッをランダム",
+  
+  "config.title": "TJA Format Support",
+  "config.gogotimeHighlight": "ゴーゴータイムを色付けします。",
+  "config.branchHighlight": "譜面分岐を区分ごとに色付けします。", 
+  "config.liteMode": "構文解析をスキップして処理速度を向上させます。あらゆる機能が無効化されます。",
+  "config.completion": "プレイヤー固有命令の補完表示設定",
+  "config.measureCountHint": "空行後の小節に小節番号を表示します。",
+  "config.language": "表示言語を選択します。Autoは VS Code の表示言語に自動的に合わせます。",
+  
+  "view.chartInfo": "譜面情報",
+  
+  "semantic.roll": "連打",
+  "semantic.rollBig": "連打（大）", 
+  "semantic.balloon": "風船",
+  "semantic.balloonBig": "風船（大）",
+  "semantic.fuze": "時限爆弾",
+  "semantic.gogo": "ゴーゴータイム"
+}
