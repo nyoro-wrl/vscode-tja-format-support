@@ -13,7 +13,6 @@ import {
 import { Note } from "../types/note";
 import { Configs } from "../configs";
 import { changeLiteModeCommand } from "../commands/changeLiteMode";
-import { t } from "../i18n";
 
 /**
  * カーソル位置の小節番号表示
@@ -28,7 +27,7 @@ export class MeasureStatusBarItem implements vscode.Disposable {
       StatusBarAlignment.Right,
       200
     );
-    this.statusBarItem.name = t("statusBar.measure");
+    this.statusBarItem.name = "小節数";
     this.statusBarItem.tooltip = jumpMeasureCommand.tooltip;
     this.disposables.push(this.statusBarItem);
 
@@ -94,7 +93,7 @@ export class MeasureStatusBarItem implements vscode.Disposable {
     // 最大小節数を取得
     const maxMeasure = chartNode?.properties.info.measure;
     if (measure !== undefined && chartNode !== undefined && maxMeasure !== undefined) {
-      this.statusBarItem.text = `${t("statusBar.measure")}: ${measure} / ${maxMeasure}`;
+      this.statusBarItem.text = `小節: ${measure} / ${maxMeasure}`;
       this.statusBarItem.command = { ...jumpMeasureCommand, arguments: [chartNode] };
       this.statusBarItem.show();
     } else {
@@ -121,7 +120,7 @@ export class ComboStatusBarItem implements vscode.Disposable {
       StatusBarAlignment.Right,
       201
     );
-    this.statusBarItem.name = t("statusBar.combo");
+    this.statusBarItem.name = "コンボ数";
     this.disposables.push(this.statusBarItem);
 
     this.disposables.push(
@@ -243,7 +242,7 @@ export class ComboStatusBarItem implements vscode.Disposable {
         texts.push(masterCombo.toString());
       }
     }
-    this.statusBarItem.text = `${t("statusBar.combo")}: ${texts.join(", ")}`;
+    this.statusBarItem.text = `コンボ数: ${texts.join(", ")}`;
     this.statusBarItem.show();
   }
 
@@ -297,8 +296,8 @@ export class LiteModeStatusBarItem implements vscode.Disposable {
 
   private show() {
     const isLiteMode = new Configs().liteMode.get();
-    const modeText = isLiteMode ? t("statusBar.liteMode") : t("statusBar.normalMode");
-    const reverseModeText = !isLiteMode ? t("statusBar.liteMode") : t("statusBar.normalMode");
+    const modeText = isLiteMode ? "軽量モード" : "通常モード";
+    const reverseModeText = !isLiteMode ? "軽量モード" : "通常モード";
     this.statusBarItem.text = "TJA:" + modeText;
     this.statusBarItem.tooltip = reverseModeText + "に切り替え";
     this.statusBarItem.command = {
