@@ -37,34 +37,8 @@
 
 ## 截图
 
-![sample](images/sample.png)
+![sample](../images/sample.png)
 
-![command](images/command.gif)
+![command](../images/command.gif)
 
-![balloon](images/balloon.gif)
-
-## 语言设置
-
-此扩展支持多种语言。您可以通过两种方式更改界面语言：
-
-### 方法1：命令面板
-1. 按 `Ctrl+Shift+P`（Windows/Linux）或 `Cmd+Shift+P`（macOS）
-2. 搜索并选择"TJA: Change Language"
-3. 从列表中选择您喜欢的语言
-4. 重启 VS Code 以完全应用更改
-
-### 方法2：设置
-1. 打开 VS Code 设置（`Ctrl+,` 或 文件 > 首选项 > 设置）
-2. 搜索 `tjaFormatSupport.language`
-3. 从下拉菜单选择语言：
-   - `zh` - 中文
-   - `ja` - 日语
-   - `en` - 英语
-
-## 安装
-
-从 VS Code 扩展商店安装，或在扩展视图中搜索"TJA Format Support"。
-
-## 问题与反馈
-
-如果您遇到任何问题或有建议，请在我们的 [GitHub Issues](https://github.com/nyoro-wrl/vscode-tja-format-support/issues) 页面上报告。
+![balloon](../images/balloon.gif)
