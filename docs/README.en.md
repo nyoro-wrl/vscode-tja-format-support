@@ -37,34 +37,8 @@ Also supports `.tjc`, `.tjf`, and `.tmg` formats to some extent.
 
 ## Screenshots
 
-![sample](images/sample.png)
+![sample](../images/sample.png)
 
-![command](images/command.gif)
+![command](../images/command.gif)
 
-![balloon](images/balloon.gif)
-
-## Language Settings
-
-This extension supports multiple languages. You can change the interface language in two ways:
-
-### Method 1: Command Palette
-1. Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
-2. Search for and select "TJA: Change Language"
-3. Choose your preferred language from the list
-4. Restart VS Code to fully apply the changes
-
-### Method 2: Settings
-1. Open VS Code Settings (`Ctrl+,` or File > Preferences > Settings)
-2. Search for `tjaFormatSupport.language`
-3. Select language from dropdown:
-   - `zh` - Chinese
-   - `ja` - Japanese
-   - `en` - English
-
-## Installation
-
-Install from the VS Code Extension Marketplace or search for "TJA Format Support" in the Extensions view.
-
-## Issues & Feedback
-
-If you encounter any problems or have suggestions, please report them on our [GitHub Issues](https://github.com/nyoro-wrl/vscode-tja-format-support/issues) page.
+![balloon](../images/balloon.gif)
