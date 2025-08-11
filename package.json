@@ -87,12 +87,12 @@
       },
       {
         "command": "tja.changeLanguage",
-        "title": "Change Language / 更改语言 / 言語変更",
+        "title": "言語変更 / Change Language / 更改语言",
         "category": "tja"
       },
       {
         "command": "tja.debugLanguage",
-        "title": "Debug Language Settings / 调试语言设置 / 言語設定のデバッグ",
+        "title": "言語設定のデバッグ / Debug Language Settings / 调试语言设置",
         "category": "tja"
       }
     ],
@@ -202,15 +202,15 @@
           "type": "string",
           "enum": [
             "auto",
-            "zh",
             "ja",
-            "en"
+            "en",
+            "zh"
           ],
           "enumDescriptions": [
             "Auto",
-            "中文",
             "日本語",
-            "English"
+            "English",
+            "中文"
           ],
           "default": "auto",
           "description": "%config.language%"

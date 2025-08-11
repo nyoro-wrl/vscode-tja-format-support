@@ -30,46 +30,46 @@ export async function debugLanguage(): Promise<void> {
   
   // デバッグ情報を作成
   const debugInfo = [
-    "=== TJA 语言设置调试信息 ===",
+    "=== TJA Language Settings Debug Info ===",
     "",
-    `当前使用语言: ${currentLanguage}`,
-    `配置文件语言: ${configuredLanguage || "未设置"}`,
-    `VS Code 语言: ${vsCodeLanguage}`,
+    `Current Language: ${currentLanguage}`,
+    `Configured Language: ${configuredLanguage || "Not Set"}`,
+    `VS Code Language: ${vsCodeLanguage}`,
     "",
-    "支持的语言:",
+    "Supported Languages:",
     ...Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => `  ${code}: ${name}`),
     "",
-    "测试翻译结果:",
+    "Translation Test Results:",
     `  statusBar.measure: "${testTranslations.statusBarMeasure}"`,
     `  commands.zoom: "${testTranslations.commandsZoom}"`, 
     `  config.language: "${testTranslations.configLanguage}"`,
     "",
-    "配置路径: tjaFormatSupport.language",
+    "Configuration Path: tjaFormatSupport.language",
     "",
-    "如果翻译不正确，请尝试:",
-    "1. 重启 VS Code",
-    "2. 检查配置是否正确保存",
-    "3. 查看开发者控制台的日志信息"
+    "If translations are incorrect, please try:",
+    "1. Restart VS Code",
+    "2. Check if configuration is saved correctly",
+    "3. Check developer console for log information"
   ].join("\n");
   
   // デバッグ情報を表示
   const action = await vscode.window.showInformationMessage(
-    "语言调试信息已复制到剪贴板",
-    "查看详情",
-    "重新设置语言"
+    "Language debug info has been copied to clipboard",
+    "View Details",
+    "Change Language"
   );
   
   // クリップボードにコピー
   await vscode.env.clipboard.writeText(debugInfo);
   
-  if (action === "查看详情") {
+  if (action === "View Details") {
     // 一時ドキュメントを作成してデバッグ情報を表示
     const doc = await vscode.workspace.openTextDocument({
       content: debugInfo,
       language: "plaintext"
     });
     await vscode.window.showTextDocument(doc);
-  } else if (action === "重新设置语言") {
+  } else if (action === "Change Language") {
     // 言語選択を再度開く
     await vscode.commands.executeCommand("tja.changeLanguage");
   }

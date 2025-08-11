@@ -1,20 +1,20 @@
 import * as vscode from "vscode";
-import { zh } from "./zh";
 import { ja } from "./ja";
 import { en } from "./en";
+import { zh } from "./zh";
 
 /**
  * サポート言語一覧
  */
 export const SUPPORTED_LANGUAGES = {
   auto: "Auto",
-  zh: "中文",
   ja: "日本語",
   en: "English",
+  zh: "中文",
 } as const;
 
 export type LanguageConfig = keyof typeof SUPPORTED_LANGUAGES;
-export type SupportedLanguage = "zh" | "ja" | "en";
+export type SupportedLanguage = "ja" | "en" | "zh";
 
 /**
  * 言語リソースインターフェース
@@ -188,9 +188,9 @@ export interface LanguageResources {
  * 現在言語リソースマッピング
  */
 const resources: Record<SupportedLanguage, LanguageResources> = {
-  zh,
   ja,
   en,
+  zh,
 };
 
 /**
@@ -241,10 +241,12 @@ export class LanguageManager {
     if (config === "auto") {
       // VS Code言語設定から自動推定
       const vsCodeLanguage = vscode.env.language;
-      if (vsCodeLanguage.startsWith("zh")) {
-        return "zh";
-      } else if (vsCodeLanguage.startsWith("ja")) {
+      if (vsCodeLanguage.startsWith("ja")) {
         return "ja";
+      } else if (vsCodeLanguage.startsWith("en")) {
+        return "en";
+      } else if (vsCodeLanguage.startsWith("zh")) {
+        return "zh";
       } else {
         return "en"; // その他は英語
       }

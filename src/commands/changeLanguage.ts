@@ -41,7 +41,7 @@ export async function changeLanguage(): Promise<void> {
 
   // クイック選択メニューを表示
   const selected = await vscode.window.showQuickPick(languageItems, {
-    placeHolder: "Select display language / 选择显示语言 / 表示言語を選択",
+    placeHolder: "表示言語を選択 / Select display language / 选择显示语言",
     ignoreFocusOut: false,
   });
 
@@ -72,13 +72,13 @@ export async function changeLanguage(): Promise<void> {
  */
 function getRestartMessage(language: SupportedLanguage): string {
   switch (language) {
-    case "zh":
-      return "语言设置已更改，需要重启 VS Code 才能完全应用。";
-    case "en":
-      return "Language setting has been changed. Please restart VS Code to apply the changes fully.";
     case "ja":
     default:
       return "言語設定が変更されました。完全に適用するにはVS Codeの再起動が必要です。";
+    case "en":
+      return "Language setting has been changed. Please restart VS Code to apply the changes fully.";
+    case "zh":
+      return "语言设置已更改，需要重启 VS Code 才能完全应用。";
   }
 }
 
@@ -87,12 +87,12 @@ function getRestartMessage(language: SupportedLanguage): string {
  */
 function getRestartButtonText(language: SupportedLanguage): string {
   switch (language) {
-    case "zh":
-      return "重启";
-    case "en":
-      return "Restart";
     case "ja":
     default:
       return "再起動";
+    case "en":
+      return "Restart";
+    case "zh":
+      return "重启";
   }
 }
