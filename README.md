@@ -3,7 +3,7 @@
 太鼓の達人シミュレーターで使用される`.tja`フォーマットをサポートします。
 `.tjc` `.tjf` `.tmg`にもある程度対応しています。
 
-**日本語** | [English](README.en.md) | [中文](README.zh.md)
+**日本語** | [English](docs/README.en.md) | [中文](docs/README.zh.md)
 
 ## 主な機能
 

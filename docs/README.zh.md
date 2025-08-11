@@ -3,7 +3,7 @@
 支持太鼓之达人模拟器中使用的 `.tja` 格式。
 也在一定程度上支持 `.tjc`、`.tjf`、`.tmg` 格式。
 
-[日本語](README.md) | [English](README.en.md) | **中文**
+[日本語](../README.md) | [English](README.en.md) | **中文**
 
 ## 主要功能
 

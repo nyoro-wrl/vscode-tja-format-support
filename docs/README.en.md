@@ -3,7 +3,7 @@
 This extension provides support for the `.tja` format used in Taiko no Tatsujin simulators.
 Also supports `.tjc`, `.tjf`, and `.tmg` formats to some extent.
 
-[日本語](README.md) | **English** | [中文](README.zh.md)
+[日本語](../README.md) | **English** | [中文](README.zh.md)
 
 ## Main Features
 
