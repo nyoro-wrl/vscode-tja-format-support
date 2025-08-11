@@ -28,71 +28,61 @@
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.zoom",
-        "title": "%tja.zoom%",
+        "title": "譜面の拡大",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection && !editorHasMultipleSelections",
         "command": "tja.truncate",
-        "title": "%tja.truncate%",
+        "title": "譜面の切り詰め",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection && !editorHasMultipleSelections",
         "command": "tja.constantScroll",
-        "title": "%tja.constantScroll%",
+        "title": "スクロール速度の一定化",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection && !editorHasMultipleSelections",
         "command": "tja.transitionScroll",
-        "title": "%tja.transitionScroll%",
+        "title": "スクロール速度の遷移",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.deleteCommands",
-        "title": "%tja.deleteCommands%",
+        "title": "命令の一括削除",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.toBig",
-        "title": "%tja.toBig%",
+        "title": "大音符に置換",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.toSmall",
-        "title": "%tja.toSmall%",
+        "title": "小音符に置換",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.toRest",
-        "title": "%tja.toRest%",
+        "title": "休符に置換",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.reverse",
-        "title": "%tja.reverse%",
+        "title": "ドン/カッを反転",
         "category": "tja"
       },
       {
         "enablement": "editorLangId == tja && editorHasSelection",
         "command": "tja.random",
-        "title": "%tja.random%",
-        "category": "tja"
-      },
-      {
-        "command": "tja.changeLanguage",
-        "title": "言語変更 / Change Language / 更改语言",
-        "category": "tja"
-      },
-      {
-        "command": "tja.debugLanguage",
-        "title": "言語設定のデバッグ / Debug Language Settings / 调试语言设置",
+        "title": "ドン/カッをランダム",
         "category": "tja"
       }
     ],
@@ -152,26 +142,26 @@
     },
     "configuration": {
       "type": "object",
-      "title": "%config.title%",
+      "title": "TJA Format Support",
       "properties": {
         "tjaFormatSupport.gogotimeHighlight": {
           "type": "boolean",
           "default": true,
-          "description": "%config.gogotimeHighlight%"
+          "description": "ゴーゴータイムを色付けします。"
         },
         "tjaFormatSupport.branchHighlight": {
           "type": "boolean",
           "default": true,
-          "description": "%config.branchHighlight%"
+          "description": "譜面分岐を区分ごとに色付けします。"
         },
         "tjaFormatSupport.liteMode": {
           "type": "boolean",
           "default": false,
-          "description": "%config.liteMode%"
+          "description": "構文解析をスキップして処理速度を向上させます。あらゆる機能が無効化されます。"
         },
         "tjaFormatSupport.completion": {
           "type": "object",
-          "description": "%config.completion%",
+          "description": "プレイヤー固有命令の補完表示設定",
           "properties": {
             "tjap": {
               "type": "boolean",
@@ -196,24 +186,7 @@
         "tjaFormatSupport.measureCountHint": {
           "type": "boolean",
           "default": true,
-          "description": "%config.measureCountHint%"
-        },
-        "tjaFormatSupport.language": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "ja",
-            "en",
-            "zh"
-          ],
-          "enumDescriptions": [
-            "Auto",
-            "日本語",
-            "English",
-            "中文"
-          ],
-          "default": "auto",
-          "description": "%config.language%"
+          "description": "空行後の小節に小節番号を表示します。"
         }
       }
     },
@@ -237,7 +210,7 @@
       "explorer": [
         {
           "id": "tja.info",
-          "name": "%view.chartInfo%",
+          "name": "譜面情報",
           "when": "tja.activeFile",
           "icon": "images/icon.png"
         }
@@ -253,27 +226,27 @@
     "semanticTokenTypes": [
       {
         "id": "roll",
-        "description": "%semantic.roll%"
+        "description": "連打"
       },
       {
         "id": "rollBig",
-        "description": "%semantic.rollBig%"
+        "description": "連打（大）"
       },
       {
         "id": "balloon",
-        "description": "%semantic.balloon%"
+        "description": "風船"
       },
       {
         "id": "balloonBig",
-        "description": "%semantic.balloonBig%"
+        "description": "風船（大）"
       },
       {
         "id": "fuze",
-        "description": "%semantic.fuze%"
+        "description": "時限爆弾"
       },
       {
         "id": "gogo",
-        "description": "%semantic.gogo%"
+        "description": "ゴーゴータイム"
       },
       {
         "id": "gogoMeasureEnd",

@@ -1,6 +1,5 @@
 import { MarkdownString, SnippetString } from "vscode";
 import { CommandCollection } from "../types/command";
-import { getLocalizedCommandInfo, getLocalizedCommandParamDescription } from "../util/i18nHelper";
 
 /**
  * 命令の仕様一覧
@@ -9,18 +8,15 @@ export const commands = new CommandCollection({
   // 太鼓さん次郎
   start: {
     name: "START",
-    get detail() { 
-      return getLocalizedCommandInfo("start").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("start").documentation; 
-    },
+    detail: "開始",
+    documentation:
+      "譜面データの記述を開始します。  \n" +
+      "`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。  \n\n" +
+      "`<player>`に`P1`や`P2`を指定することで、譜面をプレイヤー別に記述することができます。",
     parameter: [
       {
         name: "player",
-        get description() { 
-          return getLocalizedCommandParamDescription("start", "playerDescription"); 
-        },
+        description: "プレイヤーサイド  \n" + "`P1`または`P2`",
         snippet: [
           { value: "P1", detail: "1Pサイド" },
           { value: "P2", detail: "2Pサイド" },
@@ -35,12 +31,10 @@ export const commands = new CommandCollection({
   },
   end: {
     name: "END",
-    get detail() { 
-      return getLocalizedCommandInfo("end").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("end").documentation; 
-    },
+    detail: "終了",
+    documentation:
+      "譜面データの記述を終了します。  \n" +
+      "`#START`と`#END`で囲んだ範囲が譜面データとして解釈されます。",
     parameter: [],
     separator: "None",
     section: "End",
@@ -49,18 +43,9 @@ export const commands = new CommandCollection({
   },
   bpmchange: {
     name: "BPMCHANGE",
-    get detail() { 
-      return getLocalizedCommandInfo("bpmchange").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("bpmchange").documentation; 
-    },
-    parameter: [{ 
-      name: "bpm", 
-      get description() { 
-        return getLocalizedCommandParamDescription("bpmchange", "bpmDescription"); 
-      } 
-    }],
+    detail: "BPM変更",
+    documentation: "BPMを変更します。",
+    parameter: [{ name: "bpm", description: "BPM" }],
     separator: "None",
     section: "Inner",
     category: "Base",
@@ -68,12 +53,8 @@ export const commands = new CommandCollection({
   },
   gogostart: {
     name: "GOGOSTART",
-    get detail() { 
-      return getLocalizedCommandInfo("gogostart").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("gogostart").documentation; 
-    },
+    detail: "ゴーゴー開始",
+    documentation: "ゴーゴータイムを開始します。",
     parameter: [],
     separator: "None",
     section: "Inner",
@@ -82,12 +63,8 @@ export const commands = new CommandCollection({
   },
   gogoend: {
     name: "GOGOEND",
-    get detail() { 
-      return getLocalizedCommandInfo("gogoend").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("gogoend").documentation; 
-    },
+    detail: "ゴーゴー終了",
+    documentation: "ゴーゴータイムを終了します。",
     parameter: [],
     separator: "None",
     section: "Inner",
@@ -96,18 +73,12 @@ export const commands = new CommandCollection({
   },
   measure: {
     name: "MEASURE",
-    get detail() { 
-      return getLocalizedCommandInfo("measure").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("measure").documentation; 
-    },
+    detail: "拍子変更",
+    documentation: "拍子を変更します。  \n" + "`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。",
     parameter: [
       {
         name: "measure",
-        get description() { 
-          return getLocalizedCommandParamDescription("measure", "measureDescription"); 
-        },
+        description: "拍子  \n" + "`4/4`で4分の4拍子、`6/8`で8分の6拍子になります。",
       },
     ],
     separator: "None",
@@ -117,18 +88,9 @@ export const commands = new CommandCollection({
   },
   scroll: {
     name: "SCROLL",
-    get detail() { 
-      return getLocalizedCommandInfo("scroll").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("scroll").documentation; 
-    },
-    parameter: [{ 
-      name: "rate", 
-      get description() { 
-        return getLocalizedCommandParamDescription("scroll", "rateDescription"); 
-      } 
-    }],
+    detail: "スクロール速度変更",
+    documentation: "譜面のスクロール速度を`<rate>`倍に変更します。  \n" + "デフォルトは`1`です。",
+    parameter: [{ name: "rate", description: "スクロール速度（基準値: 1）" }],
     separator: "None",
     section: "Inner",
     category: "Base",
@@ -136,18 +98,11 @@ export const commands = new CommandCollection({
   },
   delay: {
     name: "DELAY",
-    get detail() { 
-      return getLocalizedCommandInfo("delay").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("delay").documentation; 
-    },
-    parameter: [{ 
-      name: "second", 
-      get description() { 
-        return getLocalizedCommandParamDescription("delay", "secondDescription"); 
-      } 
-    }],
+    detail: "譜面遅延（停止）",
+    documentation:
+      "譜面が流れてくるタイミングを`<second>`秒遅らせます。  \n" +
+      "`#BMSCROLL`,`#HBSCROLL`適用下では譜面停止扱いになります。",
+    parameter: [{ name: "second", description: "停止秒数" }],
     separator: "None",
     section: "Inner",
     category: "Base",
@@ -155,12 +110,10 @@ export const commands = new CommandCollection({
   },
   section: {
     name: "SECTION",
-    get detail() { 
-      return getLocalizedCommandInfo("section").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("section").documentation; 
-    },
+    detail: "分岐判定リセット",
+    documentation:
+      "譜面分岐の判定に使う連打数、精度をリセットします。  \n" +
+      "分岐したい箇所の一小節以上前に置いてください。",
     parameter: [],
     separator: "None",
     section: "MeasureHead",
@@ -169,18 +122,19 @@ export const commands = new CommandCollection({
   },
   branchstart: {
     name: "BRANCHSTART",
-    get detail() { 
-      return getLocalizedCommandInfo("branchstart").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("branchstart").documentation; 
-    },
+    detail: "分岐開始",
+    documentation:
+      "譜面分岐を開始します。  \n\n" +
+      "`<type>`: 分岐条件を指定します。`r`で連打数、`p`で精度(%)、`s`でスコア。  \n" +
+      "`<expart>`: 玄人譜面の分岐に必要な値。  \n" +
+      "`<master>`: 達人譜面の分岐に必要な値。  \n\n" +
+      "分岐判定は一小節前に行われます。  \n" +
+      "一小節前から連打が始まる場合、その連打もカウントします。  \n\n" +
+      "分岐後は普通譜面`#N`、玄人譜面`#E`、達人譜面`#M`で記述します。",
     parameter: [
       {
         name: "type",
-        get description() { 
-          return getLocalizedCommandParamDescription("branchstart", "typeDescription"); 
-        },
+        description: "分岐条件  \n" + "`r`で連打数、`p`で精度(%)、`s`でスコア。",
         snippet: [
           { value: "r", detail: "連打数" },
           { value: "p", detail: "精度(%)" },
@@ -189,15 +143,17 @@ export const commands = new CommandCollection({
       },
       {
         name: "expart",
-        get description() {
-          return getLocalizedCommandParamDescription("branchstart", "expertDescription");
-        },
+        description:
+          "玄人譜面の分岐に必要な値  \n" +
+          "### 分岐条件の種類  \n" +
+          "`r`: 連打数, `p`: 精度(%), `s`: スコア",
       },
       {
         name: "master",
-        get description() {
-          return getLocalizedCommandParamDescription("branchstart", "masterDescription");
-        },
+        description:
+          "達人譜面の分岐に必要な値  \n" +
+          "### 分岐条件の種類  \n" +
+          "`r`: 連打数, `p`: 精度(%), `s`: スコア",
       },
     ],
     separator: "Comma",
@@ -207,12 +163,8 @@ export const commands = new CommandCollection({
   },
   branchend: {
     name: "BRANCHEND",
-    get detail() { 
-      return getLocalizedCommandInfo("branchend").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("branchend").documentation; 
-    },
+    detail: "分岐終了",
+    documentation: "譜面分岐を終了します。  \n" + "以降は全ての分岐で共通の譜面が流れます。",
     parameter: [],
     separator: "None",
     section: "Branch",
@@ -221,12 +173,8 @@ export const commands = new CommandCollection({
   },
   n: {
     name: "N",
-    get detail() { 
-      return getLocalizedCommandInfo("n").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("n").documentation; 
-    },
+    detail: "普通譜面",
+    documentation: "普通譜面を記述します。",
     parameter: [],
     separator: "None",
     section: "Branch",
@@ -235,12 +183,8 @@ export const commands = new CommandCollection({
   },
   e: {
     name: "E",
-    get detail() { 
-      return getLocalizedCommandInfo("e").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("e").documentation; 
-    },
+    detail: "玄人譜面",
+    documentation: "玄人譜面を記述します。",
     parameter: [],
     separator: "None",
     section: "Branch",
@@ -249,12 +193,8 @@ export const commands = new CommandCollection({
   },
   m: {
     name: "M",
-    get detail() { 
-      return getLocalizedCommandInfo("m").detail; 
-    },
-    get documentation() { 
-      return getLocalizedCommandInfo("m").documentation; 
-    },
+    detail: "達人譜面",
+    documentation: "達人譜面を記述します。",
     parameter: [],
     separator: "None",
     section: "Branch",
@@ -263,9 +203,7 @@ export const commands = new CommandCollection({
   },
   levelhold: {
     name: "LEVELHOLD",
-    get detail() { 
-      return getLocalizedCommandInfo("levelhold").detail; 
-    },
+    detail: "分岐固定",
     documentation:
       "現在の譜面分岐を固定します。  \n" +
       "この命令がある小節に到達した場合、以後も譜面分岐が行われなくなります。",
