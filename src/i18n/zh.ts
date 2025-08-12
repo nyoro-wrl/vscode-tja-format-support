@@ -16,6 +16,102 @@ export const zh: LanguageResources = {
     reverse: "反转咚/咔",
     random: "随机咚/咔"
   },
+
+  messages: {
+    // 通用消息
+    noChartInSelection: "选择范围内未找到谱面",
+    
+    // 缩放相关
+    zoomPrompt: "请输入缩放倍率",
+    zoomValidationInteger: "请输入整数",
+    zoomValidationMinTwo: "请输入2以上的整数",
+    
+    // 恒定滚动相关
+    constantScrollPrompt: "请输入滚动速度的基准BPM",
+    constantScrollValidationNumber: "请输入数字",
+    
+    // 滚动变换相关
+    transitionScrollStartTitle: "滚动速度起始值",
+    transitionScrollStartPrompt: "请输入滚动速度起始值",
+    transitionScrollEndTitle: "滚动速度结束值",
+    transitionScrollEndPrompt: "请输入滚动速度结束值",
+    transitionScrollFrequencyTitle: "滚动速度变换频率",
+    transitionScrollFrequencyPlaceholder: "请选择变换频率",
+    transitionScrollEasingTitle: "滚动速度缓动",
+    transitionScrollEasingPlaceholder: "请选择缓动类型",
+    frequencyMeasure: "小节",
+    frequencyLine: "行",
+    frequencyNote: "音符",
+    frequencyAlways: "常时",
+    
+    // 删除命令相关
+    deleteCommandsPlaceholder: "选择要删除的命令",
+    deleteCommandsAll: "全部",
+    noCommandsInSelection: "选择范围内未找到命令",
+    
+    // 跳转小节相关
+    jumpMeasurePrompt: "请输入要跳转的小节号",
+    jumpMeasurePlaceholder: "1 ~ {0}",
+    jumpMeasureValidationInteger: "请输入整数",
+    jumpMeasureValidationNotFound: "未找到小节",
+    jumpMeasureBranchPlaceholder: "选择要跳转的谱面分支",
+    branchNormal: "普通 (Normal)",
+    branchExpert: "玄人 (Expert)",
+    branchMaster: "达人 (Master)",
+    
+    // 切换模式相关
+    liteModeNormal: "普通模式",
+    liteModeLite: "轻量模式",
+    
+    // 更改语言相关
+    changeLanguagePlaceholder: "表示言語を選択 / Select display language / 选择显示语言",
+    changeLanguageCurrent: "$(check) 当前",
+    changeLanguageLater: "稍后",
+    restartMessage: "语言设置已更改，需要重启 VS Code 才能完全应用。",
+    restartButton: "重启"
+  },
+
+  parser: {
+    // 一般错误
+    invalidText: "无效文本。",
+    extensionError: "扩展错误",
+    invalidHeaderPosition: "头部位置无效。",
+    invalidCommandPosition: "命令位置无效。",
+    
+    // 气球音符相关
+    noBalloonNotes: "未找到气球音符。",
+    balloonCountNotDefined: "未定义打击数。",
+    
+    // 结构错误
+    missingStart: "未找到 #START。",
+    missingEnd: "未找到 #END。",
+    missingBranchStart: "未找到 #BRANCHSTART。",
+    measureNotClosed: "小节未闭合。",
+    duplicateBranch: "分支重复。",
+    noBranchSection: "未找到分支区段。",
+    
+    // 谱面状态错误
+    rollNoteInterrupted: "音符中断。",
+    measureCountMismatch: "分支间小节数不统一。",
+    measurePlacedInMiddle: "放置在小节中间。",
+    
+    // 命令相关
+    redundantCommand: "冗余命令。",
+    commandPositionInvalid: "命令位置无效。",
+    commandBeforeBranchStart: "命令位置无效。请放置在 #BRANCHSTART 之前。",
+    
+    // 分支状态
+    barlineStateInconsistent: "分支后的小节线显示状态（#BARLINEOFF,#BARLINEON）不统一。",
+    gogotimeStateInconsistent: "分支后的GoGo Time状态（#GOGOSTART,#GOGOEND）不统一。",
+    dummyNoteStateInconsistent: "分支后的虚拟音符状态（#DUMMYSTART,#DUMMYEND）不统一。"
+  },
+
+  codeActions: {
+    setBalloonCount: "设置气球音符打击数",
+    delete: "删除",
+    createEnd: "创建 #END",
+    removeRedundantCommand: "删除冗余命令"
+  },
   
   config: {
     gogotimeHighlight: "为 GoGo Time 添加颜色高亮。",
@@ -44,6 +140,54 @@ export const zh: LanguageResources = {
     balloonBig: "气球（大）",
     fuze: "定时炸弹",
     gogo: "GoGo Time"
+  },
+
+  // 扩展相关
+  extension: {
+    updateNotificationTitle: "TJA Format Support 已添加新功能",
+    updateNotificationOk: "确定",
+    updateNotificationChangelog: "查看更改日志"
+  },
+
+  // 文档链接相关
+  documentLinks: {
+    openAudioFile: "打开音频文件",
+    openSongFile: "打开歌曲文件",
+    openSideRevFile: "打开反转文件",
+    openBackgroundImage: "打开背景图片",
+    openBackgroundMovie: "打开背景视频",
+    openPreviewImage: "打开预览图片",
+    openBgaFile: "打开BGA",
+    openLyricsFile: "打开歌词文件",
+    openFile: "打开文件"
+  },
+
+  // 重命名提供者相关
+  renameProvider: {
+    balloonCountInteger: "请输入整数作为气球音符打击数",
+    fileParseError: "文件解析失败",
+    notBalloonParameter: "不是气球音符打击数参数",
+    balloonHeaderNotFound: "未找到对应的气球音符头部",
+    balloonParameterNotFound: "未找到气球音符参数",
+    notBalloonNote: "不是气球音符"
+  },
+
+  // 签名帮助相关
+  signatureHelp: {
+    examNumberDescription: "指定1以上的整数。每次调用头部时递增数字。",
+    numberDescription: "指定一个数字。"
+  },
+
+  // 代码片段相关
+  snippet: {
+    definedCommandDocumentation: "谱面中定义的命令",
+    folderDetail: "文件夹",
+    zeroPaddingDetail: "以与上一行相同的长度进衁0填充"
+  },
+
+  // 状态栏相关
+  statusBarTooltips: {
+    switchTo: "切换到"
   },
 
   // TJA命令详细信息

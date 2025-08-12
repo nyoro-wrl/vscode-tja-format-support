@@ -300,7 +300,7 @@ export class LiteModeStatusBarItem implements vscode.Disposable {
     const modeText = isLiteMode ? t("statusBar.liteMode") : t("statusBar.normalMode");
     const reverseModeText = !isLiteMode ? t("statusBar.liteMode") : t("statusBar.normalMode");
     this.statusBarItem.text = "TJA:" + modeText;
-    this.statusBarItem.tooltip = reverseModeText + "に切り替え";
+    this.statusBarItem.tooltip = reverseModeText + t("statusBarTooltips.switchTo");
     this.statusBarItem.command = {
       ...changeLiteModeCommand,
       arguments: [!isLiteMode],

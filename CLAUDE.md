@@ -14,6 +14,14 @@ This is a VS Code extension for TJA format support - providing syntax highlighti
 - `npm run lint` - Run ESLint on TypeScript source files
 - `npm run vscode:prepublish` - Prepare extension for publishing
 
+## Testing the Extension
+
+To test the extension during development:
+1. Open this project in VS Code
+2. Press F5 to launch a new Extension Development Host window
+3. Open a .tja file in the new window to test language features
+4. Use `npm run test` to run the automated test suite
+
 ## Architecture Overview
 
 ### Core Processing Pipeline
@@ -44,10 +52,23 @@ The `src/types/` directory defines the domain model:
 - **state.ts** - Chart state tracking during parsing
 
 ### Extension Configuration
-Three main settings control behavior:
+Key settings control behavior:
 - `gogotimeHighlight` - Highlight gogo time sections
 - `branchHighlight` - Color-code chart branches (normal/expert/master)
 - `liteMode` - Skip parsing for performance (disables language features)
+- `measureCountHint` - Show measure count hints in status bar
+- `completion` - Configure completion providers for different Taiko simulators (TJAPlayer, OpenTaiko, TaikoManyGimmicks)
+- `language` - Extension language (auto, ja, en, zh)
+
+### Internationalization System
+The extension supports multiple languages through:
+- `LanguageManager` singleton in `src/i18n/index.ts`
+- Language resource files in `src/i18n/` (ja.ts, en.ts, zh.ts)
+- VS Code package localization files (`package.nls.*.json`)
+- Translation function `t()` for runtime text translation
 
 ### File Format Support
-Handles multiple Taiko chart formats with format-specific parsing logic. TMG format uses different command syntax with parentheses instead of spaces.
+Handles multiple Taiko chart formats with format-specific parsing logic:
+- **.tja** - Standard Taiko Jiro format
+- **.tjc/.tjf** - Taiko Jiro variants
+- **.tmg** - TaikoManyGimmicks format (uses parentheses instead of spaces for command syntax)

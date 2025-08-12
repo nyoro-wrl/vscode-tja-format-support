@@ -16,6 +16,102 @@ export const en: LanguageResources = {
     reverse: "Reverse Don/Ka",
     random: "Randomize Don/Ka"
   },
+
+  messages: {
+    // Common messages
+    noChartInSelection: "No chart found in selection",
+    
+    // Zoom related
+    zoomPrompt: "Enter zoom multiplier",
+    zoomValidationInteger: "Please enter an integer",
+    zoomValidationMinTwo: "Please enter an integer of 2 or greater",
+    
+    // ConstantScroll related
+    constantScrollPrompt: "Enter reference BPM for scroll speed",
+    constantScrollValidationNumber: "Please enter a number",
+    
+    // TransitionScroll related
+    transitionScrollStartTitle: "Scroll Speed Start Value",
+    transitionScrollStartPrompt: "Enter scroll speed start value",
+    transitionScrollEndTitle: "Scroll Speed End Value",
+    transitionScrollEndPrompt: "Enter scroll speed end value",
+    transitionScrollFrequencyTitle: "Scroll Speed Transition Frequency",
+    transitionScrollFrequencyPlaceholder: "Select transition frequency",
+    transitionScrollEasingTitle: "Scroll Speed Easing",
+    transitionScrollEasingPlaceholder: "Select easing type",
+    frequencyMeasure: "Measure",
+    frequencyLine: "Line",
+    frequencyNote: "Note",
+    frequencyAlways: "Always",
+    
+    // DeleteCommands related
+    deleteCommandsPlaceholder: "Select commands to delete",
+    deleteCommandsAll: "All",
+    noCommandsInSelection: "No commands found in selection",
+    
+    // JumpMeasure related
+    jumpMeasurePrompt: "Enter measure number to jump to",
+    jumpMeasurePlaceholder: "1 ~ {0}",
+    jumpMeasureValidationInteger: "Please enter an integer",
+    jumpMeasureValidationNotFound: "Measure not found",
+    jumpMeasureBranchPlaceholder: "Select branch to jump to",
+    branchNormal: "Normal",
+    branchExpert: "Expert",
+    branchMaster: "Master",
+    
+    // ChangeLiteMode related
+    liteModeNormal: "Normal Mode",
+    liteModeLite: "Lite Mode",
+    
+    // ChangeLanguage related
+    changeLanguagePlaceholder: "表示言語を選択 / Select display language / 选择显示语言",
+    changeLanguageCurrent: "$(check) Current",
+    changeLanguageLater: "Later",
+    restartMessage: "Language setting has been changed. Please restart VS Code to apply the changes fully.",
+    restartButton: "Restart"
+  },
+
+  parser: {
+    // General errors
+    invalidText: "Invalid text.",
+    extensionError: "Extension error",
+    invalidHeaderPosition: "Invalid header position.",
+    invalidCommandPosition: "Invalid command position.",
+    
+    // Balloon note related
+    noBalloonNotes: "No balloon notes found.",
+    balloonCountNotDefined: "Hit count not defined.",
+    
+    // Structure errors
+    missingStart: "#START not found.",
+    missingEnd: "#END not found.",
+    missingBranchStart: "#BRANCHSTART not found.",
+    measureNotClosed: "Measure not closed.",
+    duplicateBranch: "Duplicate branch.",
+    noBranchSection: "No branch section found.",
+    
+    // Chart state errors
+    rollNoteInterrupted: "Note interrupted.",
+    measureCountMismatch: "Measure count mismatch between branches.",
+    measurePlacedInMiddle: "Placed in the middle of measure.",
+    
+    // Command related
+    redundantCommand: "Redundant command.",
+    commandPositionInvalid: "Invalid command position.",
+    commandBeforeBranchStart: "Invalid command position. Place before #BRANCHSTART.",
+    
+    // Branch state
+    barlineStateInconsistent: "Barline state (#BARLINEOFF, #BARLINEON) is inconsistent after branch.",
+    gogotimeStateInconsistent: "Gogo time state (#GOGOSTART, #GOGOEND) is inconsistent after branch.",
+    dummyNoteStateInconsistent: "Dummy note state (#DUMMYSTART, #DUMMYEND) is inconsistent after branch."
+  },
+
+  codeActions: {
+    setBalloonCount: "Set balloon note hit count",
+    delete: "Delete",
+    createEnd: "Create #END",
+    removeRedundantCommand: "Remove redundant command"
+  },
   
   config: {
     gogotimeHighlight: "Add color highlight for GoGo Time.",
@@ -44,6 +140,54 @@ export const en: LanguageResources = {
     balloonBig: "Balloon (Big)",
     fuze: "Time Bomb",
     gogo: "GoGo Time"
+  },
+
+  // Extension related
+  extension: {
+    updateNotificationTitle: "New features have been added to TJA Format Support",
+    updateNotificationOk: "OK",
+    updateNotificationChangelog: "View Changelog"
+  },
+
+  // Document links related
+  documentLinks: {
+    openAudioFile: "Open audio file",
+    openSongFile: "Open song file",
+    openSideRevFile: "Open side reverse file",
+    openBackgroundImage: "Open background image",
+    openBackgroundMovie: "Open background movie",
+    openPreviewImage: "Open preview image",
+    openBgaFile: "Open BGA",
+    openLyricsFile: "Open lyrics file",
+    openFile: "Open file"
+  },
+
+  // Rename provider related
+  renameProvider: {
+    balloonCountInteger: "Please enter balloon note hit count as an integer",
+    fileParseError: "Failed to parse file",
+    notBalloonParameter: "Not a balloon note hit count parameter",
+    balloonHeaderNotFound: "Corresponding balloon note header not found",
+    balloonParameterNotFound: "Balloon note parameter not found",
+    notBalloonNote: "Not a balloon note"
+  },
+
+  // Signature help related
+  signatureHelp: {
+    examNumberDescription: "Specify an integer of 1 or greater. Increment the number each time you call the header.",
+    numberDescription: "Specify a number."
+  },
+
+  // Snippet related
+  snippet: {
+    definedCommandDocumentation: "Commands defined in the chart",
+    folderDetail: "Folder",
+    zeroPaddingDetail: "Zero-pad to same length as previous line"
+  },
+
+  // Status bar related
+  statusBarTooltips: {
+    switchTo: "Switch to"
   },
 
   // TJA Command Details

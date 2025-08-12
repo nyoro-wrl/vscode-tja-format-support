@@ -6,7 +6,13 @@ import {
   JumpBalloonParameterDefinitionProvider,
 } from "./providers/definition";
 import { BalloonParameterRenameProvider } from "./providers/renameProvider";
-import { BalloonHoverProvider, CommandHoverProvider, HeaderHoverProvider, HeaderParameterHoverProvider, CommandParameterHoverProvider } from "./providers/hover";
+import {
+  BalloonHoverProvider,
+  CommandHoverProvider,
+  HeaderHoverProvider,
+  HeaderParameterHoverProvider,
+  CommandParameterHoverProvider,
+} from "./providers/hover";
 import {
   CommandCompletionItemProvider,
   CommandParameterCompletionItemProvider,
@@ -52,8 +58,7 @@ import {
 } from "./commands/chartEdit";
 import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
-import { getLanguageManager } from "./i18n";
-
+import { getLanguageManager, t } from "./i18n";
 
 export let activeTjaFile: ActiveTjaFile;
 /**
@@ -67,10 +72,10 @@ export let documents: Documents;
  */
 export function activate(context: vscode.ExtensionContext) {
   versionCheck(context);
-  
+
   // 初始化语言管理器
   const languageManager = getLanguageManager();
-  
+
   activeTjaFile = new ActiveTjaFile();
   documents = new Documents();
 
@@ -102,12 +107,26 @@ export function activate(context: vscode.ExtensionContext) {
       new DocumentSemanticTokensProvider(),
       legend
     ),
-    languages.registerCompletionItemProvider(selector, new HeaderCompletionItemProvider(), ":", " "),
+    languages.registerCompletionItemProvider(
+      selector,
+      new HeaderCompletionItemProvider(),
+      ":",
+      " "
+    ),
     languages.registerCompletionItemProvider(selector, new HeaderParameterCompletionItemProvider()),
     languages.registerCompletionItemProvider(selector, new CommandCompletionItemProvider(), "#"),
-    languages.registerCompletionItemProvider(selector, new CommandParameterCompletionItemProvider()),
+    languages.registerCompletionItemProvider(
+      selector,
+      new CommandParameterCompletionItemProvider()
+    ),
     languages.registerCompletionItemProvider(selector, new NotesPaddingItemProvider()),
-    languages.registerSignatureHelpProvider(selector, new CommandSignatureHelpProvider(), " ", ",", ":"),
+    languages.registerSignatureHelpProvider(
+      selector,
+      new CommandSignatureHelpProvider(),
+      " ",
+      ",",
+      ":"
+    ),
     languages.registerDefinitionProvider(selector, new JumpBalloonNotesDefinitionProvider()),
     languages.registerDefinitionProvider(selector, new JumpBalloonParameterDefinitionProvider()),
     languages.registerRenameProvider(selector, new BalloonParameterRenameProvider()),
@@ -157,14 +176,14 @@ function versionCheck(context: vscode.ExtensionContext) {
   if (previousVersion && noticeVersion.some((x) => x > previousVersion && x <= currentVersion)) {
     vscode.window
       .showInformationMessage(
-        "TJA Format Supportに新たな機能が追加されました",
-        "OK",
-        "変更ログの確認"
+        t("extension.updateNotificationTitle"),
+        t("extension.updateNotificationOk"),
+        t("extension.updateNotificationChangelog")
       )
       .then((selection) => {
-        if (selection === "変更ログの確認") {
+        if (selection === t("extension.updateNotificationChangelog")) {
           const changelogUrl = vscode.Uri.parse(
-            "https://marketplace.visualstudio.com/items/nyoro.tja-format-support/changelog"
+            "https://github.com/nyoro-wrl/vscode-tja-format-support/blob/master/CHANGELOG.md"
           );
           vscode.env.openExternal(changelogUrl);
           // vscode.commands.executeCommand("extension.open", context.extension.id);

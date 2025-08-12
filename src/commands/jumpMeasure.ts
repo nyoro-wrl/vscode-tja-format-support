@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Selection, TextEditor, TextEditorEdit } from "vscode";
 import { BranchSectionNode, ChartNode, MeasureNode } from "../types/node";
+import { t } from "../i18n";
 
 export const jumpMeasureCommand: vscode.Command = {
   command: "tja.jumpMeasure",
@@ -22,24 +23,24 @@ export async function jumpMeasure(
 ): Promise<void> {
   const maxMeasure = chartNode.properties.info.measure;
   const input = await vscode.window.showInputBox({
-    prompt: "移動先の小節番号を入力してください",
-    placeHolder: `1 ~ ${maxMeasure}`,
+    prompt: t("messages.jumpMeasurePrompt"),
+    placeHolder: t("messages.jumpMeasurePlaceholder").replace("{0}", maxMeasure.toString()),
     validateInput: (text) => {
       if (!text) {
         return;
       }
       if (Number.isNaN(Number(text))) {
-        return "整数を入力してください";
+        return t("messages.jumpMeasureValidationInteger");
       }
       const measure = Number(text);
       if (!Number.isInteger(measure)) {
-        return "整数を入力してください";
+        return t("messages.jumpMeasureValidationInteger");
       }
       const measureNodes = chartNode.filter(
         (x) => x instanceof MeasureNode && x.properties.startChartState.measure === measure
       );
       if (measureNodes.length === 0) {
-        return "小節が見つかりません";
+        return t("messages.jumpMeasureValidationNotFound");
       }
     },
   });
@@ -70,17 +71,17 @@ export async function jumpMeasure(
 
     const items: { label: string; value: string }[] = [];
     if (nBranch !== undefined) {
-      items.push({ label: "普通 (Normal)", value: "N" });
+      items.push({ label: t("messages.branchNormal"), value: "N" });
     }
     if (eBranch !== undefined) {
-      items.push({ label: "玄人 (Expert)", value: "E" });
+      items.push({ label: t("messages.branchExpert"), value: "E" });
     }
     if (mBranch !== undefined) {
-      items.push({ label: "達人 (Master)", value: "M" });
+      items.push({ label: t("messages.branchMaster"), value: "M" });
     }
 
     const selectedItem = await vscode.window.showQuickPick(items, {
-      placeHolder: "移動先の譜面分岐を選択してください",
+      placeHolder: t("messages.jumpMeasureBranchPlaceholder"),
     });
     if (selectedItem === undefined) {
       return;

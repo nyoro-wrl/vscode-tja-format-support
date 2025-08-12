@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Configs } from "../configs";
+import { t } from "../i18n";
 
 export const changeLiteModeCommand: vscode.Command = {
   command: "tja.changeLiteMode",
@@ -9,8 +10,8 @@ export const changeLiteModeCommand: vscode.Command = {
 
 export async function changeLiteMode(value: boolean | undefined): Promise<void> {
   if (value === undefined) {
-    const normalText = "通常モード";
-    const liteText = "軽量モード";
+    const normalText = t("messages.liteModeNormal");
+    const liteText = t("messages.liteModeLite");
     const input = await vscode.window.showQuickPick([normalText, liteText]);
     if (input === normalText) {
       value = false;

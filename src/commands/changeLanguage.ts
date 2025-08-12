@@ -4,6 +4,7 @@ import {
   SUPPORTED_LANGUAGES,
   LanguageConfig,
   SupportedLanguage,
+  t,
 } from "../i18n";
 
 /**
@@ -29,7 +30,7 @@ export async function changeLanguage(): Promise<void> {
     // Autoの場合は元の名前をそのまま使用
 
     if (code === currentConfig) {
-      description = "$(check) Current";
+      description = t("messages.changeLanguageCurrent");
     }
 
     return {
@@ -41,7 +42,7 @@ export async function changeLanguage(): Promise<void> {
 
   // クイック選択メニューを表示
   const selected = await vscode.window.showQuickPick(languageItems, {
-    placeHolder: "表示言語を選択 / Select display language / 选择显示语言",
+    placeHolder: t("messages.changeLanguagePlaceholder"),
     ignoreFocusOut: false,
   });
 
@@ -57,7 +58,7 @@ export async function changeLanguage(): Promise<void> {
     const choice = await vscode.window.showInformationMessage(
       restartMessage,
       restartButton,
-      "Later"
+      t("messages.changeLanguageLater")
     );
 
     if (choice === restartButton) {
@@ -71,28 +72,14 @@ export async function changeLanguage(): Promise<void> {
  * 再起動メッセージを取得
  */
 function getRestartMessage(language: SupportedLanguage): string {
-  switch (language) {
-    case "ja":
-    default:
-      return "言語設定が変更されました。完全に適用するにはVS Codeの再起動が必要です。";
-    case "en":
-      return "Language setting has been changed. Please restart VS Code to apply the changes fully.";
-    case "zh":
-      return "语言设置已更改，需要重启 VS Code 才能完全应用。";
-  }
+  const manager = getLanguageManager();
+  return manager.getTranslation("messages.restartMessage", language);
 }
 
 /**
  * 再起動ボタンテキストを取得
  */
 function getRestartButtonText(language: SupportedLanguage): string {
-  switch (language) {
-    case "ja":
-    default:
-      return "再起動";
-    case "en":
-      return "Restart";
-    case "zh":
-      return "重启";
-  }
+  const manager = getLanguageManager();
+  return manager.getTranslation("messages.restartButton", language);
 }

@@ -40,6 +40,7 @@ import {
 import { FilePathType, getRegExp } from "../types/statement";
 import { IHeader } from "../types/header";
 import { ICommand } from "../types/command";
+import { t } from "../i18n";
 
 /**
  * FilePathTypeに対応するファイル拡張子マッピング
@@ -573,7 +574,7 @@ export class CommandCompletionItemProvider implements vscode.CompletionItemProvi
           continue;
         }
         snippet.insertText = new SnippetString((containSharp ? "" : "#") + name);
-        snippet.documentation = "譜面内で定義された命令";
+        snippet.documentation = t("snippet.definedCommandDocumentation");
         snippet.sortText = sortText.toString();
         snippets.push(snippet);
       }
@@ -800,7 +801,6 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
 
     try {
       const files = await fs.promises.readdir(directoryPath, { withFileTypes: true });
-      const allowedExtensions = getExtensionsForFilePathType(filePathType);
 
       for (const file of files) {
         if (file.isFile()) {
@@ -841,7 +841,7 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
             file.name + "/",
             vscode.CompletionItemKind.Folder
           );
-          completionItem.detail = "フォルダ";
+          completionItem.detail = t("snippet.folderDetail");
           completionItem.insertText = file.name + "/";
           completionItem.command = {
             command: "editor.action.triggerSuggest",
@@ -1071,7 +1071,6 @@ export class CommandParameterCompletionItemProvider implements vscode.Completion
 
     try {
       const files = await fs.promises.readdir(directoryPath, { withFileTypes: true });
-      const allowedExtensions = getExtensionsForFilePathType(filePathType);
 
       for (const file of files) {
         if (file.isFile()) {
@@ -1123,7 +1122,7 @@ export class CommandParameterCompletionItemProvider implements vscode.Completion
             file.name + "/",
             vscode.CompletionItemKind.Folder
           );
-          completionItem.detail = "フォルダ";
+          completionItem.detail = t("snippet.folderDetail");
           completionItem.insertText = file.name + "/";
           completionItem.command = {
             command: "editor.action.triggerSuggest",
@@ -1262,7 +1261,7 @@ export class NotesPaddingItemProvider implements vscode.CompletionItemProvider {
     const snippet = new CompletionItem(label, CompletionItemKind.Snippet);
     snippet.filterText = text;
     snippet.insertText = text;
-    snippet.detail = "直前の行と同じ長さで0埋め";
+    snippet.detail = t("snippet.zeroPaddingDetail");
     snippets.push(snippet);
     return snippets;
   }
