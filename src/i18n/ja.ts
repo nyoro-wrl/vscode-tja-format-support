@@ -16,6 +16,60 @@ export const ja: LanguageResources = {
     reverse: "ドン/カッを反転",
     random: "ドン/カッをランダム"
   },
+
+  messages: {
+    // 共通メッセージ
+    noChartInSelection: "選択範囲に譜面が見つかりませんでした",
+    
+    // Zoom関連
+    zoomPrompt: "拡大させる倍率を入力してください",
+    zoomValidationInteger: "整数を入力してください",
+    zoomValidationMinTwo: "2以上の整数を入力してください",
+    
+    // ConstantScroll関連
+    constantScrollPrompt: "スクロール速度の基準となるBPMを入力してください",
+    constantScrollValidationNumber: "数値を入力してください",
+    
+    // TransitionScroll関連
+    transitionScrollStartTitle: "スクロール速度の開始値",
+    transitionScrollStartPrompt: "スクロール速度の開始値を入力してください",
+    transitionScrollEndTitle: "スクロール速度の終了値",
+    transitionScrollEndPrompt: "スクロール速度の終了値を入力してください",
+    transitionScrollFrequencyTitle: "スクロール速度の遷移頻度",
+    transitionScrollFrequencyPlaceholder: "スクロール速度を遷移させる頻度を選択してください",
+    transitionScrollEasingTitle: "スクロール速度のイージング",
+    transitionScrollEasingPlaceholder: "イージングを選択してください",
+    frequencyMeasure: "小節",
+    frequencyLine: "行",
+    frequencyNote: "音符",
+    frequencyAlways: "常時",
+    
+    // DeleteCommands関連
+    deleteCommandsPlaceholder: "削除する命令を選択してください",
+    deleteCommandsAll: "すべて",
+    noCommandsInSelection: "選択範囲に命令が見つかりませんでした",
+    
+    // JumpMeasure関連
+    jumpMeasurePrompt: "移動先の小節番号を入力してください",
+    jumpMeasurePlaceholder: "1 ~ {0}",
+    jumpMeasureValidationInteger: "整数を入力してください",
+    jumpMeasureValidationNotFound: "小節が見つかりません",
+    jumpMeasureBranchPlaceholder: "移動先の譜面分岐を選択してください",
+    branchNormal: "普通 (Normal)",
+    branchExpert: "玄人 (Expert)",
+    branchMaster: "達人 (Master)",
+    
+    // ChangeLiteMode関連
+    liteModeNormal: "通常モード",
+    liteModeLite: "軽量モード",
+    
+    // ChangeLanguage関連
+    changeLanguagePlaceholder: "表示言語を選択 / Select display language / 选择显示语言",
+    changeLanguageCurrent: "$(check) 現在",
+    changeLanguageLater: "後で",
+    restartMessage: "言語設定が変更されました。完全に適用するにはVS Codeの再起動が必要です。",
+    restartButton: "再起動"
+  },
   
   config: {
     gogotimeHighlight: "ゴーゴータイムを色付けします。",

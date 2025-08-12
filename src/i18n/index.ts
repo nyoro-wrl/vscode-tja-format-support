@@ -34,6 +34,61 @@ export interface LanguageResources {
     random: string;
   };
 
+  // コマンドメッセージとプロンプト
+  messages: {
+    // 共通メッセージ
+    noChartInSelection: string;
+    
+    // Zoom関連
+    zoomPrompt: string;
+    zoomValidationInteger: string;
+    zoomValidationMinTwo: string;
+    
+    // ConstantScroll関連
+    constantScrollPrompt: string;
+    constantScrollValidationNumber: string;
+    
+    // TransitionScroll関連
+    transitionScrollStartTitle: string;
+    transitionScrollStartPrompt: string;
+    transitionScrollEndTitle: string;
+    transitionScrollEndPrompt: string;
+    transitionScrollFrequencyTitle: string;
+    transitionScrollFrequencyPlaceholder: string;
+    transitionScrollEasingTitle: string;
+    transitionScrollEasingPlaceholder: string;
+    frequencyMeasure: string;
+    frequencyLine: string;
+    frequencyNote: string;
+    frequencyAlways: string;
+    
+    // DeleteCommands関連
+    deleteCommandsPlaceholder: string;
+    deleteCommandsAll: string;
+    noCommandsInSelection: string;
+    
+    // JumpMeasure関連
+    jumpMeasurePrompt: string;
+    jumpMeasurePlaceholder: string;
+    jumpMeasureValidationInteger: string;
+    jumpMeasureValidationNotFound: string;
+    jumpMeasureBranchPlaceholder: string;
+    branchNormal: string;
+    branchExpert: string;
+    branchMaster: string;
+    
+    // ChangeLiteMode関連
+    liteModeNormal: string;
+    liteModeLite: string;
+    
+    // ChangeLanguage関連
+    changeLanguagePlaceholder: string;
+    changeLanguageCurrent: string;
+    changeLanguageLater: string;
+    restartMessage: string;
+    restartButton: string;
+  };
+
   // 設定項目説明
   config: {
     gogotimeHighlight: string;
@@ -298,15 +353,22 @@ export class LanguageManager {
    * 翻訳テキストを取得
    */
   t(key: string): string {
+    return this.getTranslation(key, this.currentLanguage);
+  }
+
+  /**
+   * 指定された言語の翻訳テキストを取得
+   */
+  getTranslation(key: string, language: SupportedLanguage): string {
     const keys = key.split(".");
-    let value: any = this.getResources();
+    let value: any = resources[language];
 
     for (const k of keys) {
       if (value && typeof value === "object" && k in value) {
         value = value[k];
       } else {
         // 翻訳が見つからない場合、キー名をフォールバックとして返す
-        console.warn(`[TJA Language] 翻訳キーが見つかりません: ${key} (言語: ${this.currentLanguage})`);
+        console.warn(`[TJA Language] 翻訳キーが見つかりません: ${key} (言語: ${language})`);
         return key;
       }
     }

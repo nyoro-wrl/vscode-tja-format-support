@@ -16,6 +16,60 @@ export const en: LanguageResources = {
     reverse: "Reverse Don/Ka",
     random: "Randomize Don/Ka"
   },
+
+  messages: {
+    // Common messages
+    noChartInSelection: "No chart found in selection",
+    
+    // Zoom related
+    zoomPrompt: "Enter zoom multiplier",
+    zoomValidationInteger: "Please enter an integer",
+    zoomValidationMinTwo: "Please enter an integer of 2 or greater",
+    
+    // ConstantScroll related
+    constantScrollPrompt: "Enter reference BPM for scroll speed",
+    constantScrollValidationNumber: "Please enter a number",
+    
+    // TransitionScroll related
+    transitionScrollStartTitle: "Scroll Speed Start Value",
+    transitionScrollStartPrompt: "Enter scroll speed start value",
+    transitionScrollEndTitle: "Scroll Speed End Value",
+    transitionScrollEndPrompt: "Enter scroll speed end value",
+    transitionScrollFrequencyTitle: "Scroll Speed Transition Frequency",
+    transitionScrollFrequencyPlaceholder: "Select transition frequency",
+    transitionScrollEasingTitle: "Scroll Speed Easing",
+    transitionScrollEasingPlaceholder: "Select easing type",
+    frequencyMeasure: "Measure",
+    frequencyLine: "Line",
+    frequencyNote: "Note",
+    frequencyAlways: "Always",
+    
+    // DeleteCommands related
+    deleteCommandsPlaceholder: "Select commands to delete",
+    deleteCommandsAll: "All",
+    noCommandsInSelection: "No commands found in selection",
+    
+    // JumpMeasure related
+    jumpMeasurePrompt: "Enter measure number to jump to",
+    jumpMeasurePlaceholder: "1 ~ {0}",
+    jumpMeasureValidationInteger: "Please enter an integer",
+    jumpMeasureValidationNotFound: "Measure not found",
+    jumpMeasureBranchPlaceholder: "Select branch to jump to",
+    branchNormal: "Normal",
+    branchExpert: "Expert",
+    branchMaster: "Master",
+    
+    // ChangeLiteMode related
+    liteModeNormal: "Normal Mode",
+    liteModeLite: "Lite Mode",
+    
+    // ChangeLanguage related
+    changeLanguagePlaceholder: "表示言語を選択 / Select display language / 选择显示语言",
+    changeLanguageCurrent: "$(check) Current",
+    changeLanguageLater: "Later",
+    restartMessage: "Language setting has been changed. Please restart VS Code to apply the changes fully.",
+    restartButton: "Restart"
+  },
   
   config: {
     gogotimeHighlight: "Add color highlight for GoGo Time.",

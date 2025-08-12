@@ -16,6 +16,60 @@ export const zh: LanguageResources = {
     reverse: "反转咚/咔",
     random: "随机咚/咔"
   },
+
+  messages: {
+    // 通用消息
+    noChartInSelection: "选择范围内未找到谱面",
+    
+    // 缩放相关
+    zoomPrompt: "请输入缩放倍率",
+    zoomValidationInteger: "请输入整数",
+    zoomValidationMinTwo: "请输入2以上的整数",
+    
+    // 恒定滚动相关
+    constantScrollPrompt: "请输入滚动速度的基准BPM",
+    constantScrollValidationNumber: "请输入数字",
+    
+    // 滚动变换相关
+    transitionScrollStartTitle: "滚动速度起始值",
+    transitionScrollStartPrompt: "请输入滚动速度起始值",
+    transitionScrollEndTitle: "滚动速度结束值",
+    transitionScrollEndPrompt: "请输入滚动速度结束值",
+    transitionScrollFrequencyTitle: "滚动速度变换频率",
+    transitionScrollFrequencyPlaceholder: "请选择变换频率",
+    transitionScrollEasingTitle: "滚动速度缓动",
+    transitionScrollEasingPlaceholder: "请选择缓动类型",
+    frequencyMeasure: "小节",
+    frequencyLine: "行",
+    frequencyNote: "音符",
+    frequencyAlways: "常时",
+    
+    // 删除命令相关
+    deleteCommandsPlaceholder: "选择要删除的命令",
+    deleteCommandsAll: "全部",
+    noCommandsInSelection: "选择范围内未找到命令",
+    
+    // 跳转小节相关
+    jumpMeasurePrompt: "请输入要跳转的小节号",
+    jumpMeasurePlaceholder: "1 ~ {0}",
+    jumpMeasureValidationInteger: "请输入整数",
+    jumpMeasureValidationNotFound: "未找到小节",
+    jumpMeasureBranchPlaceholder: "选择要跳转的谱面分支",
+    branchNormal: "普通 (Normal)",
+    branchExpert: "玄人 (Expert)",
+    branchMaster: "达人 (Master)",
+    
+    // 切换模式相关
+    liteModeNormal: "普通模式",
+    liteModeLite: "轻量模式",
+    
+    // 更改语言相关
+    changeLanguagePlaceholder: "表示言語を選択 / Select display language / 选择显示语言",
+    changeLanguageCurrent: "$(check) 当前",
+    changeLanguageLater: "稍后",
+    restartMessage: "语言设置已更改，需要重启 VS Code 才能完全应用。",
+    restartButton: "重启"
+  },
   
   config: {
     gogotimeHighlight: "为 GoGo Time 添加颜色高亮。",

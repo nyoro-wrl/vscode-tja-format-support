@@ -15,6 +15,7 @@ import {
 import { ICommand } from "../types/command";
 import { easingStrings, isEasingType, lerp } from "../util/easing";
 import { getRegExp } from "../types/statement";
+import { t } from "../i18n";
 
 /**
  * 譜面の拡大
@@ -32,27 +33,27 @@ export async function zoom(textEditor: TextEditor, edit: TextEditorEdit) {
     );
   }
   if (notes.length === 0) {
-    vscode.window.showWarningMessage("選択範囲に譜面が見つかりませんでした");
+    vscode.window.showWarningMessage(t("messages.noChartInSelection"));
     return;
   }
 
   const input = await vscode.window.showInputBox({
-    title: "譜面の拡大",
-    prompt: "拡大させる倍率を入力してください",
+    title: t("commands.zoom"),
+    prompt: t("messages.zoomPrompt"),
     value: "2",
     validateInput: (text) => {
       if (!text) {
         return;
       }
       if (Number.isNaN(Number(text))) {
-        return "整数を入力してください";
+        return t("messages.zoomValidationInteger");
       }
       const scale = Number(text);
       if (scale < 2) {
-        return "2以上の整数を入力してください";
+        return t("messages.zoomValidationMinTwo");
       }
       if (!Number.isInteger(scale)) {
-        return "整数を入力してください";
+        return t("messages.zoomValidationInteger");
       }
     },
   });
@@ -193,20 +194,20 @@ export async function constantScroll(textEditor: TextEditor, edit: TextEditorEdi
   const notes = bpmChangeFirstNotes.unique();
 
   if (notes.length === 0) {
-    vscode.window.showWarningMessage("選択範囲に譜面が見つかりませんでした");
+    vscode.window.showWarningMessage(t("messages.noChartInSelection"));
     return;
   }
 
   const input = await vscode.window.showInputBox({
-    title: "スクロール速度の一定化",
-    prompt: "スクロール速度の基準となるBPMを入力してください",
+    title: t("commands.constantScroll"),
+    prompt: t("messages.constantScrollPrompt"),
     placeHolder: "BPM",
     validateInput: (text) => {
       if (!text) {
         return;
       }
       if (Number.isNaN(Number(text))) {
-        return "数値を入力してください";
+        return t("messages.constantScrollValidationNumber");
       }
     },
   });
@@ -268,20 +269,20 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
 
   const notes = root.filter<NoteNode>((x) => selection.contains(x.range) && x instanceof NoteNode);
   if (notes.length === 0) {
-    vscode.window.showWarningMessage("選択範囲に譜面が見つかりませんでした");
+    vscode.window.showWarningMessage(t("messages.noChartInSelection"));
     return;
   }
 
   const startInput = await vscode.window.showInputBox({
-    title: "スクロール速度の開始値",
-    prompt: "スクロール速度の開始値を入力してください",
+    title: t("messages.transitionScrollStartTitle"),
+    prompt: t("messages.transitionScrollStartPrompt"),
     placeHolder: "1",
     validateInput: (text) => {
       if (!text) {
         return;
       }
       if (Number.isNaN(Number(text))) {
-        return "数値を入力してください";
+        return t("messages.constantScrollValidationNumber");
       }
     },
   });
@@ -291,15 +292,15 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
   const start = Number(startInput);
 
   const endInput = await vscode.window.showInputBox({
-    title: "スクロール速度の終了値",
-    prompt: "スクロール速度の終了値を入力してください",
+    title: t("messages.transitionScrollEndTitle"),
+    prompt: t("messages.transitionScrollEndPrompt"),
     placeHolder: "1",
     validateInput: (text) => {
       if (!text) {
         return;
       }
       if (Number.isNaN(Number(text))) {
-        return "数値を入力してください";
+        return t("messages.constantScrollValidationNumber");
       }
     },
   });
@@ -308,17 +309,17 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
   }
   const end = Number(endInput);
 
-  const frequencySelected = await vscode.window.showQuickPick(["小節", "行", "音符", "常時"], {
-    title: "スクロール速度の遷移頻度",
-    placeHolder: "スクロール速度を遷移させる頻度を選択してください",
+  const frequencySelected = await vscode.window.showQuickPick([t("messages.frequencyMeasure"), t("messages.frequencyLine"), t("messages.frequencyNote"), t("messages.frequencyAlways")], {
+    title: t("messages.transitionScrollFrequencyTitle"),
+    placeHolder: t("messages.transitionScrollFrequencyPlaceholder"),
   });
   if (frequencySelected === undefined) {
     return;
   }
 
   const easingSelected = await vscode.window.showQuickPick(easingStrings, {
-    title: "スクロール速度のイージング",
-    placeHolder: "イージングを選択してください",
+    title: t("messages.transitionScrollEasingTitle"),
+    placeHolder: t("messages.transitionScrollEasingPlaceholder"),
   });
   if (easingSelected === undefined || !isEasingType(easingSelected)) {
     return;
@@ -326,7 +327,7 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
 
   // 挿入位置を集める
   const positions: Position[] = [];
-  if (frequencySelected === "小節") {
+  if (frequencySelected === t("messages.frequencyMeasure")) {
     positions.push(
       ...notes
         .filter(
@@ -340,16 +341,16 @@ export async function transitionScroll(textEditor: TextEditor, edit: TextEditorE
         )
         .map((x) => x.range.start)
     );
-  } else if (frequencySelected === "行") {
+  } else if (frequencySelected === t("messages.frequencyLine")) {
     positions.push(
       ...notes
         .map((x) => x.range.start.line)
         .unique()
         .map((x) => new Position(x, 0))
     );
-  } else if (frequencySelected === "音符") {
+  } else if (frequencySelected === t("messages.frequencyNote")) {
     positions.push(...notes.filter((x) => x.value !== "0").map((x) => x.range.start));
-  } else if (frequencySelected === "常時") {
+  } else if (frequencySelected === t("messages.frequencyAlways")) {
     positions.push(...notes.map((x) => x.range.start));
   }
 
@@ -405,12 +406,12 @@ export async function deleteCommands(textEditor: TextEditor, edit: TextEditorEdi
     );
   }
   if (nodes.length === 0) {
-    vscode.window.showWarningMessage("選択範囲に命令が見つかりませんでした");
+    vscode.window.showWarningMessage(t("messages.noCommandsInSelection"));
     return;
   }
   const commandNames = nodes.map((x) => "#" + x.properties.name).uniqueSorted();
 
-  const allDelete = "すべて";
+  const allDelete = t("messages.deleteCommandsAll");
   const options: string[] = [allDelete, ...commandNames];
   let deleteName: string;
   let deleteCommand: ICommand | undefined;
@@ -418,8 +419,8 @@ export async function deleteCommands(textEditor: TextEditor, edit: TextEditorEdi
     deleteName = allDelete;
   } else {
     const selected = await vscode.window.showQuickPick(options, {
-      title: "命令の一括削除",
-      placeHolder: "削除する命令を選択してください",
+      title: t("commands.deleteCommands"),
+      placeHolder: t("messages.deleteCommandsPlaceholder"),
     });
     if (selected === undefined) {
       return;
