@@ -3,6 +3,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { documents } from "../extension";
 import { HeaderNode, ParameterNode } from "../types/node";
+import { t } from "../i18n";
 
 /**
  * ファイルパス指定ヘッダーのドキュメントリンクプロバイダー
@@ -89,23 +90,23 @@ export class TjaDocumentLinkProvider implements vscode.DocumentLinkProvider {
   private getTooltipForHeader(headerName: string, filePath: string): string {
     switch (headerName) {
       case "WAVE":
-        return `音源ファイルを開く: ${filePath}`;
+        return `${t("documentLinks.openAudioFile")}: ${filePath}`;
       case "SONG":
-        return `課題曲ファイルを開く: ${filePath}`;
+        return `${t("documentLinks.openSongFile")}: ${filePath}`;
       case "SIDEREV":
-        return `表裏対応ファイルを開く: ${filePath}`;
+        return `${t("documentLinks.openSideRevFile")}: ${filePath}`;
       case "BGIMAGE":
-        return `背景画像を開く: ${filePath}`;
+        return `${t("documentLinks.openBackgroundImage")}: ${filePath}`;
       case "BGMOVIE":
-        return `背景動画を開く: ${filePath}`;
+        return `${t("documentLinks.openBackgroundMovie")}: ${filePath}`;
       case "PREIMAGE":
-        return `選曲画面画像を開く: ${filePath}`;
+        return `${t("documentLinks.openPreviewImage")}: ${filePath}`;
       case "BGA":
-        return `BGAを開く: ${filePath}`;
+        return `${t("documentLinks.openBgaFile")}: ${filePath}`;
       case "LYRICS":
-        return `歌詞ファイルを開く: ${filePath}`;
+        return `${t("documentLinks.openLyricsFile")}: ${filePath}`;
       default:
-        return `ファイルを開く: ${filePath}`;
+        return `${t("documentLinks.openFile")}: ${filePath}`;
     }
   }
 }

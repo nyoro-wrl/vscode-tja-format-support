@@ -142,6 +142,54 @@ export const ja: LanguageResources = {
     gogo: "ゴーゴータイム"
   },
 
+  // 拡張機能関連
+  extension: {
+    updateNotificationTitle: "TJA Format Supportに新たな機能が追加されました",
+    updateNotificationOk: "OK",
+    updateNotificationChangelog: "変更ログの確認"
+  },
+
+  // ドキュメントリンク関連
+  documentLinks: {
+    openAudioFile: "音源ファイルを開く",
+    openSongFile: "課題曲ファイルを開く",
+    openSideRevFile: "表裏対応ファイルを開く",
+    openBackgroundImage: "背景画像を開く",
+    openBackgroundMovie: "背景動画を開く",
+    openPreviewImage: "選曲画面画像を開く",
+    openBgaFile: "BGAを開く",
+    openLyricsFile: "歌詞ファイルを開く",
+    openFile: "ファイルを開く"
+  },
+
+  // リネームプロバイダー関連
+  renameProvider: {
+    balloonCountInteger: "風船音符の打数は整数で入力してください",
+    fileParseError: "ファイルの解析に失敗しました",
+    notBalloonParameter: "風船音符の打数パラメータではありません",
+    balloonHeaderNotFound: "対応する風船音符ヘッダーが見つかりません",
+    balloonParameterNotFound: "風船音符のパラメータが見つかりません",
+    notBalloonNote: "風船音符ではありません"
+  },
+
+  // シグネチャヘルプ関連
+  signatureHelp: {
+    examNumberDescription: "1以上の整数を指定します。ヘッダーを呼ぶごとに数を増やします。",
+    numberDescription: "数字を指定します。"
+  },
+
+  // スニペット関連
+  snippet: {
+    definedCommandDocumentation: "譜面内で定義された命令",
+    folderDetail: "フォルダ",
+    zeroPaddingDetail: "直前の行と同じ長さで0埋め"
+  },
+
+  // ステータスバー関連
+  statusBarTooltips: {
+    switchTo: "に切り替え"
+  },
+
   // TJA命令詳細情報
   tjaCommands: {
     start: {

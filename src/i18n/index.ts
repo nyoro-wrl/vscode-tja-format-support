@@ -238,6 +238,54 @@ export interface LanguageResources {
     };
   };
 
+  // 拡張機能関連
+  extension: {
+    updateNotificationTitle: string;
+    updateNotificationOk: string;
+    updateNotificationChangelog: string;
+  };
+
+  // ドキュメントリンク関連
+  documentLinks: {
+    openAudioFile: string;
+    openSongFile: string;
+    openSideRevFile: string;
+    openBackgroundImage: string;
+    openBackgroundMovie: string;
+    openPreviewImage: string;
+    openBgaFile: string;
+    openLyricsFile: string;
+    openFile: string;
+  };
+
+  // リネームプロバイダー関連
+  renameProvider: {
+    balloonCountInteger: string;
+    fileParseError: string;
+    notBalloonParameter: string;
+    balloonHeaderNotFound: string;
+    balloonParameterNotFound: string;
+    notBalloonNote: string;
+  };
+
+  // シグネチャヘルプ関連
+  signatureHelp: {
+    examNumberDescription: string;
+    numberDescription: string;
+  };
+
+  // スニペット関連
+  snippet: {
+    definedCommandDocumentation: string;
+    folderDetail: string;
+    zeroPaddingDetail: string;
+  };
+
+  // ステータスバー関連
+  statusBarTooltips: {
+    switchTo: string;
+  };
+
   // TJAヘッダー情報
   tjaHeaders: {
     title: {

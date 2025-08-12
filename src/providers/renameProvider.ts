@@ -17,6 +17,7 @@ import {
   WorkspaceEdit,
 } from "vscode";
 import { getRegExp } from "../types/statement";
+import { t } from "../i18n";
 
 type NewType = CancellationToken;
 
@@ -28,7 +29,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
     token: NewType
   ): Promise<WorkspaceEdit | undefined> {
     if (!/^\d+$/.test(newName)) {
-      throw new Error("風船音符の打数は整数で入力してください");
+      throw new Error(t("renameProvider.balloonCountInteger"));
     }
 
     const root = documents.parse(document, token);
@@ -491,7 +492,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
   ): Promise<Range | { range: Range; placeholder: string }> {
     const root = documents.parse(document, token);
     if (!root) {
-      throw new Error("ファイルの解析に失敗しました");
+      throw new Error(t("renameProvider.fileParseError"));
     }
 
     // Try to find balloon header parameter first
@@ -520,7 +521,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       );
 
       if (candidateNotes.length === 0) {
-        throw new Error("風船音符の打数パラメータではありません");
+        throw new Error(t("renameProvider.notBalloonParameter"));
       }
 
       // If multiple candidates exist, choose the one closest to cursor position
@@ -539,7 +540,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
 
       const style = balloonNote?.findParent<StyleNode>((x) => x instanceof StyleNode, { token });
       if (!style || !balloonNote || balloonNote.properties.note.balloonId === undefined) {
-        throw new Error("風船音符の打数パラメータではありません");
+        throw new Error(t("renameProvider.notBalloonParameter"));
       }
 
       const balloonHeader = style.find<HeaderNode>(
@@ -557,7 +558,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       );
 
       if (!balloonHeader) {
-        throw new Error("対応する風船音符ヘッダーが見つかりません");
+        throw new Error(t("renameProvider.balloonHeaderNotFound"));
       }
 
       // Find parameter by balloonId using the parameter's index property
@@ -568,7 +569,7 @@ export class BalloonParameterRenameProvider implements RenameProvider {
         { token }
       );
       if (!balloonParameter) {
-        throw new Error("風船音符のパラメータが見つかりません");
+        throw new Error(t("renameProvider.balloonParameterNotFound"));
       }
       return {
         range: balloonNote.range,
@@ -604,6 +605,6 @@ export class BalloonParameterRenameProvider implements RenameProvider {
       };
     }
 
-    throw new Error("風船音符ではありません");
+    throw new Error(t("renameProvider.notBalloonNote"));
   }
 }

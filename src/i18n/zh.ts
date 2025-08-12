@@ -142,6 +142,54 @@ export const zh: LanguageResources = {
     gogo: "GoGo Time"
   },
 
+  // 扩展相关
+  extension: {
+    updateNotificationTitle: "TJA Format Support 已添加新功能",
+    updateNotificationOk: "确定",
+    updateNotificationChangelog: "查看更改日志"
+  },
+
+  // 文档链接相关
+  documentLinks: {
+    openAudioFile: "打开音频文件",
+    openSongFile: "打开歌曲文件",
+    openSideRevFile: "打开反转文件",
+    openBackgroundImage: "打开背景图片",
+    openBackgroundMovie: "打开背景视频",
+    openPreviewImage: "打开预览图片",
+    openBgaFile: "打开BGA",
+    openLyricsFile: "打开歌词文件",
+    openFile: "打开文件"
+  },
+
+  // 重命名提供者相关
+  renameProvider: {
+    balloonCountInteger: "请输入整数作为气球音符打击数",
+    fileParseError: "文件解析失败",
+    notBalloonParameter: "不是气球音符打击数参数",
+    balloonHeaderNotFound: "未找到对应的气球音符头部",
+    balloonParameterNotFound: "未找到气球音符参数",
+    notBalloonNote: "不是气球音符"
+  },
+
+  // 签名帮助相关
+  signatureHelp: {
+    examNumberDescription: "指定1以上的整数。每次调用头部时递增数字。",
+    numberDescription: "指定一个数字。"
+  },
+
+  // 代码片段相关
+  snippet: {
+    definedCommandDocumentation: "谱面中定义的命令",
+    folderDetail: "文件夹",
+    zeroPaddingDetail: "以与上一行相同的长度进衁0填充"
+  },
+
+  // 状态栏相关
+  statusBarTooltips: {
+    switchTo: "切换到"
+  },
+
   // TJA命令详细信息
   tjaCommands: {
     start: {

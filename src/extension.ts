@@ -58,7 +58,7 @@ import {
 } from "./commands/chartEdit";
 import { balloonParameterQuickFix } from "./commands/balloonParameterQuickFix";
 import { SemVer } from "semver";
-import { getLanguageManager } from "./i18n";
+import { getLanguageManager, t } from "./i18n";
 
 export let activeTjaFile: ActiveTjaFile;
 /**
@@ -176,12 +176,12 @@ function versionCheck(context: vscode.ExtensionContext) {
   if (previousVersion && noticeVersion.some((x) => x > previousVersion && x <= currentVersion)) {
     vscode.window
       .showInformationMessage(
-        "TJA Format Supportに新たな機能が追加されました",
-        "OK",
-        "変更ログの確認"
+        t("extension.updateNotificationTitle"),
+        t("extension.updateNotificationOk"),
+        t("extension.updateNotificationChangelog")
       )
       .then((selection) => {
-        if (selection === "変更ログの確認") {
+        if (selection === t("extension.updateNotificationChangelog")) {
           const changelogUrl = vscode.Uri.parse(
             "https://github.com/nyoro-wrl/vscode-tja-format-support/blob/master/CHANGELOG.md"
           );

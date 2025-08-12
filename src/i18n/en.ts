@@ -142,6 +142,54 @@ export const en: LanguageResources = {
     gogo: "GoGo Time"
   },
 
+  // Extension related
+  extension: {
+    updateNotificationTitle: "New features have been added to TJA Format Support",
+    updateNotificationOk: "OK",
+    updateNotificationChangelog: "View Changelog"
+  },
+
+  // Document links related
+  documentLinks: {
+    openAudioFile: "Open audio file",
+    openSongFile: "Open song file",
+    openSideRevFile: "Open side reverse file",
+    openBackgroundImage: "Open background image",
+    openBackgroundMovie: "Open background movie",
+    openPreviewImage: "Open preview image",
+    openBgaFile: "Open BGA",
+    openLyricsFile: "Open lyrics file",
+    openFile: "Open file"
+  },
+
+  // Rename provider related
+  renameProvider: {
+    balloonCountInteger: "Please enter balloon note hit count as an integer",
+    fileParseError: "Failed to parse file",
+    notBalloonParameter: "Not a balloon note hit count parameter",
+    balloonHeaderNotFound: "Corresponding balloon note header not found",
+    balloonParameterNotFound: "Balloon note parameter not found",
+    notBalloonNote: "Not a balloon note"
+  },
+
+  // Signature help related
+  signatureHelp: {
+    examNumberDescription: "Specify an integer of 1 or greater. Increment the number each time you call the header.",
+    numberDescription: "Specify a number."
+  },
+
+  // Snippet related
+  snippet: {
+    definedCommandDocumentation: "Commands defined in the chart",
+    folderDetail: "Folder",
+    zeroPaddingDetail: "Zero-pad to same length as previous line"
+  },
+
+  // Status bar related
+  statusBarTooltips: {
+    switchTo: "Switch to"
+  },
+
   // TJA Command Details
   tjaCommands: {
     start: {

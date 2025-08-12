@@ -11,6 +11,7 @@ import {
 } from "vscode";
 import { IHeader } from "../types/header";
 import { ICommand } from "../types/command";
+import { t } from "../i18n";
 
 export class CommandSignatureHelpProvider implements SignatureHelpProvider {
   async provideSignatureHelp(
@@ -213,9 +214,9 @@ export class CommandSignatureHelpProvider implements SignatureHelpProvider {
     // ヘッダー名に応じた数字パラメータの説明を返す
     switch (baseName) {
       case headers.items.exam.name:
-        return "1以上の整数を指定します。ヘッダーを呼ぶごとに数を増やします。";
+        return t("signatureHelp.examNumberDescription");
       default:
-        return "数字を指定します。";
+        return t("signatureHelp.numberDescription");
     }
   }
 
