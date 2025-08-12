@@ -70,6 +70,48 @@ export const en: LanguageResources = {
     restartMessage: "Language setting has been changed. Please restart VS Code to apply the changes fully.",
     restartButton: "Restart"
   },
+
+  parser: {
+    // General errors
+    invalidText: "Invalid text.",
+    extensionError: "Extension error",
+    invalidHeaderPosition: "Invalid header position.",
+    invalidCommandPosition: "Invalid command position.",
+    
+    // Balloon note related
+    noBalloonNotes: "No balloon notes found.",
+    balloonCountNotDefined: "Hit count not defined.",
+    
+    // Structure errors
+    missingStart: "#START not found.",
+    missingEnd: "#END not found.",
+    missingBranchStart: "#BRANCHSTART not found.",
+    measureNotClosed: "Measure not closed.",
+    duplicateBranch: "Duplicate branch.",
+    noBranchSection: "No branch section found.",
+    
+    // Chart state errors
+    rollNoteInterrupted: "Note interrupted.",
+    measureCountMismatch: "Measure count mismatch between branches.",
+    measurePlacedInMiddle: "Placed in the middle of measure.",
+    
+    // Command related
+    redundantCommand: "Redundant command.",
+    commandPositionInvalid: "Invalid command position.",
+    commandBeforeBranchStart: "Invalid command position. Place before #BRANCHSTART.",
+    
+    // Branch state
+    barlineStateInconsistent: "Barline state (#BARLINEOFF, #BARLINEON) is inconsistent after branch.",
+    gogotimeStateInconsistent: "Gogo time state (#GOGOSTART, #GOGOEND) is inconsistent after branch.",
+    dummyNoteStateInconsistent: "Dummy note state (#DUMMYSTART, #DUMMYEND) is inconsistent after branch."
+  },
+
+  codeActions: {
+    setBalloonCount: "Set balloon note hit count",
+    delete: "Delete",
+    createEnd: "Create #END",
+    removeRedundantCommand: "Remove redundant command"
+  },
   
   config: {
     gogotimeHighlight: "Add color highlight for GoGo Time.",

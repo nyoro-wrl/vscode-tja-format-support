@@ -800,7 +800,6 @@ export class HeaderParameterCompletionItemProvider implements vscode.CompletionI
 
     try {
       const files = await fs.promises.readdir(directoryPath, { withFileTypes: true });
-      const allowedExtensions = getExtensionsForFilePathType(filePathType);
 
       for (const file of files) {
         if (file.isFile()) {
@@ -1071,7 +1070,6 @@ export class CommandParameterCompletionItemProvider implements vscode.Completion
 
     try {
       const files = await fs.promises.readdir(directoryPath, { withFileTypes: true });
-      const allowedExtensions = getExtensionsForFilePathType(filePathType);
 
       for (const file of files) {
         if (file.isFile()) {

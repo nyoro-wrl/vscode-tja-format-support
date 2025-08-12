@@ -70,6 +70,48 @@ export const ja: LanguageResources = {
     restartMessage: "言語設定が変更されました。完全に適用するにはVS Codeの再起動が必要です。",
     restartButton: "再起動"
   },
+
+  parser: {
+    // 一般的なエラー
+    invalidText: "不正なテキストです。",
+    extensionError: "拡張機能エラー",
+    invalidHeaderPosition: "ヘッダーの位置が不正です。",
+    invalidCommandPosition: "命令の位置が不正です。",
+    
+    // 風船音符関連
+    noBalloonNotes: "風船音符がありません。",
+    balloonCountNotDefined: "打数が定義されていません。",
+    
+    // 構造エラー
+    missingStart: "#START がありません。",
+    missingEnd: "#END がありません。",
+    missingBranchStart: "#BRANCHSTART がありません。",
+    measureNotClosed: "小節が閉じられていません。",
+    duplicateBranch: "譜面分岐が重複しています。",
+    noBranchSection: "譜面分岐の区分がありません。",
+    
+    // 譜面状態エラー
+    rollNoteInterrupted: "音符が途切れています。",
+    measureCountMismatch: "譜面分岐の小節数が統一されていません。",
+    measurePlacedInMiddle: "小節の途中に配置されています。",
+    
+    // 命令関連
+    redundantCommand: "不要な命令です。",
+    commandPositionInvalid: "命令の位置が不正です。",
+    commandBeforeBranchStart: "命令の位置が不正です。#BRANCHSTARTより前に配置してください。",
+    
+    // 譜面分岐状態
+    barlineStateInconsistent: "譜面分岐後の小節線表示状態（#BARLINEOFF,#BARLINEON）が統一されていません。",
+    gogotimeStateInconsistent: "譜面分岐後のゴーゴータイム状態（#GOGOSTART,#GOGOEND）が統一されていません。",
+    dummyNoteStateInconsistent: "譜面分岐後のダミーノーツ状態（#DUMMYSTART,#DUMMYEND）が統一されていません。"
+  },
+
+  codeActions: {
+    setBalloonCount: "風船音符の打数を設定",
+    delete: "削除",
+    createEnd: "#END の作成",
+    removeRedundantCommand: "不要な命令を削除"
+  },
   
   config: {
     gogotimeHighlight: "ゴーゴータイムを色付けします。",

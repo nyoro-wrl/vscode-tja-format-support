@@ -70,6 +70,48 @@ export const zh: LanguageResources = {
     restartMessage: "语言设置已更改，需要重启 VS Code 才能完全应用。",
     restartButton: "重启"
   },
+
+  parser: {
+    // 一般错误
+    invalidText: "无效文本。",
+    extensionError: "扩展错误",
+    invalidHeaderPosition: "头部位置无效。",
+    invalidCommandPosition: "命令位置无效。",
+    
+    // 气球音符相关
+    noBalloonNotes: "未找到气球音符。",
+    balloonCountNotDefined: "未定义打击数。",
+    
+    // 结构错误
+    missingStart: "未找到 #START。",
+    missingEnd: "未找到 #END。",
+    missingBranchStart: "未找到 #BRANCHSTART。",
+    measureNotClosed: "小节未闭合。",
+    duplicateBranch: "分支重复。",
+    noBranchSection: "未找到分支区段。",
+    
+    // 谱面状态错误
+    rollNoteInterrupted: "音符中断。",
+    measureCountMismatch: "分支间小节数不统一。",
+    measurePlacedInMiddle: "放置在小节中间。",
+    
+    // 命令相关
+    redundantCommand: "冗余命令。",
+    commandPositionInvalid: "命令位置无效。",
+    commandBeforeBranchStart: "命令位置无效。请放置在 #BRANCHSTART 之前。",
+    
+    // 分支状态
+    barlineStateInconsistent: "分支后的小节线显示状态（#BARLINEOFF,#BARLINEON）不统一。",
+    gogotimeStateInconsistent: "分支后的GoGo Time状态（#GOGOSTART,#GOGOEND）不统一。",
+    dummyNoteStateInconsistent: "分支后的虚拟音符状态（#DUMMYSTART,#DUMMYEND）不统一。"
+  },
+
+  codeActions: {
+    setBalloonCount: "设置气球音符打击数",
+    delete: "删除",
+    createEnd: "创建 #END",
+    removeRedundantCommand: "删除冗余命令"
+  },
   
   config: {
     gogotimeHighlight: "为 GoGo Time 添加颜色高亮。",

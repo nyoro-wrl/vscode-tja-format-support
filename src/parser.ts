@@ -34,6 +34,7 @@ import { DiagnosticResult } from "./providers/diagnostics";
 import { getRegExp, Separator } from "./types/statement";
 import { CommandSection, ICommand } from "./types/command";
 import { isTmg } from "./util/util";
+import { t } from "./i18n";
 
 // TODO #BRANCHSTART #BRANCHENDを跨いた風船音符の対応（不明とする）
 // TODO 二人用譜面のとき、風船音符は1Pと2Pで分けて書ける？
@@ -208,7 +209,7 @@ export class Parser {
               this.addDiagnostic(
                 "Unedited",
                 diagnosticRange,
-                "風船音符がありません。",
+                t("parser.noBalloonNotes"),
                 DiagnosticSeverity.Warning
               );
             }
@@ -255,7 +256,7 @@ export class Parser {
                 this.addDiagnostic(
                   "Unedited",
                   diagnosticRange,
-                  "風船音符がありません。",
+                  t("parser.noBalloonNotes"),
                   DiagnosticSeverity.Warning
                 );
               }
@@ -361,7 +362,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           token.range,
-          "不要な命令です。",
+          t("parser.redundantCommand"),
           DiagnosticSeverity.Warning,
           "redundant-command"
         );
@@ -372,7 +373,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           token.range,
-          "不要な命令です。",
+          t("parser.redundantCommand"),
           DiagnosticSeverity.Warning,
           "redundant-command"
         );
@@ -383,7 +384,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           token.range,
-          "不要な命令です。",
+          t("parser.redundantCommand"),
           DiagnosticSeverity.Warning,
           "redundant-command"
         );
@@ -394,7 +395,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           token.range,
-          "不要な命令です。",
+          t("parser.redundantCommand"),
           DiagnosticSeverity.Warning,
           "redundant-command"
         );
@@ -405,7 +406,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           token.range,
-          "不要な命令です。",
+          t("parser.redundantCommand"),
           DiagnosticSeverity.Warning,
           "redundant-command"
         );
@@ -416,7 +417,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           token.range,
-          "不要な命令です。",
+          t("parser.redundantCommand"),
           DiagnosticSeverity.Warning,
           "redundant-command"
         );
@@ -442,7 +443,7 @@ export class Parser {
         this.addDiagnostic(
           "Realtime",
           node.range,
-          "小節の途中に配置されています。",
+          t("parser.measurePlacedInMiddle"),
           DiagnosticSeverity.Warning
         );
       }
@@ -512,7 +513,7 @@ export class Parser {
           this.addDiagnostic(
             "Unedited",
             parent.range,
-            "不要な命令です。",
+            t("parser.redundantCommand"),
             DiagnosticSeverity.Warning,
             "redundant-command"
           );
@@ -528,7 +529,7 @@ export class Parser {
           this.addDiagnostic(
             "Unedited",
             parent.range,
-            "不要な命令です。",
+            t("parser.redundantCommand"),
             DiagnosticSeverity.Warning,
             "redundant-command"
           );
@@ -551,7 +552,7 @@ export class Parser {
           this.addDiagnostic(
             "Unedited",
             parent.range,
-            "不要な命令です。",
+            t("parser.redundantCommand"),
             DiagnosticSeverity.Warning,
             "redundant-command"
           );
@@ -647,7 +648,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           nem.range,
-          `譜面分岐の小節数が統一されていません。\n${
+          `${t("parser.measureCountMismatch")}\n${
             branchChartState.measure - sectionChartState.measure
           }小節足りていません。`,
           DiagnosticSeverity.Warning
@@ -685,7 +686,7 @@ export class Parser {
       (parent.properties.hasExpert && branchSection.properties.kind === "E") ||
       (parent.properties.hasMaster && branchSection.properties.kind === "M")
     ) {
-      this.addDiagnostic("Realtime", branchSection.range, "譜面分岐が重複しています。");
+      this.addDiagnostic("Realtime", branchSection.range, t("parser.duplicateBranch"));
     }
     parent.push(branchSection);
   }
@@ -725,7 +726,7 @@ export class Parser {
         this.addDiagnostic(
           "Realtime",
           token.range,
-          `${name}音符が途切れています。`,
+          `${name}${t("parser.rollNoteInterrupted")}`,
           DiagnosticSeverity.Warning
         );
       }
@@ -809,7 +810,7 @@ export class Parser {
             this.addDiagnostic(
               "Unedited",
               wordRange,
-              `打数が定義されていません。[${balloonNoteInfo}]`,
+              `${t("parser.balloonCountNotDefined")}[${balloonNoteInfo}]`,
               DiagnosticSeverity.Warning
             );
           }
@@ -867,7 +868,7 @@ export class Parser {
       this.addDiagnostic(
         "Realtime",
         token.range,
-        "譜面分岐後の小節線表示状態（#BARLINEOFF,#BARLINEON）が統一されていません。",
+        t("parser.barlineStateInconsistent"),
         DiagnosticSeverity.Hint
       );
     }
@@ -876,7 +877,7 @@ export class Parser {
       this.addDiagnostic(
         "Realtime",
         token.range,
-        "譜面分岐後のゴーゴータイム状態（#GOGOSTART,#GOGOEND）が統一されていません。",
+        t("parser.gogotimeStateInconsistent"),
         DiagnosticSeverity.Hint
       );
     }
@@ -885,7 +886,7 @@ export class Parser {
       this.addDiagnostic(
         "Realtime",
         token.range,
-        "譜面分岐後のダミーノーツ状態（#DUMMYSTART,#DUMMYEND）が統一されていません。",
+        t("parser.dummyNoteStateInconsistent"),
         DiagnosticSeverity.Hint
       );
     }
@@ -906,7 +907,7 @@ export class Parser {
         this.addDiagnostic(
           "Unedited",
           new Range(lastMeasure.range.end, lastMeasure.range.end),
-          `${name}音符が途切れています。`,
+          `${name}${t("parser.rollNoteInterrupted")}`,
           DiagnosticSeverity.Error
         );
       }
@@ -926,7 +927,7 @@ export class Parser {
       this.addDiagnostic(
         "Unedited",
         new Range(node.range.end, node.range.end),
-        "小節が閉じられていません。"
+        t("parser.measureNotClosed")
       );
     }
   }
@@ -968,7 +969,7 @@ export class Parser {
       }
       const token = this.tokens[this.position];
       if (token.kind === "Unknown") {
-        this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+        this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
         parent.pushRange(token.range);
       } else {
         if (parent instanceof RootNode) {
@@ -979,14 +980,14 @@ export class Parser {
             } else if (section === "Root" || section === "Unknown") {
               this.parseRootHeaders(parent, token);
             } else {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
             this.parseCourse(parent, token);
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
@@ -1008,7 +1009,7 @@ export class Parser {
             return parent;
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
@@ -1031,14 +1032,14 @@ export class Parser {
               this.position--;
               return parent;
             } else {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
             this.parseStyle(parent, token);
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
@@ -1064,7 +1065,7 @@ export class Parser {
               this.position--;
               return parent;
             } else {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
@@ -1083,14 +1084,14 @@ export class Parser {
               section === "End"
             ) {
               const node = this.parseCommand(parent, token, separator);
-              this.addDiagnostic("Realtime", node.range, "#START がありません。");
+              this.addDiagnostic("Realtime", node.range, t("parser.missingStart"));
             } else {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
               parent.pushRange(token.range);
             }
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
@@ -1105,7 +1106,7 @@ export class Parser {
           } else if (token.kind === "EndOfLine") {
             return parent;
           } else {
-            this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+            this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             parent.pushRange(token.range);
           }
         } else if (
@@ -1118,7 +1119,7 @@ export class Parser {
             if (section === "Free" || section === "Unknown") {
               this.processFreeHeader(parent, token);
             } else {
-              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidHeaderPosition"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
@@ -1127,7 +1128,7 @@ export class Parser {
             const separator = isTmg(this.document) ? "Comma" : info?.separator ?? "Unknown";
             if (section === "Outer" || section === "Start") {
               this.parseCommand(parent, token, separator);
-              this.addDiagnostic("Realtime", token.range, "命令の位置が不正です。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidCommandPosition"));
             } else if (section === "Inner" || section === "MeasureHead" || section === "Unknown") {
               this.parseMeasure(parent, token);
             } else if (section === "Song") {
@@ -1160,14 +1161,14 @@ export class Parser {
                 return parent;
               }
             } else {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
             this.parseMeasure(parent, token);
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
@@ -1177,7 +1178,7 @@ export class Parser {
             if (section === "Free" || section === "Unknown") {
               this.processFreeHeader(parent, token);
             } else {
-              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidHeaderPosition"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
@@ -1197,19 +1198,15 @@ export class Parser {
               if (info === commands.items.branchend) {
                 return parent;
               }
-              this.addDiagnostic(
-                "Realtime",
-                node.range,
-                "命令の位置が不正です。#BRANCHSTARTより前に配置してください。"
-              );
+              this.addDiagnostic("Realtime", node.range, t("parser.commandBeforeBranchStart"));
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
-            this.addDiagnostic("Realtime", token.range, "譜面分岐の区分がありません。");
+            this.addDiagnostic("Realtime", token.range, t("parser.noBranchSection"));
             this.position--;
             return parent;
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
@@ -1219,7 +1216,7 @@ export class Parser {
             if (section === "Free" || section === "Unknown") {
               this.processFreeHeader(parent, token);
             } else {
-              this.addDiagnostic("Realtime", token.range, "ヘッダーの位置が不正です。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidHeaderPosition"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Command") {
@@ -1243,7 +1240,7 @@ export class Parser {
                   undefined
               ) {
                 const node = this.parseCommand(parent, token, separator);
-                this.addDiagnostic("Realtime", node.range, "#BRANCHSTART がありません。");
+                this.addDiagnostic("Realtime", node.range, t("parser.missingBranchStart"));
               } else if (
                 parent.children.length > 0 &&
                 parent.children.every((x) => x instanceof CommandNode)
@@ -1266,7 +1263,7 @@ export class Parser {
               this.position--;
               return parent;
             } else {
-              this.addDiagnostic("Realtime", token.range, "不正なテキストです。");
+              this.addDiagnostic("Realtime", token.range, t("parser.invalidText"));
               parent.pushRange(token.range);
             }
           } else if (token.kind === "Notes" || token.kind === "MeasureEnd") {
@@ -1279,12 +1276,12 @@ export class Parser {
             }
           } else {
             if (token.kind !== "EndOfLine") {
-              this.addDiagnostic("Unedited", token.range, "不正なテキストです。");
+              this.addDiagnostic("Unedited", token.range, t("parser.invalidText"));
             }
             parent.pushRange(token.range);
           }
         } else {
-          this.addDiagnostic("Realtime", token.range, "拡張機能エラー");
+          this.addDiagnostic("Realtime", token.range, t("parser.extensionError"));
           parent.pushRange(token.range);
         }
       }
@@ -1293,7 +1290,7 @@ export class Parser {
       if (parent instanceof ChartNode) {
         const lastEol = findLast(this.tokens, (x) => x.kind === "EndOfLine");
         if (lastEol !== undefined) {
-          this.addDiagnostic("Realtime", lastEol.range, "#END がありません。");
+          this.addDiagnostic("Realtime", lastEol.range, t("parser.missingEnd"));
         }
       }
     }
@@ -1306,12 +1303,12 @@ export class Parser {
         return "";
       case "Roll":
       case "RollBig":
-        return "連打";
+        return t("semanticTokens.roll");
       case "Balloon":
       case "BalloonBig":
-        return "風船";
+        return t("semanticTokens.balloon");
       case "Fuze":
-        return "時限爆弾";
+        return t("semanticTokens.fuze");
     }
   }
 }

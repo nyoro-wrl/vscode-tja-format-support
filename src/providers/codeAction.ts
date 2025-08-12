@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { documents } from "../extension";
 import { NoteNode } from "../types/node";
+import { t } from "../i18n";
 
 export class TjaCodeActionProvider implements vscode.CodeActionProvider {
   public static readonly providedCodeActionKinds = [vscode.CodeActionKind.QuickFix];
@@ -18,17 +19,17 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
       if (token.isCancellationRequested) {
         return actions;
       }
-      if (diagnostic.message.startsWith("打数が定義されていません。")) {
+      if (diagnostic.message.startsWith(t("parser.balloonCountNotDefined"))) {
         const action = this.createBalloonParameterQuickFix(document, diagnostic, token);
         if (action) {
           actions.push(action);
         }
-      } else if (diagnostic.message === "風船音符がありません。") {
+      } else if (diagnostic.message === t("parser.noBalloonNotes")) {
         const action = this.createUnusedBalloonParameterQuickFix(document, diagnostic);
         if (action) {
           actions.push(action);
         }
-      } else if (diagnostic.message === "#END がありません。") {
+      } else if (diagnostic.message === t("parser.missingEnd")) {
         const action = this.createEndCommandQuickFix(document, diagnostic);
         if (action) {
           actions.push(action);
@@ -99,7 +100,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
       return undefined;
     }
 
-    const action = new vscode.CodeAction("風船音符の打数を設定", vscode.CodeActionKind.QuickFix);
+    const action = new vscode.CodeAction(t("codeActions.setBalloonCount"), vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];
 
     // Create custom command to position cursor and trigger rename
@@ -112,7 +113,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
 
     action.command = {
       command: "tja.balloonParameterQuickFix",
-      title: "風船音符の打数を設定",
+      title: t("codeActions.setBalloonCount"),
       arguments: [document.uri, targetPosition],
     };
 
@@ -125,7 +126,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
     document: vscode.TextDocument,
     diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
-    const action = new vscode.CodeAction("削除", vscode.CodeActionKind.QuickFix);
+    const action = new vscode.CodeAction(t("codeActions.delete"), vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];
 
     // Use the diagnostic range directly (which already includes the correct range)
@@ -141,7 +142,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
     document: vscode.TextDocument,
     diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
-    const action = new vscode.CodeAction("#END の作成", vscode.CodeActionKind.QuickFix);
+    const action = new vscode.CodeAction(t("codeActions.createEnd"), vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];
 
     // Insert #END at the line after the diagnostic position
@@ -161,7 +162,7 @@ export class TjaCodeActionProvider implements vscode.CodeActionProvider {
     document: vscode.TextDocument,
     diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
-    const action = new vscode.CodeAction("不要な命令を削除", vscode.CodeActionKind.QuickFix);
+    const action = new vscode.CodeAction(t("codeActions.removeRedundantCommand"), vscode.CodeActionKind.QuickFix);
     action.diagnostics = [diagnostic];
 
     // Calculate the range to delete (include the entire line)

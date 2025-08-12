@@ -89,6 +89,50 @@ export interface LanguageResources {
     restartButton: string;
   };
 
+  // パーサー診断メッセージ
+  parser: {
+    // 一般的なエラー
+    invalidText: string;
+    extensionError: string;
+    invalidHeaderPosition: string;
+    invalidCommandPosition: string;
+    
+    // 風船音符関連
+    noBalloonNotes: string;
+    balloonCountNotDefined: string;
+    
+    // 構造エラー
+    missingStart: string;
+    missingEnd: string;
+    missingBranchStart: string;
+    measureNotClosed: string;
+    duplicateBranch: string;
+    noBranchSection: string;
+    
+    // 譜面状態エラー
+    rollNoteInterrupted: string;
+    measureCountMismatch: string;
+    measurePlacedInMiddle: string;
+    
+    // 命令関連
+    redundantCommand: string;
+    commandPositionInvalid: string;
+    commandBeforeBranchStart: string;
+    
+    // 譜面分岐状態
+    barlineStateInconsistent: string;
+    gogotimeStateInconsistent: string;
+    dummyNoteStateInconsistent: string;
+  };
+
+  // コードアクション
+  codeActions: {
+    setBalloonCount: string;
+    delete: string;
+    createEnd: string;
+    removeRedundantCommand: string;
+  };
+
   // 設定項目説明
   config: {
     gogotimeHighlight: string;
