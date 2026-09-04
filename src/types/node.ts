@@ -943,7 +943,9 @@ export class MeasureNode extends ParentNode<
     if (node instanceof NoteNode) {
       chartState = node.properties;
       this.properties.notesLength++;
-      this.properties.notes.push(node.properties.note);
+      if (!(node.value === "9" && node.properties.rollState === "BalloonBigBorder")) {
+        this.properties.notes.push(node.properties.note);
+      }
     } else if (node instanceof ChartStateCommandNode) {
       chartState = node.properties.chartState;
     } else if (node instanceof MeasureEndNode) {
@@ -972,7 +974,14 @@ export class MeasureNode extends ParentNode<
           this.properties.endChartState.isDummyNote = "unknown";
         }
         if (this.properties.endChartState.rollState !== chartState.rollState) {
-          this.properties.endChartState.rollState = "None";
+          if (
+            this.properties.endChartState.rollState === "BalloonBig" &&
+            chartState.rollState === "BalloonBigBorder"
+          ) {
+            this.properties.endChartState.rollState = "BalloonBigBorder";
+          } else {
+            this.properties.endChartState.rollState = "None";
+          }
         }
         if (this.properties.endChartState.bpm !== chartState.bpm) {
           this.properties.endChartState.bpm = undefined;

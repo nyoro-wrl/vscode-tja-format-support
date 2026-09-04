@@ -720,7 +720,22 @@ export class Parser {
    * @param token
    */
   private parseNote(parent: MeasureNode, token: Token): void {
-    if (/[1-79A-Z]/.test(token.value)) {
+    const isPotatoBorder =
+      token.value === "9" &&
+      (this.chartState.rollState === "BalloonBig" ||
+        this.chartState.rollState === "BalloonBigBorder");
+    if (isPotatoBorder) {
+      if (this.chartState.rollState === "BalloonBigBorder") {
+        const name = this.getRollStateName(this.chartState.rollState);
+        this.addDiagnostic(
+          "Realtime",
+          token.range,
+          `${name}${t("parser.rollNoteInterrupted")}`,
+          DiagnosticSeverity.Warning
+        );
+      }
+      this.chartState.rollState = "BalloonBigBorder";
+    } else if (/[1-79A-Z]/.test(token.value)) {
       if (token.value !== "8" && this.chartState.rollState !== "None") {
         const name = this.getRollStateName(this.chartState.rollState);
         this.addDiagnostic(
@@ -766,7 +781,7 @@ export class Parser {
     }
     const node = new NoteNode(parent, token, this.chartState, this.nowBalloonId);
     parent.push(node);
-    if (this.nowBalloonId !== undefined && /[79D]/.test(token.value)) {
+    if (this.nowBalloonId !== undefined && /[79D]/.test(token.value) && !isPotatoBorder) {
       const styleNode = parent.findParent<StyleNode>((x) => x instanceof StyleNode, {
         token: this.parseCancel,
       });
@@ -1306,6 +1321,7 @@ export class Parser {
         return t("semanticTokens.roll");
       case "Balloon":
       case "BalloonBig":
+      case "BalloonBigBorder":
         return t("semanticTokens.balloon");
       case "Fuze":
         return t("semanticTokens.fuze");

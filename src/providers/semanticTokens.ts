@@ -70,7 +70,10 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
         tokensBuilder.push(note.range, "rollBig");
       } else if (note.properties.rollState === "Balloon") {
         tokensBuilder.push(note.range, "balloon");
-      } else if (note.properties.rollState === "BalloonBig") {
+      } else if (
+        note.properties.rollState === "BalloonBig" ||
+        note.properties.rollState === "BalloonBigBorder"
+      ) {
         tokensBuilder.push(note.range, "balloonBig");
       } else if (note.properties.rollState === "Fuze") {
         tokensBuilder.push(note.range, "fuze");
